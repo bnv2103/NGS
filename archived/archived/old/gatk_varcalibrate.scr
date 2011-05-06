@@ -1,0 +1,52 @@
+#!/bin/sh
+#$ -S /bin/sh
+#$ -cwd
+#$ -l h_vmem=5G,time=6::
+
+# Recalibrate called variants
+# Load all samples genome-wide in a single $INP vcf file
+
+HEAP=4000
+JAVA="java -Xmx${HEAP}m -Djava.io.tmpdir=/ifs/data/c2b2/ip_lab/shares/DATA/tmp"
+GATK="$JAVA -jar /ifs/data/c2b2/ip_lab/shares/SOFTWARE/Sting/dist/GenomeAnalysisTK.jar"
+REF='/ifs/data/c2b2/ip_lab/shares/DATA/Sequencing/resources/Homo_sapiens_assembly18.fasta'
+
+DBSNP='/ifs/data/c2b2/ip_lab/shares/DATA/Sequencing/resources/dbsnp_130_hg18.rod'
+HAPMAP='/ifs/data/c2b2/ip_lab/shares/DATA/Sequencing/resources/hapmap.genotypes_r27_nr.hg18_fwd.vcf'
+
+INP=$1
+
+$GATK \
+ -T GenerateVariantClusters \
+ -B input,VCF,$INP.vcf \
+ -B hapmap,VCF,$HAPMAP \
+ -R $REF \
+ --DBSNP $DBSNP \
+ -l INFO \
+ -an QD -an SB -an HaplotypeScore -an HRun \
+ -clusterFile $INP.cluster
+
+$GATK \
+ -T VariantRecalibrator \
+ -B input,VCF,$INP.vcf \
+ -R $REF \
+ --DBSNP $DBSNP \
+ -l INFO \
+ --ignore_filter HARD_TO_VALIDATE \
+ -clusterFile $INP.cluster \
+ -o $INP.recalibrator_output.vcf \
+ -tranchesFile $INP.dat.tranches \
+ -reportDatFile $INP.dat \
+ --target_titv 2.07 \
+ -Rscript /ifs/data/c2b2/ip_lab/shares/SOFTWARE/R/R-2.11.1/bin/R \
+ -resources /ifs/data/c2b2/ip_lab/shares/SOFTWARE/Sting/R/
+
+$GATK \
+ -R $REF \
+ --DBSNP $DBSNP \
+ -B input,VCF,$INP.recalibrator_output.vcf \
+ -l INFO \
+ --fdr_filter_level 10.0 \
+ -tranchesFile $INP.dat.tranches \
+ -o $INP.recalibrator_output.filtered.vcf \
+ -T ApplyVariantCuts
