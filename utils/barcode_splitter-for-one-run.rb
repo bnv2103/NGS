@@ -141,7 +141,7 @@ def doSplit(bfq, targetfq, lane, multiplex, outprefix, barcodesize)
       ndiscard += 1
     end
   end
-
+  $stderr.puts "#{targetfq}:\t#decoded=#{ndecode}\t#unknown=#{ndiscard}"
   outio.values.each {|oio| oio.close}
   bio.close
   tio.close
