@@ -4,7 +4,8 @@ io = File.new(fq, 'r')
 
 bcode = {}
 while !io.eof?
-  bc = (io.take(4))[1].chomp
+  bcl = (io.take(4))[1].chomp
+  bc = bcl[0..6]
   if !bcode.key?(bc)
     bcode[bc] = 0
   end
