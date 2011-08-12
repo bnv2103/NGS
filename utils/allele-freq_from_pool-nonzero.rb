@@ -11,16 +11,26 @@ def main
     
     cols = line.chomp.split(/\s+/)
     
-    allelec = 0
-    
+    allelec = [0,0,0,0]
+    pos = cols[1] 
     cols[3..-1].each do |gt|
       a = gt.split(';')
-      a[1..-1].each do |n|
-        allelec += n.to_i
+      1.upto(4) do |i|
+        n = a[i].to_i
+#      a[1..-1].each do |n|
+        if n > 0
+          allelec[i-1] += 1
+        end
+        #        allelec += n.to_i
       end
     end
-    if allelec > 0
+    
+    ga =  allelec.select {|g| g > 0}
+    if ga.size > 1
       puts line
+#      if pos == "121320556"
+ #       $stderr.puts ga.join("\t")
+ #     end
     end
   end
 end
