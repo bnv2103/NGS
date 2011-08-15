@@ -11,17 +11,18 @@ INP=""
 CHR=""
 MEM=""
 chain=""
-
+MaxReads=20000
 USAGE="Usage: $0 -I <Input bam file> -L <Chromosome> -g <global config> [-m heap_memory]"
 ERRORMESSAGE="#### ERROR"
 ERRORMESSAGE1="The following error has occurred"
 
-while getopts I:L:m:g:c:h o
+while getopts I:L:m:g:r:c:h o
   do 
   case "$o" in
       I) INP="$OPTARG";;
       L) CHR="$OPTARG";;
       m) MEM="$OPTARG";;
+      r) MaxReads="$OPTARG";;
       c) chain="$OPTARG";;  # if $chain != 0,  chain reaction.
       g) GLOBAL="$OPTARG";;  # global config
       h) echo $USAGE
@@ -107,7 +108,9 @@ $GATK \
     -R $REF \
     -D $DBSNP \
     -T IndelRealigner \
-    -compress 0 \
+    -B:indels,VCF $INDELVCF  \
+    --maxReadsForRealignment $MaxReads \
+    -compress 5 \
     -targetIntervals $OUTDIR/$CHR.forRealigner.intervals \
     -o $OUTDIR/$CHR.cleaned.bam 
 
