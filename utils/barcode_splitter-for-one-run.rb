@@ -174,23 +174,23 @@ end
 
 def readBar(b)
   # example:
-# Ac039eabxx, 1 ,15,hg18,TGACCA,Target,N,SE100,Erin Bush,Richard Mayeux
-# Ac039eabxx, 1 ,16,hg18,ACAGTG,Target,N,SE100,Erin Bush,Richard Mayeux
-# Ac039eabxx, 2 ,R1d492,bacteria,CGATGT,DNA Single End 50bp multiplexing=6,N,SE100,Erin Bush,Largus Angenent
-# Ac039eabxx, 2 ,R1d520,bacteria,TGACCA,DNA Single End 50bp multiplexing=6,N,SE100,Erin Bush,Largus Angenent
-
+  # Ac039eabxx, 1 ,15,hg18,TGACCA,Target,N,SE100,Erin Bush,Richard Mayeux
+  # Ac039eabxx, 1 ,16,hg18,ACAGTG,Target,N,SE100,Erin Bush,Richard Mayeux
+  # Ac039eabxx, 2 ,R1d492,bacteria,CGATGT,DNA Single End 50bp multiplexing=6,N,SE100,Erin Bush,Largus Angenent
+  # Ac039eabxx, 2 ,R1d520,bacteria,TGACCA,DNA Single End 50bp multiplexing=6,N,SE100,Erin Bush,Largus Angenent
+  
 
   coding = {}
   File.new(b, 'r').each do |line|
     next if line.match(/^#/) # header line
-
+    
     cols = line.chomp.split(',')
     run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[2].strip, cols[4].strip
-
+    
     if !coding.key?(lane)
       coding[lane] = {}
     end
-    coding[lane][code] = sampleID
+    coding[lane][code] = sampleID.tr("/", "_")
   end
   return coding
 end
