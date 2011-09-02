@@ -32,12 +32,15 @@ if [[ $fq == "" || $setting == "" || $num == "" ]]
 fi
 
 
+## $BASEDIR is included
+. $setting 
+
 ## extract 
 
 
 name=`basename $fq | sed 's/.fastq$//g' | sed 's/.fq$//g' | sed 's/\//\_/g'`
 rfq=$name"_random_"$num.fq
-cmd="$RUBY ~/code/NGS/utiles/randomly-take-N-reads-from-fastq.rb $fq $num > $rfq"
+cmd="$RUBY $BASEDIR/randomly-take-N-reads-from-fastq.rb $fq $num $rfq"
 
 echo -e "randomly extract $num reads from $fq\n $cmd"
 $cmd
@@ -45,6 +48,6 @@ $cmd
 
 ## tophat and cufflinks
 
-cmd="sh ~/code/NGS/RNA_seq/pipeline_cufflink-ref.sh  -i $rfq -s  $setting -n $nt "
+cmd="sh $BASEDIR/pipeline_cufflink-ref.sh  -i $rfq -s  $setting -n $nt "
 echo -e "do tophat and cufflinks:\n $cmd"
 $cmd
