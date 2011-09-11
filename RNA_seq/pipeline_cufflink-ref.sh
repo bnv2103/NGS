@@ -10,7 +10,7 @@ USAGE="Usage: $0 -i fastq -s setting [-n num_threads]"
 nt=4 # default 4 threads for tophat
 outdir=""
 
-while getopts i:s:n:h opt
+while getopts i:s:n:o:h opt
   do
   case "$opt" in
       i) fq="$OPTARG";;
