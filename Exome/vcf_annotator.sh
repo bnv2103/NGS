@@ -51,7 +51,8 @@ $GATK \
     -B:variant,VCF $input \
     -B:dbsnp,VCF $DBSNPVCF \
     -B:compHapMap,VCF $HapMapV3VCF \
-    -B:compdbSNP132,VCF $DBSNP132
+    -B:compdbSNP132,VCF $DBSNP132 \
+    -B:comp1KG,VCF $OneKGenomes 
 
 #    -B:comp1KG_CEU,VCF 1000GenomesCalls.CEU.vcf \
 

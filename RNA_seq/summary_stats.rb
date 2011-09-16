@@ -23,12 +23,18 @@ def main
   else
     isoforms = "#{dir}/accepted_hits.bam_cufflinks_ref/genes.fpkm_tracking"
   end
+  
+  mapped = 0
+  mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | grep -v different`
+  if mappedline =~ /^(\d+)\s+/
+    mapped = $1
+  end
 
   puts isoforms
   if File.exist?(isoforms)
     a = `Rscript ~/code/NGS/RNA_seq/cufflinks.summary.R #{isoforms}`.sub("[1]","").strip.split(/\s+/).join("\t")
     
-    puts "#{dir}\t#{sampleName}\t#{nreads}\t#{a}"
+    puts "#{dir}\t#{sampleName}\t#{nreads}\t#{mapped}\t#{a}"
   end
 end
 

@@ -5,13 +5,14 @@ nt=1 # default number of threads
 dcov=300 # down sampling to dcov if depth is larger than dcov
 njobs=100
 
-USAGE="Usage: $0 -i <list of bam files> -m <heap> -s <global setting> [ -n number_of_threads] [ -j number_of_qjobs] [-d down_sampling] [ -v total_mem ]"
+USAGE="Usage: $0 -i <list of bam files> -m <heap> -s <global setting> [ -n number_of_threads] [ -j number_of_qjobs] [-d down_sampling] [ -v total_mem ] [ -o output_Dir ]"
 
 while getopts i:m:o:s:d:n:j:b:q:v:h opt
   do 
   case "$opt" in
       i) bamlist="$OPTARG";;
       m) MEM="$OPTARG";;
+      o) outDir="$OPTARG";;
       s) setting="$OPTARG";;  # global config
       n) nthreads="$OPTARG";;
       d) dcov="$OPTARG";;
@@ -55,7 +56,12 @@ fi
 # fi
 
 bamlist=`readlink -e $bamlist`
+
 temp=$bamlist"_VarCalling_dir"
+
+if [[ $outDir != "" ]]; then
+	temp=$outDir
+fi
 
 mkdir -p $temp
 

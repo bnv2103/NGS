@@ -32,7 +32,7 @@ for f in $runs
 	  echo -e "$f\t$HiSeqRuns/$f/\t$FastqDir/$f" >> $StatusDir/basecall.complete  
 
       # Bcl to fastq, will take 4-5 hours. then do demultiplexing
-	  cmd="qsub -N process.$f -l mem=8G,time=72::  -pe smp 4   -o $QueueLog/bclToFastq.$f.o -e $QueueLog/bclToFastq.$f.e $PIPEBASE/bclToFastq.sh -i $HiSeqRuns/$f -o $FastqDir/$f -s $setting -n 4"
+	  cmd="qsub -N process.$f -l mem=2G,time=72::  -pe smp 4   -o $QueueLog/bclToFastq.$f.o -e $QueueLog/bclToFastq.$f.e $PIPEBASE/bclToFastq.sh -i $HiSeqRuns/$f -o $FastqDir/$f -s $setting -n 4"
 	  $cmd
 	  echo $cmd
 	  echo "$cmd" >> $StatusDir/history.txt

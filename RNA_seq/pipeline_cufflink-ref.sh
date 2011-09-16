@@ -53,13 +53,18 @@ if [[ ! -s $bam ]]; then
     exit 1
 fi
 
+## index
+samtools index $bam
 
 ## do cufflinks
 cuffout=$bam"_cufflinks_ref"
-
-cmd="cufflinks -o $cuffout --GTF  $GENES $bam"
+cuffout2=$bam"_cufflinks_ref-guided"
+cmd="cufflinks -o $cuffout --GTF  $GENES --num-threads $nt  $bam"
 
 echo -e "do cufflinks with ref genes: \n $cmd"
 $cmd
 
+cmd="cufflinks -o $cuffout2 --GTF-guide  $GENES --num-threads $nt  $bam"
+echo -e "do cufflinks with ref genes as guide: \n $cmd"
+$cmd
 

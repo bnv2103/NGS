@@ -109,7 +109,7 @@ for r in $reads
     $PIPEBASE/qseq2fastq.pl s_"$lane"_"$r"_*_qseq.txt > $fastqout/s_"$lane"_"$r".fastq &   
     let njobs=$njobs+1
 
-    if [[ $njobs >= $nt ]]; then
+    if [[ $njobs == $nt ]]; then
 	wait  ##  wait for all background job to finish to start another loop 
 	njobs=0
     fi
