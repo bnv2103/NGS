@@ -54,16 +54,16 @@ def main
       info.split(';').each do |l|  
         k,v = l.split('=')
 
-        if  k == "refseq.functionalClass" and v == "silent"  ## syn
+        if  k =~ /refseq\.functionalClass/ and v == "silent"  ## syn
           synonFlag = 1
           coding = 1
-        elsif  k == "refseq.functionalClass" and v == "missense"  # missense
+        elsif  k =~ /refseq\.functionalClass/ and v == "missense"  # missense
           missenseFlag = 1
           coding = 1
-        elsif k == "refseq.functionalClass" and v == "nonsense"
+        elsif k =~ /refseq\.functionalClass/ and v == "nonsense"
           nonsenseFlag = 1
           coding = 1
-        elsif k == "refseq.functionalClass" and v == "readthrough"
+        elsif k =~ /refseq\.functionalClass/ and v == "readthrough"
           coding = 1
           readthroughFlag = 1
         end
@@ -122,7 +122,20 @@ def main
 #    puts "#novelti/tv: #{novelti}/#{noveltv} = #{novelti/noveltv.to_f}"
   end
 
-  puts "\#items\t#{sid.join("\t")}"
+  puts "\Samples\t#{sid.join("\t")}"
+  print "all_SNV"
+  sid.each {|s| print "\t#{knownti[s] + knowntv[s] + novelti[s] + noveltv[s]}"}
+  print "\n"
+  
+  print "all_known"
+  sid.each {|s| print "\t#{knownti[s] + knowntv[s]}"}
+  print "\n"
+
+
+  print "all_novel"
+  sid.each {|s| print "\t#{novelti[s] + noveltv[s]}"}
+  print "\n"
+
   print "known:ti/tv"
   sid.each {|s| print "\t#{knownti[s]}/#{knowntv[s]}"}
   print "\n"
