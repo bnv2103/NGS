@@ -37,23 +37,21 @@ fi
 
 
 JAVA="java -Xmx${HEAP}g -Djava.io.tmpdir="${temp}
-GATK="$JAVA -jar "${GATKJAR}
+GATK="$JAVA -jar "${GATKJAR12}
 
 uname -a 
 
 $GATK \
     -T VariantAnnotator \
-    -l INFO \
     -R $REF \
-    -I $bam \
     -o $output \
-    -all \
-    -B:variant,VCF $input \
-    -B:dbsnp,VCF $DBSNPVCF \
-    -B:compHapMap,VCF $HapMapV3VCF \
-    -B:compdbSNP132,VCF $DBSNP132 \
-    -B:comp1KG,VCF $OneKGenomes 
-
+    --variant $input \
+    --dbsnp $DBSNPVCF \
+    --comp:HapMapV3 $HapMapV3VCF \
+    --comp:dbSNP132 $DBSNP132 \
+    --comp:1KG $OneKGenomes 
+#    -all \
+#    -I $bam \
 #    -B:comp1KG_CEU,VCF 1000GenomesCalls.CEU.vcf \
 
 #    -A AlleleBalance \
