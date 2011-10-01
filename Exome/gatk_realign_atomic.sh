@@ -45,7 +45,7 @@ if [ ! $MEM == "" ]
 fi
 
 
-OUTDIR=$INP"_pipe"
+OUTDIR=$INP"_refine"
 if [ ! -d $OUTDIR ]; then
     mkdir $OUTDIR
 fi
@@ -100,6 +100,7 @@ $GATK \
     -I $INP \
     -R $REF \
     -D $DBSNP \
+    -B:indels,VCF $INDELVCF  \
     -o $OUTDIR/$CHR.forRealigner.intervals
 
 $GATK \
@@ -162,7 +163,27 @@ if [[ $chain != "" ]]; then
 	      
 	      rm -f $OUTDIR/*.fixed.bam
 	      ${SAMTOOLS} index $OUTDIR/all.realigned.bam  > $OUTDIR/log.index 2>&1
-####	      rm -rf $INP  # delete original bam
+
+	      if [[  -s $OUTDIR/all.realigned.bam  ]]; then
+		  rm -rf $INP  # delete original bam
+
+		  # trigger downstream analysis (dedup and recalibrate)
+		  echo "dedup"
+		  
+		  cmd="${BPATH}/deduplication.sh -i $OUTDIR/all.realigned.bam -s $GLOBAL"
+		  echo $cmd
+		  $cmd
+		  
+		  echo "recalibrate quality"
+		  date 
+
+		  cmd="qsub -l mem=8G,time=55:: -o $OUTDIR/all.realigned.bam.log.recalib.o -e $OUTDIR/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam"
+		  echo $cmd
+		  $cmd
+	      fi
+	      
+
+
 	  fi
 	  
 	  i=2

@@ -15,20 +15,20 @@ CHR=""
 REF=""
 OUTPUT=""
 TEMP=""
-
+chain=""
 USAGE="Usage: $0 -I <Input bam file> -g <global config> \"#:#-#\"]"
 ERRORMESSAGE="#### ERROR"
 ERRORMESSAGE1="The following error has occurred"
 
-while getopts I:L:m:g:t:o:h opt
+while getopts I:L:m:g:o:c:h opt
   do     
   case "$opt" in
       I)      INP="$OPTARG";;
       L)      CHR="$OPTARG";;
       g)      GLOBAL="$OPTARG";;
-      t)      TEMP="$OPTARG";;
       m)      MEM="$OPTARG";;
       o)      OUTPUT="$OPTARG";;
+      c)      chain="$OPTARG";;
       h)      echo $USAGE
 	  exit 1;;
   esac
@@ -47,7 +47,9 @@ if [ ! $MEM == "" ]
     HEAP=$MEM
 fi
 
-# JOB_ID is the qsub job ID
+
+TEMP=$OUTPUT"_tempDir"
+
 if [ ! -d $TEMP ]; then
     mkdir -p $TEMP
 fi
@@ -65,10 +67,10 @@ fi
 Targets=$TEMP"/target.list"
 
 ## dedup first
-
-$SAMTOOLS rmdup $INP $INP.temp
-mv $INP.temp $INP
-$SAMTOOLS index $INP
+# use caution! 
+# $SAMTOOLS rmdup $INP $INP.temp
+# mv $INP.temp $INP
+# $SAMTOOLS index $INP
 
 
 $GATK \
@@ -96,16 +98,25 @@ $GATK \
     -T TableRecalibration \
     -I $INP \
     -recalFile $INP.recal_data.csv \
+    -compress 5 \
     --out $OUTPUT
 
 ### need to 
 ## according to lh3 at http://biostar.stackexchange.com/questions/1269/what-is-the-best-pipeline-for-human-whole-exome-sequencing
 
 # $SAMTOOLS calmd -br $OUTPUT.temp $REF > $OUTPUT
-
+## update: this has been incorporated in GATK
 
 $SAMTOOLS index $OUTPUT
 
-
+rm -rf $TEMP
 echo "recalibration complete"
 
+if [[ $chain != ""  ]]; then
+    # trigger downstream analysis 
+    date
+    cmd="qsub -N depth -l mem=5G,time=48:: -o $OUTPUT.depth.log.o -e $OUTPUT.depth.log.e ${BPATH}/gatk_depthofcoverage.sh  -g $GLOBAL -I $OUTPUT  -m 3000"
+    echo $cmd
+    $cmd
+    
+fi

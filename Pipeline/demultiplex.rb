@@ -32,10 +32,22 @@
 require 'zlib'
 
 def main
-  barcode = ARGV[0] # comma-delimited csv file
+  inputdir = ARGV[0]
+  outdir = ARGV[1]
+  prefix = ARGV[2]
+  barcode = ARGV[3] # comma-delimited csv file
+  
+  nt = ARGV[4]  # max threads
+
   ## targetfastq = ARGV[1]  # barcode is the first 6bp of the reads
-  outprefix = ARGV[1]
-  inputdir = ARGV[2]
+  
+  if nt == nil
+    nt = 4
+  else
+    nt = nt.to_i
+  end
+
+
 
   barcodesize = 6  # barcode size
 
@@ -54,21 +66,24 @@ def main
       end
     end
   end
-##  $stderr.puts "allowed multiplexing codes: #{multiplex.keys.size}"
+  ##  $stderr.puts "allowed multiplexing codes: #{multiplex.keys.size}"
   $stderr.puts "multiplex mapping: #{multiplex}"
 
-##  outputio["discarded"] = File.new(targetfastq + "_discarded.fastq", "w" )
-  assignment = decode(inputdir, multiplex, outprefix, barcodesize)
+  outprefix = outdir + "/" + prefix 
+  ##  outputio["discarded"] = File.new(targetfastq + "_discarded.fastq", "w" )
+  assignment = decode(inputdir, multiplex, outprefix, barcodesize, nt)
   
 end
 
-def decode(inputdir, multiplex, outprefix, barcodesize)
+def decode(inputdir, multiplex, outprefix, barcodesize, nt )
   
   # get the list of files in the dir
   #   puts inputdir
   barcodefq = Dir.new(inputdir).select {|a| a.match(/s\_\d+\_2\.\S+/) }
   
   $stderr.puts "barcode files: \n#{barcodefq.join("\n")}"
+
+  nprocess = 0
 
   barcodefq.sort.each do |bfq|
     if bfq.match(/s\_(\d+)\_2\.(\S+)/)
@@ -84,6 +99,13 @@ def decode(inputdir, multiplex, outprefix, barcodesize)
       Process.fork do
         doSplit(bfql, targetfq1, lane, multiplex, outprefix, barcodesize) if File.exist?(targetfq1)
         doSplit(bfql, targetfq3, lane, multiplex, outprefix, barcodesize) if File.exist?(targetfq3)
+      end
+
+      nprocess += 1
+
+      if nprocess >= nt # need wait
+        Process.waitall
+        nprocess = 0 
       end
     end
   end
@@ -186,6 +208,8 @@ def readBar(b)
     
     cols = line.chomp.split(',')
     run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[2].strip, cols[4].strip
+    
+    next if code == ""
     
     if !coding.key?(lane)
       coding[lane] = {}

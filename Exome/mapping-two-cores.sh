@@ -16,13 +16,14 @@ samtools=`which samtools`
 output=""
 bwaversion=`$bwa 2>&1 | grep Version | awk '{print $2""$3}'`
 #sortmem=1000000000  # mem allocated for samtools sort  
+chain="0"  # whether call downstream analysis (default 0 means not). 
 setting=""
 
 ### Note: bwa sample uses about 3.5G RAM
 
 USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
 
-while getopts i:p:g:q:d:n:t:s:z:f:m:o:h opt
+while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h opt
   do      
   case "$opt" in
       i) fastq1="$OPTARG";;
@@ -36,6 +37,7 @@ while getopts i:p:g:q:d:n:t:s:z:f:m:o:h opt
       z) readgroup="$OPTARG";;
       f) platform="$OPTARG";;
       o) output="$OPTARG";;
+      c) chain="$OPTARG";;
       s) setting="$OPTARG";;
       h)    echo $USAGE
           exit 1;;
@@ -130,3 +132,37 @@ rm -f $output.bam.temp*
 $samtools index $output.bam
 
 date
+
+if [[ $chain != "0" ]]; then ## call realign
+    
+    OUTDIR=$output.bam_refine
+
+    if [ ! -d $OUTDIR ]; then
+	mkdir $OUTDIR
+    fi  
+    status=$OUTDIR"/realign.status"
+    if [ -e $status ] ; then
+	rm -f $status
+    fi
+
+    touch $status
+    qmem=5 # default
+    heapm=4
+    for (( i=1; i<=24; i++))
+      do 
+      if [[ $i -lt 7 ]]; then  # mem=8 for large chr
+	  qmem=8
+	  heapm=7
+      fi
+      
+      g=`basename $output.bam | sed 's/\//_/g'`
+      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/log.$i.realign.o -e $OUTDIR/log.$i.realign.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam  -g $setting -L $i -c $status -m $heapm"
+      echo $cmd
+      $cmd
+    done
+
+
+###     $QSUB -l mem=8G,time=58::  $BPATH/gatk_realign_all.sh   -g $setting -I $output.bam 
+
+
+fi

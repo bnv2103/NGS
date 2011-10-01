@@ -28,12 +28,14 @@ def main
   end
 
   if optHash.key?("--strand")
-    sbc = optHash["-strand"].to_f
+    sbc = optHash["--strand"].to_f
   end
 
   if optHash.key?("--nreads")
     ncut = optHash["--nreads"].to_i
   end
+
+#  $stderr.puts "#{bbc}\t#{mbc}\t#{sbc}\t#{ncut}"
 
   File.new(optHash["--vcf"], 'r').each do |line|
     if line.match("^#")
@@ -59,7 +61,7 @@ def main
         elsif f=~ /PV4\=(\S+)\,(\S+),(\S+),(\S+)/
           sb , bb, mb, tb = $1.to_f, $2.to_f, $3.to_f, $4.to_f
           
-          if  bb == 0.0 or tb == 0.0
+          if  bb == 0.0 or tb == 0.0 or mb == 0.0 or tb == 0.0
             bflag = 0
           elsif Math.log10(sb) < sbc or Math.log10(bb) < bbc or Math.log10(mb) < mbc or Math.log10(tb) < tbc
             bflag = 0
@@ -68,19 +70,29 @@ def main
       end
 
       flag = []
+      xflag = 1
       if rflag == 0
-        flag << "RATIO"
+        flag << "RATIO-bad"
+        xflag = 0
+      else
+        flag << "RATIO-ok"
       end
       
       if nflag == 0
-        flag << "NUM-NONREF"
+        flag << "NUM_NONREF-bad"
+        xflag = 0
+      else
+        flag << "NUM_NONREF-ok"
       end
 
-      if bflag == 0
-        flag << "BIAS"
+      if bflag == 0 and !optHash.key?("--avoid")  ## do not use bias filter
+        flag << "BIAS-bad"
+        xflag = 0
+      else
+        flag << "BIAS-ok"
       end
 
-      if flag.size > 0
+      if xflag == 0 
         flagstring = "FILTER:" + flag.join(";")
       else
         flagstring = "PASS"
@@ -100,6 +112,7 @@ def getopt
                         ["--baseQ", "-b", GetoptLong::REQUIRED_ARGUMENT],
                         ["--mapQ", "-m", GetoptLong::REQUIRED_ARGUMENT],
                         ["--strand", "-s", GetoptLong::REQUIRED_ARGUMENT],
+                        ["--avoid", "-a", GetoptLong::NO_ARGUMENT],
                         ["--nreads", "-n", GetoptLong::REQUIRED_ARGUMENT],
                         ["--help", "-h", GetoptLong::NO_ARGUMENT]
                         )
