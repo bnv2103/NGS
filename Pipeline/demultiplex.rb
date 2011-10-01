@@ -207,6 +207,11 @@ def readBar(b)
     next if line.match(/^#/) # header line
     
     cols = line.chomp.split(',')
+
+    if cols.size < 8 
+      cols  = line.chomp.split(/\t/)
+    end
+
     run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[2].strip, cols[4].strip
     
     next if code == ""

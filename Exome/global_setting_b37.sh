@@ -5,6 +5,7 @@ export REF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/human_g1k_
 export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_50mb_with_annotation.hg19.bed.mod"
 export DBSNP="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/dbsnp_130_b37.rod"
 export DBSNPVCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/dbsnp_132.b37.excluding_sites_after_129.vcf" 
+export DBSNP132="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/dbsnp_132.b37.vcf"
 export HapMapV3VCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/hapmap_3.3.b37.vcf"
 export INDELVCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/1000G_indels_for_realignment.b37.vcf"
 export OneKGenomes="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/ALL.wgs.phase1.projectConsensus.snps.sites.vcf.PASS.vcf"

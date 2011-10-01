@@ -80,12 +80,12 @@ $OLB/bin/setupBclToQseq.py -b $BCALL -o $qseqout --overwrite -P .clocs
 
 # qmake -inherit --
 
-if [[ -e "finished.txt" ]]; then
-    echo -e "Qseq conversion from $absIN done" > BclToQseq.complete.txt
-else
-    echo "BclToQseq failed"
-    exit 1
-fi
+#if [[ -e "finished.txt" ]]; then
+#    echo -e "Qseq conversion from $absIN done" > BclToQseq.complete.txt
+#else
+#    echo "BclToQseq failed"
+#    exit 1
+#fi
 
 echo -e "Convert qseq to fastq"
 
@@ -128,9 +128,13 @@ echo -e "qseq to fastq done"
 # demultiplex                                                                                                     
 sampleSheet=$SampleSheets/$runName.csv
 
+if [[ ! -s $sampleSheet ]]; then
+    sampleSheet=$SampleSheets/$runName.tsv
+fi 
+
 if [[ -s $sampleSheet ]]; then
     
-
+    
     if [[ ! -e $demultiplexout ]]; then
 	mkdir $demultiplexout
     fi

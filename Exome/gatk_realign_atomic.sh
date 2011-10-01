@@ -11,17 +11,19 @@ INP=""
 CHR=""
 MEM=""
 chain=""
+OUTDIR=""
 MaxReads=20000
 USAGE="Usage: $0 -I <Input bam file> -L <Chromosome> -g <global config> [-m heap_memory]"
 ERRORMESSAGE="#### ERROR"
 ERRORMESSAGE1="The following error has occurred"
 
-while getopts I:L:m:g:r:c:h o
+while getopts I:L:m:g:r:o:c:h o
   do 
   case "$o" in
       I) INP="$OPTARG";;
       L) CHR="$OPTARG";;
       m) MEM="$OPTARG";;
+      o) OUTDIR="$OPTARG";;
       r) MaxReads="$OPTARG";;
       c) chain="$OPTARG";;  # if $chain != 0,  chain reaction.
       g) GLOBAL="$OPTARG";;  # global config
@@ -44,8 +46,10 @@ if [ ! $MEM == "" ]
     HEAP=$MEM
 fi
 
+if [[ $OUTDIR == "" ]]; then
+    OUTDIR=$INP"_refine"
+fi
 
-OUTDIR=$INP"_refine"
 if [ ! -d $OUTDIR ]; then
     mkdir $OUTDIR
 fi
@@ -129,7 +133,7 @@ $FIXMATE INPUT=$OUTDIR/$CHR.cleaned.bam OUTPUT=$OUTDIR/$CHR.fixed.bam SO=coordin
 
 if [[ $? == 0 ]]
     then
-    rm -f $OUTDIR/$CHR.cleaned.bam
+    rm -f $OUTDIR/$CHR.cleaned.bam*
     echo "fixmate complete"
     echo $CHR >> $status
 else
@@ -161,7 +165,7 @@ if [[ $chain != "" ]]; then
 	      echo "merge bam files"
 	      ${SAMTOOLS} merge $OUTDIR/all.realigned.bam $OUTDIR/*.fixed.bam  > $OUTDIR/log.merge 2>&1
 	      
-	      rm -f $OUTDIR/*.fixed.bam
+	      rm -f $OUTDIR/*.fixed.bam 
 	      ${SAMTOOLS} index $OUTDIR/all.realigned.bam  > $OUTDIR/log.index 2>&1
 
 	      if [[  -s $OUTDIR/all.realigned.bam  ]]; then
@@ -177,7 +181,8 @@ if [[ $chain != "" ]]; then
 		  echo "recalibrate quality"
 		  date 
 
-		  cmd="qsub -l mem=8G,time=55:: -o $OUTDIR/all.realigned.bam.log.recalib.o -e $OUTDIR/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam"
+		  mkdir -p $OUTDIR/logs/
+		  cmd="qsub -l mem=8G,time=55:: -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1"
 		  echo $cmd
 		  $cmd
 	      fi

@@ -146,6 +146,7 @@ if [[ $chain != "0" ]]; then ## call realign
     fi
 
     touch $status
+    mkdir -p $OUTDIR/logs/
     qmem=5 # default
     heapm=4
     for (( i=1; i<=24; i++))
@@ -156,7 +157,7 @@ if [[ $chain != "0" ]]; then ## call realign
       fi
       
       g=`basename $output.bam | sed 's/\//_/g'`
-      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/log.$i.realign.o -e $OUTDIR/log.$i.realign.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam  -g $setting -L $i -c $status -m $heapm"
+      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm"
       echo $cmd
       $cmd
     done
