@@ -23,7 +23,7 @@ end
 def process(chr, seq, c)
   c[chr].keys.sort.each do |pos|
     ref = seq[pos-1]
-    c[chr][pos][:context] = seq[(pos - 51)..(pos-2)] + "[#{ref}/#{c[chr][pos][:alt]}]" + seq[(pos+1)..(pos+50)]
+    c[chr][pos][:context] = seq[(pos - 51)..(pos-2)] + "[#{ref}/#{c[chr][pos][:alt]}]" + seq[(pos)..(pos+49)]
     if ref != c[chr][pos][:ref]
       $stderr.puts "Warning: reference allele does not match: #{chr} #{pos} #{c[chr][pos][:name]}"
     end
