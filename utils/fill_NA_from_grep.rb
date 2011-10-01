@@ -12,7 +12,7 @@ def main
   end
 
   while line=ARGF.gets do 
-    cols = line.chomp.split(/\s+/)
+    cols = line.chomp.split(/\t/)
     k,v = cols[0],cols[1]
     
     
