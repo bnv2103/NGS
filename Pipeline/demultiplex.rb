@@ -206,19 +206,25 @@ def readBar(b)
   File.new(b, 'r').each do |line|
     next if line.match(/^#/) # header line
     
-    cols = line.chomp.split(',')
+    cols = line.chomp.split(/\s+/)
 
-    if cols.size < 8 
-      cols  = line.chomp.split(/\t/)
+    if cols.size < 5 
+      cols  = line.chomp.split(/\s+/)
     end
 
-    run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[2].strip, cols[4].strip
+    run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[4].strip, cols[6].strip
     
-    next if code == ""
+    next if code == "--"
     
     if !coding.key?(lane)
       coding[lane] = {}
     end
+
+        if coding[lane].key?(code)
+                $stderr.puts "Duplicate barcodes in lane : #{lane} "
+                exit
+        end
+
     coding[lane][code] = sampleID.tr("/", "_")
   end
   return coding
