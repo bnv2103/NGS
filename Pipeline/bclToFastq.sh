@@ -30,7 +30,6 @@ if [[ $RunDir == "" || $OutDir == ""  || $setting == "" ]]
     exit 1
 fi
 
-. /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/Pipeline/olb_path
 . $setting 
 
 BCALL=$RunDir/Data/Intensities/BaseCalls/
