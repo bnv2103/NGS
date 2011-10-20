@@ -200,25 +200,32 @@ def readBar(b)
   # Ac039eabxx, 1 ,16,hg18,ACAGTG,Target,N,SE100,Erin Bush,Richard Mayeux
   # Ac039eabxx, 2 ,R1d492,bacteria,CGATGT,DNA Single End 50bp multiplexing=6,N,SE100,Erin Bush,Largus Angenent
   # Ac039eabxx, 2 ,R1d520,bacteria,TGACCA,DNA Single End 50bp multiplexing=6,N,SE100,Erin Bush,Largus Angenent
-  
+
+  #111012_SN828_0089_BD0CWFACXX    1       YELLOW  YELLOW  1       Bacteria        ATCACG  DNA     --      SE100   Erin Bush       PI      110926_DEREK_ASHLEY_24_BACTERIA_DNA_SE100_HISEQ aefranks@microbio.umass.edu, jward@microbio.umass.edu, la249@Cornell.edu
 
   coding = {}
   File.new(b, 'r').each do |line|
     next if line.match(/^#/) # header line
     
-    cols = line.chomp.split(',')
+    cols = line.chomp.split(/\s+/)
 
-    if cols.size < 8 
-      cols  = line.chomp.split(/\t/)
+    if cols.size < 5 
+      cols  = line.chomp.split(/\s+/)
     end
 
-    run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[2].strip, cols[4].strip
+    run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[4].strip, cols[6].strip
     
-    next if code == ""
+    next if code == "--"
     
     if !coding.key?(lane)
       coding[lane] = {}
     end
+
+	if coding[lane].key?(code)
+		$stderr.puts "Duplicate barcodes in lane : #{lane} "
+		exit
+	end
+	
     coding[lane][code] = sampleID.tr("/", "_")
   end
   return coding
