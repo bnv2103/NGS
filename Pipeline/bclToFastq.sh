@@ -30,6 +30,7 @@ if [[ $RunDir == "" || $OutDir == ""  || $setting == "" ]]
     exit 1
 fi
 
+. /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/Pipeline/olb_path
 . $setting 
 
 BCALL=$RunDir/Data/Intensities/BaseCalls/
@@ -124,6 +125,10 @@ touch $fastqout/QseqToFastq.complete.txt
 echo -e "qseq to fastq done"
 
 ## do  demultiplexing
+
+# get barcode stats
+
+qsub -o $fastqout/log.barcode-stats.o -e $fastqout/log.barcode-stats.e -l mem=3G,time=48:: -N barcode_stats $PIPEBASE/do-barcode-stats.sh $fastqout/s_*_2.fastq
 
 # demultiplex                                                                                                     
 sampleSheet=$SampleSheets/$runName.csv
