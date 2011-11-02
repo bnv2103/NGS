@@ -44,7 +44,7 @@ if [[ ! -e $absOUT ]]; then
     mkdir $absOUT
 fi
 
-chmod 750 $absOUT
+chmod 770 $absOUT
 pushd $absOUT
 
 # check if the run is indeed finished
