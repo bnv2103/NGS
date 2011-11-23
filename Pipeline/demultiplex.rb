@@ -52,8 +52,7 @@ def main
   barcodesize = 6  # barcode size
 
   coding = readBar(barcode) # return a hash {lane => { code => sample  }}
-  
-
+ 
 ### assume the original fastq files are: s_1_1.fastq for lane 1
 
   multiplex = {}
@@ -207,10 +206,11 @@ def readBar(b)
   File.new(b, 'r').each do |line|
     next if line.match(/^#/) # header line
     
+
     cols = line.chomp.split(',')
 
     if cols.size < 5 
-      cols  = line.chomp.split(/\s+/)
+      cols  = line.chomp.split(/\t/)
     end
 
     run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[4].strip, cols[6].strip
@@ -222,7 +222,7 @@ def readBar(b)
     end
 
 	if coding[lane].key?(code)
-		$stderr.puts "Duplicate barcodes in lane : #{lane} "
+		$stderr.puts "Duplicate barcodes in lane : #{lane} ; code = #{code} "
 		exit
 	end
 	

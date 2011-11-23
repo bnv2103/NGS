@@ -104,6 +104,7 @@ $GATK \
     -I $INP \
     -R $REF \
     -D $DBSNP \
+    -DBQ 10 \
     -B:indels,VCF $INDELVCF  \
     -o $OUTDIR/$CHR.forRealigner.intervals
 
@@ -112,6 +113,7 @@ $GATK \
     -I $INP \
     -R $REF \
     -D $DBSNP \
+    -DBQ 10 \
     -T IndelRealigner \
     -B:indels,VCF $INDELVCF  \
     --maxReadsForRealignment $MaxReads \
