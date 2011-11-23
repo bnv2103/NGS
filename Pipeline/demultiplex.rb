@@ -79,7 +79,7 @@ def decode(inputdir, multiplex, outprefix, barcodesize, nt )
   
   # get the list of files in the dir
   #   puts inputdir
-  barcodefq = Dir.new(inputdir).select {|a| a.match(/s\_\d+\_2\.\S+/) }
+  barcodefq = Dir.new(inputdir).select {|a| a.match(/s\_\d+\_2\.fastq$/) }
   
   $stderr.puts "barcode files: \n#{barcodefq.join("\n")}"
 
@@ -207,7 +207,7 @@ def readBar(b)
   File.new(b, 'r').each do |line|
     next if line.match(/^#/) # header line
     
-    cols = line.chomp.split(/\s+/)
+    cols = line.chomp.split(',')
 
     if cols.size < 5 
       cols  = line.chomp.split(/\s+/)
