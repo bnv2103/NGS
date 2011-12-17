@@ -56,6 +56,7 @@ def main
 ### assume the original fastq files are: s_1_1.fastq for lane 1
 
   multiplex = {}
+  reads_lane ={}
 
   coding.each do |lane, ch|
     multiplex[lane] = {}
@@ -71,7 +72,20 @@ def main
   outprefix = outdir + "/" + prefix 
   ##  outputio["discarded"] = File.new(targetfastq + "_discarded.fastq", "w" )
   assignment = decode(inputdir, multiplex, outprefix, barcodesize, nt)
-  
+ 
+  ## print summary on reads - mean and stdev per lane
+  reads_lane.each do |lane,arr_samples| 
+         $stderr.puts "Lane #{lane} \t" + arr_samples.join("\t") 
+  end
+  $stderr.puts "\n"
+  reads_lane.each do |lane,arr_samples|
+         mean = arr_samples.inject{ |sum, el| sum + el }.to_f / arr_samples.size
+         variance = arr_samples.inject(0) { |variance, x| variance += (x - mean) ** 2 }
+         stddev = Math.sqrt(variance/(arr_samples.size-1))
+         $stderr.puts "Lane #{lane}\tMean: #{mean.to_i}\tStdev: #{stddev.to_i}"
+  end
+
+ 
 end
 
 def decode(inputdir, multiplex, outprefix, barcodesize, nt )
@@ -122,11 +136,12 @@ def doSplit(bfq, targetfq, lane, multiplex, outprefix, barcodesize)
     ends = $1
   end
 
-
   outio = {}
+  reads_sample ={}
   multiplex[lane].values.sort.each do |sampleID|
     outName = outprefix + "_lane_#{lane}_#{sampleID}_#{ends}.fastq"
     outio[sampleID] = File.new(outName,'w')
+    reads_sample[sampleID] =0;
   end
   
   outio[:discard] = File.new(outprefix + "_lane_#{lane}_#{ends}.unknown.fastq", 'w')
@@ -156,13 +171,27 @@ def doSplit(bfq, targetfq, lane, multiplex, outprefix, barcodesize)
       sampleID = multiplex[lane][bc]
       
       outio[sampleID].puts tunit
+      reads_sample[sampleID] += 1
       ndecode += 1
     else # discarded
       outio[:discard].puts tunit
       ndiscard += 1
     end
   end
+### Output summary of reads per sample and reads per lane etc.
+
   $stderr.puts "#{targetfq}:\t#decoded=#{ndecode}\t#unknown=#{ndiscard}"
+  read_summary_file =  File.open(outprefix + "summary_lane_#{lane}.stats",'a+')
+  temp_out="#{lane}"
+  reads_lane[lane] = []
+
+  reads_sample.each do |sample,reads|
+	temp_out << "\t#{reads}"
+	reads_lane[lane].push(reads)	
+  end
+  read_summary_file.puts temp_out
+  read_summary_file.close
+
   outio.values.each {|oio| oio.close}
   bio.close
   tio.close
@@ -206,8 +235,7 @@ def readBar(b)
   File.new(b, 'r').each do |line|
     next if line.match(/^#/) # header line
     
-
-    cols = line.chomp.split(',')
+    cols = line.chomp.split(/\t/)
 
     if cols.size < 5 
       cols  = line.chomp.split(/\t/)
@@ -216,13 +244,14 @@ def readBar(b)
     run, lane, sampleID, code = cols[0].strip, cols[1].strip, cols[4].strip, cols[6].strip
     
     next if code == "--"
-    
+    next if code == "-"    
+
     if !coding.key?(lane)
       coding[lane] = {}
     end
 
 	if coding[lane].key?(code)
-		$stderr.puts "Duplicate barcodes in lane : #{lane} ; code = #{code} "
+		$stderr.puts "Duplicate barcodes in lane : #{lane}  for #{code} from sample #{coding[lane][code]}"
 		exit
 	end
 	
