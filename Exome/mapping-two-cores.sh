@@ -89,9 +89,9 @@ if [[ ! $fastq2 == "" ]]; then  # paired-ends
     wait   ### need to wait the F reads finish
 
     date
-    cmd="$bwa sampe -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp"
+    cmd="$bwa sampe -P -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp"
     echo $cmd
-    $bwa sampe -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp
+    $bwa sampe -P -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp
 
     date
     echo "bwa alignment complete. Sorting the bam file ..."
@@ -103,9 +103,9 @@ else  # single-end
     wait
     
     date
-    cmd="$bwa samse -r $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp"
+    cmd="$bwa samse -P -r $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp"
     echo $cmd
-    $bwa samse -r $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp
+    $bwa samse -r -P $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp
 #    $samtools sort -m $sortmem  $output.bam.temp  $output
     date
     echo "bwa alignment complete. Sorting the bam file ..."
