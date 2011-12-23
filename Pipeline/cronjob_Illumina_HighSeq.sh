@@ -48,6 +48,20 @@ for f in $runs
 	  echo $cmd
 	  echo "$cmd" >> $StatusDir/history.txt
 #	  popd
+        touch "mailBody.txt"
+        echo "" > "mailBody.txt"
+        echo "Submission Begin: NOTE : PLEASE HAVE $f.tsv COMPILED IN SAMPLESHEETS WITHIN 2 DAYS" >> mailBody.txt
+        echo ""  >> mailBody.txt
+        echo "Process: Bcl-to-Fastq " >> mailBody.txt
+        echo "Hi-Seq Run: $f " >> mailBody.txt
+        echo "Command: $cmd " >> mailBody.txt
+        echo ""  >> mailBody.txt
+
+        qstat -j process.$f >>  mailBody.txt
+	cmd1="sh $PIPEBASE/sendMail.sh -t sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
+        echo $cmd1
+        $cmd1
+        rm mailBody.txt
       else
 	  echo "Run not finished -- $f"
       fi
