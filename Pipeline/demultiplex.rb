@@ -73,6 +73,8 @@ def main
   stat = sanity_check(inputdir, outprefix, coding) 
   if stat == 0
 	$stderr.puts "ERROR: Run Failed Sanity Chcheck "
+  else
+        $stderr.puts "Sanity Check Sucessful "
   end
 
  ##  outputio["discarded"] = File.new(targetfastq + "_discarded.fastq", "w" )
