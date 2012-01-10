@@ -143,7 +143,7 @@ if [[ -s $sampleSheet ]]; then
 	mkdir $demultiplexout
     fi
     cp $sampleSheet $demultiplexout/$runName.csv
-    outprefix=`echo $runName | cut -f1 -d '_' `
+    outprefix=`echo $runName`		# outprefix=`echo $runName | cut -f1 -d '_' `
     cmd="$RUBY18 $PIPEBASE/demultiplex.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv $nt"
     $cmd
     echo "$cmd" >> $StatusDir/history.txt

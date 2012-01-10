@@ -48,6 +48,10 @@ if [ ! -d $TEMP ];
     mkdir -p $TEMP
 fi
 
+if [ -e $INP".idx" ];
+	then
+	rm $INP".idx"
+fi
 
 JAVA="java -Xmx${HEAP}g -Djava.io.tmpdir="${TEMP}
 GATK="$JAVA -jar "${GATKJAR}
