@@ -2,6 +2,9 @@
 
 args <- commandArgs(TRUE)
 ## # dir <- args[1]
+# read isoforms and genes information, 
+# print median of FPKM, mean of FPKM and number of isoforms/genes which FPKM > 1 and 0.1
+
 dataf = args[1]
 dataf2 = args[2]
 outfile = args[3]

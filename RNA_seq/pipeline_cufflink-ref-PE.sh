@@ -71,4 +71,5 @@ cmd="cufflinks -o $cuffout --GTF  $GENES $bam"
 echo -e "do cufflinks with ref genes: \n $cmd"
 $cmd
 
-
+# after run cufflink, statistics of number of reads and FPKM
+ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $outdir "summary.csv"
