@@ -69,6 +69,7 @@ if [[ $bam != "" ]]; then
 	--comp:HapMapV3 $HapMapV3VCF \
 	--comp:dbSNP132 $DBSNP132 \
 	--comp:1KG $OneKGenomes \
+        --comp:EVS $EVSVCF \
     	-o $vcf.complete.annotated.vcf \
 	#	-I $bam \    
     echo "VariantAnnotator done"
