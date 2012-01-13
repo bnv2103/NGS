@@ -41,6 +41,8 @@ rg=$g
 sampleName=$rg
 library=$rg
 
+
+## SE
 cmd="tophat --phred64-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library $BOWTIEDB $fq"
 
 echo -e "do tophat: \n $cmd"
@@ -53,18 +55,22 @@ if [[ ! -s $bam ]]; then
     exit 1
 fi
 
-## index
-samtools index $bam
 
 ## do cufflinks
 cuffout=$bam"_cufflinks_ref"
-cuffout2=$bam"_cufflinks_ref-guided"
-cmd="cufflinks -o $cuffout --GTF  $GENES --num-threads $nt  $bam"
+cuffout2=$bam"_cufflinks_ref-guide"
+
+cmd="cufflinks -o $cuffout --GTF  $GENES $bam"
 
 echo -e "do cufflinks with ref genes: \n $cmd"
 $cmd
 
-cmd="cufflinks -o $cuffout2 --GTF-guide  $GENES --num-threads $nt  $bam"
-echo -e "do cufflinks with ref genes as guide: \n $cmd"
-$cmd
+## reference-guided assembly
+cmd2="cufflinks -o $cuffout2 --GTF-guide  $GENES $bam"
 
+echo -e "do cufflinks with ref genes -guide: \n $cmd2"
+$cmd2
+
+
+# for f in *cufflinks; do ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $f "summary.csv"; done
+ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $outdir "summary.csv"
