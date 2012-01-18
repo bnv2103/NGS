@@ -7,7 +7,7 @@ njobs=100
 
 USAGE="Usage: $0 -i <list of bam files> -m <heap> -s <global setting> [ -n number_of_threads] [ -j number_of_qjobs] [-d down_sampling] [ -v total_mem ] [ -o output_Dir ]"
 
-while getopts i:m:o:s:d:n:j:b:q:v:h opt
+while getopts i:m:o:s:d:n:j:b:q:v:h:t:A opt
   do 
   case "$opt" in
       i) bamlist="$OPTARG";;
@@ -17,9 +17,11 @@ while getopts i:m:o:s:d:n:j:b:q:v:h opt
       n) nthreads="$OPTARG";;
       d) dcov="$OPTARG";;
       j) njobs="$OPTARG";;
+      t) qtime="$OPTARG";;
 #      b) mbq="$OPTARG";;
 #      q) mmq="$OPTARG";;
       v) qmem="$OPTARG";;
+      A) AUTO="$OPTARG";;
       h) echo $USAGE
 	  exit 1;;
   esac
@@ -29,6 +31,14 @@ if [[ $bamlist == ""  || $setting == "" ]]
     then
     echo $USAGE
     exit 1
+fi
+
+d1=`dirname $bamlist`
+basen=`basename d1`
+if [[ $AUTO == ""  ]];then
+	job_ext=".$basen"
+else
+	job_ext=".$basen.AUTO"
 fi
 
 if [[ ! $nthreads == "" ]]; then
@@ -43,6 +53,10 @@ fi
 
 if [[ $qmem == "" ]]; then
     let qmem=$heap+3  # allocated RAM for each qjob in total
+fi
+
+if [[ $qtime == "" ]]; then
+    let qtime=240  # time limit for the job
 fi
 
 . $setting
@@ -106,8 +120,20 @@ for (( j=1; j<=$njobs; j++ ))  #
   cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 50.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  -B:dbsnp,VCF ${DBSNPVCF} -B:compdbSNP132,VCF $DBSNP132 $infofields"
   
   echo $cmd >> $out
-  
-  
-  qsub -l mem=${qmem}G,time=240:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j.$bname $out 
+  echo "if [ ! -e $temp/status.Varcalling ];then touch $temp/status.Varcalling; fi " >> $out
+  echo "echo $j >> $temp/status.Varcalling " >> $out
+  echo "completed=`wc -l $temp/status.Varcalling | awk '{print $1}'` " >> $out
+  echo "if [[ $completed == \"100\" ]];then  echo \"all completed\" >>  $temp/status.Varcalling; " >> $out
+  echo "elif [[ $completed <= \"90\" || $completed > \"100\" ]]; then exit; fi" >>$out
+  echo " for (( i=1;i <= 100;i++ )); do ls $outDir/var.slice.$i.raw.vcf; done > $outDir/list.vcf-files.txt " >> $out
+  echo " sh ${BPATH}/vcf_concat_slices.sh $outDir/list.vcf-files.txt $outDir/list.vcf-files.txt.vcf " >> $out
+
+if [[ $AUTO == "" ]]; then  
+  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o annotation.o -e annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist  " >> $out
+else
+  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o annotation.o -e annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist -A AUTO " >> $out
+fi
+
+  qsub -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out 
   # echo $qmem
 done

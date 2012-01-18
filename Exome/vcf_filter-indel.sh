@@ -11,11 +11,12 @@ REF=""
 
 USAGE="Usage: $0 -I <Input VCF file> -g "
 
-while getopts I:t:m:g:h o
+while getopts I:t:m:g:h:A o
 do      case "$o" in
         I)      INP="$OPTARG";;
         m)      MEM="$OPTARG";;
         g)      GLOBAL="$OPTARG";;
+	A)	AUTO="$OPTARG";;
         h)      echo $USAGE
                 exit 1;;
         esac

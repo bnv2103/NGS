@@ -23,7 +23,7 @@ setting=""
 
 USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
 
-while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h opt
+while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A opt
   do      
   case "$opt" in
       i) fastq1="$OPTARG";;
@@ -39,6 +39,7 @@ while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h opt
       o) output="$OPTARG";;
       c) chain="$OPTARG";;
       s) setting="$OPTARG";;
+      A) AUTO="$OPTARG";;
       h)    echo $USAGE
           exit 1;;
   esac
@@ -157,7 +158,11 @@ if [[ $chain != "0" ]]; then ## call realign
       fi
       
       g=`basename $output.bam | sed 's/\//_/g'`
-      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm"
+	if [[ $AUTO == "" ]];then
+              cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm "
+  	else
+	      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
+	fi
       echo $cmd
       $cmd
     done
