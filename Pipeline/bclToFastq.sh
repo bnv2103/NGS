@@ -158,5 +158,24 @@ fi
 popd 
 echo -e "conversion done" > $absOUT/BclToFastq.complete.txt
 
+#Trigger Automatic Pipeline
+        cmd="sh $PIPEBASE/post_demux.sh $demultiplexout $runName "
+        echo $cmd
+        $cmd
+
+	touch "mailBody.txt"
+        echo "" > "mailBody.txt"
+        echo "Fastq Complete: The Fastq files for $f are ready ." >> mailBody.txt
+        echo ""  >> mailBody.txt
+        echo "Process: Automated DownStream Pipeline Begin " >> mailBody.txt
+        echo "Hi-Seq Run: $f " >> mailBody.txt
+        echo "Command: $cmd " >> mailBody.txt
+        echo ""  >> mailBody.txt
+
+ #       qstat -j process.$f >>  mailBody.txt
+        cmd1="sh $PIPEBASE/sendMail.sh -t sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
+        echo $cmd1
+        $cmd1
+        rm mailBody.txt
 
 

@@ -63,7 +63,7 @@ def main
     multiplex[lane] = {}
     ch.each do |str,sampleID|
       mutate1(str).each do |strmut|   # only allow hamming distance of 1
-        multiplex[lane][strmut] = sampleID.tr("_", "-")		#replace all _ with - in sampleID
+        multiplex[lane][strmut] = sampleID		#replace all _ with - in sampleID
       end
     end
   end
@@ -270,7 +270,7 @@ def readBar(b)
 	end
 
 ## replace / with _, and space with _ in sampleID	
-    coding[lane][code] = sampleID.tr("/", "_").tr(" ","_")
+    coding[lane][code] = sampleID.tr("/", "-").tr(" ","-").tr("_","-")
   end
   return coding
 end

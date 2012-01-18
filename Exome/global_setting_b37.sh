@@ -19,4 +19,5 @@ export BWA="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/bwa"
 export BPATH="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome"
 export STING="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK"
 export AnnotationTable="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/refGene-big-table-b37.txt"
-
+export RUBY18="/ifs/data/c2b2/ngs_lab/ngs/usr/local/bin/ruby"
+export UTILS="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/utils/"
