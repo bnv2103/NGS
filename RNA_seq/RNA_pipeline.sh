@@ -25,7 +25,7 @@ script_PE="$RNABASE/pipeline_cufflink-ref-PE.sh"
 
 if [ ! -d  cufflinks ]; then mkdir -p cufflinks; fi
 # print title for statistical summary
-RUBY18 $RNABASE/printTitle.rb "summary.csv"
+Rscript $RNABASE/printTitle.rb "summary.csv"
 
 f1_base=`basename $f1`
 
