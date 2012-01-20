@@ -7,6 +7,7 @@ genome=$1
 # fastq files, if it is Paired-end, then 2 fastq files are required
 f1=$2
 f2=$3
+
 RNABASE="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/RNA_seq/"
 RUBY18="/ifs/data/c2b2/ngs_lab/ngs/usr/local/bin/ruby"
 
@@ -25,7 +26,7 @@ script_PE="$RNABASE/pipeline_cufflink-ref-PE.sh"
 
 if [ ! -d  cufflinks ]; then mkdir -p cufflinks; fi
 # print title for statistical summary
-Rscript $RNABASE/printTitle.rb "summary.csv"
+ruby $RNABASE/printTitle.rb "summary.csv"
 
 f1_base=`basename $f1`
 
