@@ -13,16 +13,18 @@ for (i in 1:length(fileList) ){
     # tempName = paste(fileList[i], ".csv", sep="")
     # write.csv(a, tempName)
     B = strsplit(fileList[i], "_")
-    title = B[[1]][4]
+    # get the smaple name
+    title = B[[1]][6]
     brNum = 500
     
     hist(log10(a$FPKM), br=brNum, xlim=range(c(-10, 10)),xlab="log10(FPKM)", main = paste("Histogram of" , title))
     a.s = a[order(-a$FPKM*a$length), ]
     c = a.s[1:100, ]
     plot(1:100, log(c$FPKM*c$length), ylab="Normalized # Reads: log(FPKM*length)", main=paste("Plot of Top 100 Isoforms", title))
-    tempName = paste(B[[1]][3], B[[1]][4], sep="_")
-    tempName = paste(tempName, B[[1]][5], sep="_")
-    tempName = paste(tempName, B[[1]][6], sep="_")
+    
+    tempName = paste(B[[1]][5], B[[1]][6], sep="_")
+    tempName = paste(tempName, B[[1]][7], sep="_")
+    tempName = paste(tempName, B[[1]][8], sep="_")
     
     #tempName = paste(fileList[i], ".csv", sep="")
     tempName = paste(tempName, ".csv", sep="")
@@ -36,8 +38,8 @@ for (i in 1:(length(fileList)) ){
     	if (i != j){
 	t1 = strsplit(fileList[i], "_")
         t2 = strsplit(fileList[j], "_")
-        title1 = t1[[1]][4]
-        title2 = t2[[1]][4]
+        title1 = t1[[1]][6]
+        title2 = t2[[1]][6]
 	title_sub1 = strsplit(title1, "-")
 	title_sub2 = strsplit(title2, "-")
 	# if (title_sub1[[1]][2] == title_sub2[[1]][2]){
@@ -58,9 +60,9 @@ fileList = list.files(pattern="*genes")
 for (i in 1:length(fileList) ){
     a = read.table(fileList[i], header=T)
     B = strsplit(fileList[i], "_")
-    tempName = paste(B[[1]][3], B[[1]][4], sep="_")
-    tempName = paste(tempName, B[[1]][5], sep="_")
-    tempName = paste(tempName, B[[1]][6], sep="_")
+    tempName = paste(B[[1]][5], B[[1]][6], sep="_")
+    tempName = paste(tempName, B[[1]][7], sep="_")
+    tempName = paste(tempName, B[[1]][8], sep="_")
     tempName = paste(tempName, ".csv", sep="")
 
     # tempName = paste(fileList[i], ".csv", sep="")

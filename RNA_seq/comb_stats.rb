@@ -37,9 +37,10 @@ def main
     b = a.split(' ')
     # get the sample name 
     sampleName_short = sampleName.split('_')
-        
+    
+    # print sample name with statistical result
     writer = CSV.open(output, 'a') do |csv|
-      csv << [sampleName_short[3], nreads, uqMapped,  b[1], b[2], b[3], b[4], b[5], b[6]]
+      csv << [sampleName_short[5], nreads, uqMapped,  b[1], b[2], b[3], b[4], b[5], b[6]]
       end
   end
 end
