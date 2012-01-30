@@ -34,7 +34,7 @@ require 'zlib'
 
 def main
   inputdir = ARGV[0]
-  outdir = ARGV[1].tr("_", "-")         #replace all _ with - in RUNNAME
+  outdir = ARGV[1]#.tr("_", "-")         #replace all _ with - in RUNNAME
   prefix = ARGV[2]
   barcode = ARGV[3] # comma-delimited csv file
   
