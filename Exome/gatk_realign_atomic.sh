@@ -17,7 +17,7 @@ USAGE="Usage: $0 -I <Input bam file> -L <Chromosome> -g <global config> [-m heap
 ERRORMESSAGE="#### ERROR"
 ERRORMESSAGE1="The following error has occurred"
 
-while getopts I:L:m:g:r:o:c:h o
+while getopts I:L:m:g:r:o:c:h:A o
   do 
   case "$o" in
       I) INP="$OPTARG";;
@@ -27,6 +27,7 @@ while getopts I:L:m:g:r:o:c:h o
       r) MaxReads="$OPTARG";;
       c) chain="$OPTARG";;  # if $chain != 0,  chain reaction.
       g) GLOBAL="$OPTARG";;  # global config
+      A) AUTO="$OPTARG";;	#for automated pipeline
       h) echo $USAGE
 	  exit 1;;
   esac
@@ -104,7 +105,6 @@ $GATK \
     -I $INP \
     -R $REF \
     -D $DBSNP \
-    -DBQ 10 \
     -B:indels,VCF $INDELVCF  \
     -o $OUTDIR/$CHR.forRealigner.intervals
 
@@ -113,7 +113,6 @@ $GATK \
     -I $INP \
     -R $REF \
     -D $DBSNP \
-    -DBQ 10 \
     -T IndelRealigner \
     -B:indels,VCF $INDELVCF  \
     --maxReadsForRealignment $MaxReads \
@@ -184,7 +183,12 @@ if [[ $chain != "" ]]; then
 		  date 
 
 		  mkdir -p $OUTDIR/logs/
-		  cmd="qsub -l mem=8G,time=55:: -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1"
+		job_name=`basename $OUTDIR`
+		if [[ $AUTO == "" ]]; then
+                  cmd="qsub -l mem=8G,time=55:: -N recaliberate.$job_name -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 "
+		else
+		  cmd="qsub -l mem=8G,time=55:: -N recaliberate.$job_name.AUTO -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 -A AUTO"
+		fi
 		  echo $cmd
 		  $cmd
 	      fi

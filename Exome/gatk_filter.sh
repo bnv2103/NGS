@@ -12,11 +12,12 @@ REF=""
 
 USAGE="Usage: $0 -I <Input VCF file> -g "
 
-while getopts I:t:m:g:h o
+while getopts I:t:m:g:h:A o
 do      case "$o" in
         I)      INP="$OPTARG";;
         m)      MEM="$OPTARG";;
         g)      GLOBAL="$OPTARG";;
+	A)	AUTO="$OPTARG";;
         h)      echo $USAGE
                 exit 1;;
         esac
@@ -36,8 +37,16 @@ if [ ! $MEM == "" ]
     HEAP=$MEM
 fi
 
+        dname=`dirname $INP`
+        d1=`dirname $dname`
+        sname=`basename d1`
+if [ $AUTO == ""]; then
+	job_ext="$sname"
+else
+	job_ext="$sname.AUTO"
+fi
 if [ $JOB_ID == "" ]; then
-    JOB_ID="VarFilter"
+    JOB_ID="VarFilter$job_ext"
 fi
 
 # JOB_ID is the qsub job ID
@@ -45,11 +54,15 @@ TEMP=$INP"_"$JOB_ID"/"
 
 if [ ! -d $TEMP ]; 
     then    
-    mkdir -p $TEMP
+	mkdir -p $TEMP
 fi
 
 if [ -e $INP".idx" ];
+<<<<<<< HEAD:Exome/gatk_filter.sh
 	then
+=======
+then
+>>>>>>> fa767121cc6866fd1c77c2aff4ba5fdfe6de2218:Exome/gatk_filter.sh
 	rm $INP".idx"
 fi
 
@@ -88,3 +101,22 @@ $GATK \
 #  --clusterWindowSize 10 \
 #  --filterExpression "AB < 0.2 || MQ0 > 50" \
 #   --filterName "Nov09filters"
+<<<<<<< HEAD:Exome/gatk_filter.sh
+=======
+
+
+## separate indel from SNV:
+${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP
+${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP.filtered.vcf
+
+## filter indels:
+if [[ $AUTO == "" ]]; then
+	cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o logs/filter-indel.o -e logs/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.vcf.indel -g $GLOBAL "
+else
+        cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o logs/filter-indel.o -e logs/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.vcf.indel -g $GLOBAL  -A AUTO"
+fi
+echo $cmd
+$cmd
+
+
+>>>>>>> fa767121cc6866fd1c77c2aff4ba5fdfe6de2218:Exome/gatk_filter.sh

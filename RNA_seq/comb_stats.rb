@@ -1,6 +1,8 @@
-lrequire 'csv'
+require 'csv'
 
 def main
+  # 1. calculate the number of raw reads, unique reads from the bam file.
+  # 2. call summaryR.R to get the basic RPKM information of isoforms/genes 
   dir = ARGV[0]
   output = ARGV[1]
   flag = ARGV[2]
@@ -15,7 +17,8 @@ def main
   end
 
   if nreads == 0
-    nreads = `grep out #{dir}/left_kept_reads.info | cut -f2 -d '='`.to_i
+    # get number of reads
+    nreads = `grep reads_in #{dir}/left_kept_reads.info | cut -f2 -d '='`.to_i
   end
 
   if flag == nil
@@ -25,23 +28,19 @@ def main
     isoforms = "#{dir}/accepted_hits.bam_cufflinks_ref/genes.fpkm_tracking"
   end
 
-  mapped = 0
-  mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
-  if mappedline =~ /^(\d+)\s+/
-    mapped = $1
-  end
-
+  # get number of unique reads
+  uqMapped = `samtools view #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 6G | wc -l`.to_i
+ 
 
   if File.exist?(isoforms)
-    # a = `Rscript summaryR.R #{isoforms} #{genes} #{dirb}`.sub("[1]","").strip.split(/\s+/).join("\n")
     a = `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/summaryR.R #{isoforms} #{genes} #{dirb}`
     b = a.split(' ')
+    # get the sample name 
     sampleName_short = sampleName.split('_')
-    # puts "#{dir}\n#{sampleName}\n#{nreads}\n#{mapped}\n#{a}"
     
+    # print sample name with statistical result
     writer = CSV.open(output, 'a') do |csv|
-      # csv << [#{dir},#{sampleName},#{nreads},#{mapped},#{a}]
-      csv << [sampleName_short[3], mapped, b[1], b[2], b[3], b[4], b[5], b[6]]
+      csv << [sampleName_short[5], nreads, uqMapped,  b[1], b[2], b[3], b[4], b[5], b[6]]
       end
   end
 end

@@ -3,13 +3,14 @@
 
 heap=4
 
-while getopts v:g:m:b:h opt
+while getopts v:g:m:b:h:A opt
   do  
   case "$opt" in
       v) vcf="$OPTARG";;
       g) GLOBAL="$OPTARG";;
       m) MEM="$OPTARG";;
       b) bam="$OPTARG";;
+      A) AUTO="$OPTARG";;
       h) echo $USAGE
 	  exit 1;;
   esac
@@ -69,10 +70,22 @@ if [[ $bam != "" ]]; then
 	--comp:HapMapV3 $HapMapV3VCF \
 	--comp:dbSNP132 $DBSNP132 \
 	--comp:1KG $OneKGenomes \
-        --comp:EVS $EVSVCF \
+	--comp:EVS $EVSVCF \
     	-o $vcf.complete.annotated.vcf \
 	#	-I $bam \    
     echo "VariantAnnotator done"
 fi
 
 rm -rf $TEMP
+
+if [[ $AUTO != "" ]]	#trigger automatic downstream steps
+then
+	# filter
+	dname=`dirname $vcf`
+	d1=`dirname $dname`
+	basen=`basename d1`
+ 	cmd="qsub -N gatk_filter.$basen.AUTO -o $dname/filter.SNV.o -e $dname/filter.SNV.e -l mem=6G,time=24:: ${BPATH}/gatk_filter.sh -I $vcf.complete.annotated.vcf -g $GLOBAL -A AUTO" 
+	echo $cmd
+	$cmd
+fi
+

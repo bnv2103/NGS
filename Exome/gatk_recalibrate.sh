@@ -20,7 +20,7 @@ USAGE="Usage: $0 -I <Input bam file> -g <global config> \"#:#-#\"]"
 ERRORMESSAGE="#### ERROR"
 ERRORMESSAGE1="The following error has occurred"
 
-while getopts I:L:m:g:o:c:h opt
+while getopts I:L:m:g:o:c:h:A opt
   do     
   case "$opt" in
       I)      INP="$OPTARG";;
@@ -29,6 +29,7 @@ while getopts I:L:m:g:o:c:h opt
       m)      MEM="$OPTARG";;
       o)      OUTPUT="$OPTARG";;
       c)      chain="$OPTARG";;
+      A)      AUTO="$OPTARG";;
       h)      echo $USAGE
 	  exit 1;;
   esac
@@ -112,11 +113,19 @@ $SAMTOOLS index $OUTPUT
 rm -rf $TEMP
 echo "recalibration complete"
 
+d1=`dirname $INP`
+job_name=`basename $d1`
 if [[ $chain != ""  ]]; then
     # trigger downstream analysis 
     date
-    cmd="qsub -N depth -l mem=5G,time=48:: -o $OUTPUT.depth.log.o -e $OUTPUT.depth.log.e ${BPATH}/gatk_depthofcoverage.sh  -g $GLOBAL -I $OUTPUT  -m 3000"
+	if [[ $AUTO == "" ]]; then
+	    cmd="qsub -N depth.$job_name -l mem=5G,time=48:: -o $OUTPUT.depth.log.o -e $OUTPUT.depth.log.e ${BPATH}/gatk_depthofcoverage.sh  -g $GLOBAL -I $OUTPUT  -m 3000 "
+	else
+	    cmd="qsub -N depth.$job_name.AUTO -l mem=5G,time=48:: -o $OUTPUT.depth.log.o -e $OUTPUT.depth.log.e ${BPATH}/gatk_depthofcoverage.sh  -g $GLOBAL -I $OUTPUT  -m 3000 -A AUTO"
+	fi
     echo $cmd
     $cmd
-    
+   
 fi
+
+#
