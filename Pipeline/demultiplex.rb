@@ -34,11 +34,7 @@ require 'zlib'
 
 def main
   inputdir = ARGV[0]
-<<<<<<< HEAD:Pipeline/demultiplex.rb
-  outdir = ARGV[1].tr("_", "-")         #replace all _ with - in RUNNAME
-=======
   outdir = ARGV[1]#.tr("_", "-")         #replace all _ with - in RUNNAME
->>>>>>> fa767121cc6866fd1c77c2aff4ba5fdfe6de2218:Pipeline/demultiplex.rb
   prefix = ARGV[2]
   barcode = ARGV[3] # comma-delimited csv file
   
@@ -67,11 +63,7 @@ def main
     multiplex[lane] = {}
     ch.each do |str,sampleID|
       mutate1(str).each do |strmut|   # only allow hamming distance of 1
-<<<<<<< HEAD:Pipeline/demultiplex.rb
-        multiplex[lane][strmut] = sampleID		#replace all _ with - in sampleID
-=======
         multiplex[lane][strmut] = sampleID.tr("_", "-")		#replace all _ with - in sampleID
->>>>>>> fa767121cc6866fd1c77c2aff4ba5fdfe6de2218:Pipeline/demultiplex.rb
       end
     end
   end
@@ -278,7 +270,7 @@ def readBar(b)
 	end
 
 ## replace / with _, and space with _ in sampleID	
-    coding[lane][code] = sampleID.tr("/", "-").tr(" ","-").tr("_","-")
+    coding[lane][code] = sampleID.tr("/", "_").tr(" ","_")
   end
   return coding
 end
