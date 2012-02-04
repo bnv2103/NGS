@@ -29,11 +29,12 @@
 #  end
 # end
 
+# Output fastq file naming convention RUNNAME_laneX_SAMPLEID_ENDS.fastq  (where RUNNAME,laneX,SAMPLEID have no _ and ENDS = 1 (SE) OR 3(PE)
 require 'zlib'
 
 def main
   inputdir = ARGV[0]
-  outdir = ARGV[1]
+  outdir = ARGV[1].tr("_", "-")         #replace all _ with - in RUNNAME
   prefix = ARGV[2]
   barcode = ARGV[3] # comma-delimited csv file
   
@@ -62,7 +63,7 @@ def main
     multiplex[lane] = {}
     ch.each do |str,sampleID|
       mutate1(str).each do |strmut|   # only allow hamming distance of 1
-        multiplex[lane][strmut] = sampleID
+        multiplex[lane][strmut] = sampleID		#replace all _ with - in sampleID
       end
     end
   end
@@ -73,6 +74,8 @@ def main
   stat = sanity_check(inputdir, outprefix, coding) 
   if stat == 0
 	$stderr.puts "ERROR: Run Failed Sanity Chcheck "
+  else
+	$stderr.puts "Sanity Check Sucessful "
   end
 
  ##  outputio["discarded"] = File.new(targetfastq + "_discarded.fastq", "w" )
@@ -145,12 +148,12 @@ def doSplit(bfq, targetfq, lane, multiplex, outprefix, barcodesize)
   outio = {}
   reads_sample ={}
   multiplex[lane].values.sort.each do |sampleID|
-    outName = outprefix + "_lane_#{lane}_#{sampleID}_#{ends}.fastq"
+    outName = outprefix + "_lane#{lane}_#{sampleID}_#{ends}.fastq"
     outio[sampleID] = File.new(outName,'w')
     reads_sample[sampleID] =0;
  end
   
-  outio[:discard] = File.new(outprefix + "_lane_#{lane}_#{ends}.unknown.fastq", 'w')
+  outio[:discard] = File.new(outprefix + "_lane#{lane}_#{ends}.unknown.fastq", 'w')
   
   if bfq.match(/.gz$/)
     bio = Zlib::GzipReader.new(File.open(bfq))
@@ -188,14 +191,17 @@ def doSplit(bfq, targetfq, lane, multiplex, outprefix, barcodesize)
  ### Output summary of reads per sample and reads per lane etc.
 
   $stderr.puts "#{targetfq}:\t#decoded=#{ndecode}\t#unknown=#{ndiscard}"
-  read_summary_file =  File.open(outprefix + "_summary_lane_#{lane}.stats",'a+')
+  read_summary_file =  File.open(outprefix + "_summary_lane#{lane}.stats",'a+')
+  lane_out="lane"
   temp_out="#{lane}"
   $reads_lane[lane] = []
 
   reads_sample.each do |sample,reads|
+	lane_out << "\t#{sample}"
 	temp_out << "\t#{reads}"
 	$reads_lane[lane].push(reads)	
   end
+  read_summary_file.puts lane_out
   read_summary_file.puts temp_out
   read_summary_file.close
 
@@ -264,7 +270,7 @@ def readBar(b)
 	end
 
 ## replace / with _, and space with _ in sampleID	
-    coding[lane][code] = sampleID.tr("/", "_").tr(" ","_")
+    coding[lane][code] = sampleID.tr("/", "-").tr(" ","-").tr("_","-")
   end
   return coding
 end

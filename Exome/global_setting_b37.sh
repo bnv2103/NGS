@@ -9,6 +9,7 @@ export DBSNP132="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/dbsnp
 export HapMapV3VCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/hapmap_3.3.b37.vcf"
 export INDELVCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/1000G_indels_for_realignment.b37.vcf"
 export OneKGenomes="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/ALL.wgs.phase1.projectConsensus.snps.sites.vcf.PASS.vcf"
+export EVSVCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/EVS.vcf"
 export SAMTOOLS="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/samtools"
 # export TEMP="/ifs/scratch/c2b2/af_lab/saec/temp/"  # temp dir for Java
 export GATKJAR="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK/Sting/dist/GenomeAnalysisTK.jar" 
@@ -18,4 +19,5 @@ export BWA="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/bwa"
 export BPATH="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome"
 export STING="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK"
 export AnnotationTable="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/refGene-big-table-b37.txt"
-
+export RUBY18="/ifs/data/c2b2/ngs_lab/ngs/usr/local/bin/ruby"
+export UTILS="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/utils/"

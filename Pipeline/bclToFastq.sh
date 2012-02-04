@@ -143,7 +143,7 @@ if [[ -s $sampleSheet ]]; then
 	mkdir $demultiplexout
     fi
     cp $sampleSheet $demultiplexout/$runName.csv
-    outprefix=`echo $runName | cut -f1 -d '_' `
+    outprefix=`echo $runName`		# outprefix=`echo $runName | cut -f1 -d '_' `
     cmd="$RUBY18 $PIPEBASE/demultiplex.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv $nt"
     $cmd
     echo "$cmd" >> $StatusDir/history.txt
@@ -159,4 +159,18 @@ popd
 echo -e "conversion done" > $absOUT/BclToFastq.complete.txt
 
 
+	touch "mailBody.txt"
+        echo "" > "mailBody.txt"
+        echo "Fastq Complete: The Fastq files for $f are ready ." >> mailBody.txt
+        echo ""  >> mailBody.txt
+        echo "Process: Bcl-to-Fastq " >> mailBody.txt
+        echo "Hi-Seq Run: $f " >> mailBody.txt
+#        echo "Command: $cmd " >> mailBody.txt
+        echo ""  >> mailBody.txt
+
+ #       qstat -j process.$f >>  mailBody.txt
+        cmd1="sh $PIPEBASE/sendMail.sh -t sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
+        echo $cmd1
+        $cmd1
+        rm mailBody.txt
 
