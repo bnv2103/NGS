@@ -122,6 +122,25 @@ wait
 touch $fastqout/QseqToFastq.complete.txt
 
 echo -e "qseq to fastq done"
+#Clean up Qseq directory
+flag=1
+for i in `seq 1 8`
+do
+	for j in `seq 1 3`
+	do
+		if [ ! -e $fastqout/s_"$i"_"$j".fastq ] || [ ! -s  $fastqout/s_"$i"_"$j".fastq ]
+		then flag=0
+		fi
+	done
+done
+if [ $flag -eq "1" ]
+then
+	rm s_*.txt
+	rm -rf Matrix/
+	rm -rf Phasing/
+	rm -rf Plots/
+	rm -rf SignalMeans/
+fi
 
 ## do  demultiplexing
 
