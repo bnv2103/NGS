@@ -58,11 +58,7 @@ if [ ! -d $TEMP ];
 fi
 
 if [ -e $INP".idx" ];
-<<<<<<< HEAD:Exome/gatk_filter.sh
-	then
-=======
 then
->>>>>>> fa767121cc6866fd1c77c2aff4ba5fdfe6de2218:Exome/gatk_filter.sh
 	rm $INP".idx"
 fi
 
@@ -101,8 +97,6 @@ $GATK \
 #  --clusterWindowSize 10 \
 #  --filterExpression "AB < 0.2 || MQ0 > 50" \
 #   --filterName "Nov09filters"
-<<<<<<< HEAD:Exome/gatk_filter.sh
-=======
 
 
 ## separate indel from SNV:
@@ -119,4 +113,3 @@ echo $cmd
 $cmd
 
 
->>>>>>> fa767121cc6866fd1c77c2aff4ba5fdfe6de2218:Exome/gatk_filter.sh
