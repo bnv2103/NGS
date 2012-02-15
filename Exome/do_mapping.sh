@@ -19,7 +19,7 @@ fi
   job_id=`basename $fq |  sed 's/\_1.fastq//' `	#unique name for jobname (includes runid_lane#_sampleID
   g=`echo $fq | sed 's/_1.fastq/_3.fastq/'`
   if  [ ! -e $g ];  then g="" ; fi
-  sampleName=`basename $fq | sed 's/\_1.fastq//' | cut -f3  -d '_'`	#acc to  new convention, to change to old do -f4
+  sampleName=`basename $fq | sed 's/\_1.fastq//' | cut -f6  -d '_'`	#acc to  new convention, to change to old do -f4
   
 if [[ $automated == "" ]]; #was NOT triggered by automatic pipeline
 then
