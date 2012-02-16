@@ -90,7 +90,7 @@ if [[ ! $fastq2 == "" ]]; then  # paired-ends
     wait   ### need to wait the F reads finish
 
     date
-    cmd="$bwa sampe -P -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp"
+    cmd="$bwa sampe -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp"
     echo $cmd
     $bwa sampe -P -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp
 
