@@ -11,7 +11,7 @@ REF=""
 
 USAGE="Usage: $0 -I <Input VCF file> -g "
 
-while getopts I:t:m:g:h:A o
+while getopts I:t:m:g:h:A: o
 do      case "$o" in
         I)      INP="$OPTARG";;
         m)      MEM="$OPTARG";;

@@ -3,7 +3,7 @@
 
 heap=4
 
-while getopts v:g:m:b:h:A opt
+while getopts v:g:m:b:h:A: opt
   do  
   case "$opt" in
       v) vcf="$OPTARG";;
