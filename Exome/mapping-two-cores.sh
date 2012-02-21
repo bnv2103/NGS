@@ -104,9 +104,9 @@ else  # single-end
     wait
     
     date
-    cmd="$bwa samse -P -r $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp"
+    cmd="$bwa samse  -r $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp"
     echo $cmd
-    $bwa samse -r -P $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp
+    $bwa samse  -r $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp
 #    $samtools sort -m $sortmem  $output.bam.temp  $output
     date
     echo "bwa alignment complete. Sorting the bam file ..."
