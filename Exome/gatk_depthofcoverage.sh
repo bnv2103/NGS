@@ -88,10 +88,11 @@ fi
 
 # Summary stats on depth:
 ## reads mapped to whole genome
-samtools flagstat $INP | head -3 | tail -1 |sed '/^/$INP/'  > $INP.reads.mapped &
+echo $INP > $INP.reads.mapped
+samtools flagstat $INP | head -3 | tail -1 >> $INP.reads.mapped 
 ## information about the targeted regions.
 echo -e "sample_id\ttotal\tmean\tgranular_third_quartile\tgranular_median\tgranular_first_quartile\t%_bases_above_15" > $INP.reads.target
-cat $INP.coverage.sample_summary  | grep -v total | grep -v Total >> $INP.reads.target &
+cat $INP.coverage.sample_summary  | grep -v total | grep -v Total >> $INP.reads.target 
 
 if [[ $AUTO != "" ]]
 then
