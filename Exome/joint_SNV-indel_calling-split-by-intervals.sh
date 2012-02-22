@@ -122,8 +122,13 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo "if [ ! -e $temp/status.Varcalling ];then touch $temp/status.Varcalling; fi " >> $out
   echo "echo $j >> $temp/status.Varcalling " >> $out
   echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
-  echo "if [[ \$completed -eq \"100\" ]];then  echo \"all completed\" >>  $temp/status.Varcalling; " >> $out
-  echo "elif [[ \$completed -lt \"90\" || \$completed -gt \"100\" ]]; then exit; fi" >>$out
+  echo "while [[ \$completed != \"\" ]]; do " >> $out
+  echo "if [[ \$completed -eq \"100\" ]];then  echo \"all completed\" >>  $temp/status.Varcalling; break;" >> $out
+  echo "elif [[ \$completed -lt \"95\" || \$completed -gt \"100\" ]]; then exit; fi" >>$out
+  echo "else " >> $out
+  echo "sleep 60 " >> $out
+  echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
+  echo "fi; done" >> $out
   echo " for (( i=1;i <= 100;i++ )); do ls $outDir/var.slice.\$i.raw.vcf; done > $outDir/list.vcf-files.txt " >> $out
   echo " sh ${BPATH}/vcf_concat_slices.sh $outDir/list.vcf-files.txt $outDir/list.vcf-files.txt.vcf " >> $out
 
