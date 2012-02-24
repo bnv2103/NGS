@@ -16,7 +16,7 @@ MEM=""
 USAGE="Usage: $0 -I <Input bam file> -R <Reference fasta> [-L \"#:#-#\"] [-E <ExonFile>]"
 EXONUSAGE="Please specify either the file containing the interval list using -E or the sequences using -L"
 
-while getopts I:L:g:t:m:h:A o
+while getopts I:L:g:t:m:h:A: o
 do      case "$o" in
         I)      INP="$OPTARG";;
         g)      GLOBAL="$OPTARG";;
