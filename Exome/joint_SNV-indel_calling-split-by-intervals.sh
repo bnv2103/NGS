@@ -33,7 +33,7 @@ if [[ $bamlist == ""  || $setting == "" ]]
 fi
 
 d1=`dirname $bamlist`
-basen=`basename d1`
+basen=`basename $d1`
 if [[ $AUTO == ""  ]];then
 	job_ext=".$basen"
 else
@@ -133,9 +133,9 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo " sh ${BPATH}/vcf_concat_slices.sh $outDir/list.vcf-files.txt $outDir/list.vcf-files.txt.vcf " >> $out
 
 if [[ $AUTO == "" ]]; then  
-  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o annotation.o -e annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist  " >> $out
+  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o $temp/annotation.o -e $temp/annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist  " >> $out
 else
-  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o annotation.o -e annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist -A AUTO " >> $out
+  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o $temp/annotation.o -e $temp/annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist -A AUTO " >> $out
 fi
 
   qsub -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out 

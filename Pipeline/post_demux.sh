@@ -97,7 +97,9 @@ do
 		if [ ! -d $DIR/$APP/$projectid/$runid/mapping ]; then mkdir -p $DIR/$APP/$projectid/$runid/mapping; fi
 		if [ ! -e global_setting_b37.sh ];then
 		        cp $EXOMEBASE/global_setting_b37.sh $DIR/$APP/$projectid/$runid/.
-		        if [[ $capture =~ "Agilent_44Mb" ]]; then
+			if [[ $capture =~ "Mouse" ]]; then
+	                        echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V1_with_annotation.Mouse.bed.mod"">> $DIR/$APP/$projectid/$runid/global_setting_b37.sh
+		        elif [[ $capture =~ "Agilent_44Mb" ]]; then
 		                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V2_with_annotation.hg19.bed.mod"" >> $DIR/$APP/$projectid/$runid/global_setting_b37.sh
 		        fi
 		fi
