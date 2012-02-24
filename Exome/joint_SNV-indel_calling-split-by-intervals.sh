@@ -124,7 +124,7 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
   echo "while [[ \$completed != \"\" ]]; do " >> $out
   echo "if [[ \$completed -eq \"100\" ]];then  echo \"all completed\" >>  $temp/status.Varcalling; break;" >> $out
-  echo "elif [[ \$completed -lt \"95\" || \$completed -gt \"100\" ]]; then exit; fi" >>$out
+  echo "elif [[ \$completed -lt \"95\" || \$completed -gt \"100\" ]]; then exit; " >>$out
   echo "else " >> $out
   echo "sleep 60 " >> $out
   echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
