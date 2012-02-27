@@ -23,7 +23,7 @@ setting=""
 
 USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
 
-while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A opt
+while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A: opt
   do      
   case "$opt" in
       i) fastq1="$OPTARG";;

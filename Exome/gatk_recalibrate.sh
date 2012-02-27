@@ -20,7 +20,7 @@ USAGE="Usage: $0 -I <Input bam file> -g <global config> \"#:#-#\"]"
 ERRORMESSAGE="#### ERROR"
 ERRORMESSAGE1="The following error has occurred"
 
-while getopts I:L:m:g:o:c:h:A opt
+while getopts I:L:m:g:o:c:h:A: opt
   do     
   case "$opt" in
       I)      INP="$OPTARG";;

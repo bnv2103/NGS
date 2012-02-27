@@ -17,7 +17,7 @@ USAGE="Usage: $0 -I <Input bam file> -L <Chromosome> -g <global config> [-m heap
 ERRORMESSAGE="#### ERROR"
 ERRORMESSAGE1="The following error has occurred"
 
-while getopts I:L:m:g:r:o:c:h:A o
+while getopts I:L:m:g:r:o:c:h:A: o
   do 
   case "$o" in
       I) INP="$OPTARG";;
