@@ -83,7 +83,7 @@ then
 	# filter
 	dname=`dirname $vcf`
 	d1=`dirname $dname`
-	basen=`basename d1`
+	basen=`basename $d1`
  	cmd="qsub -N gatk_filter.$basen.AUTO -o $dname/filter.SNV.o -e $dname/filter.SNV.e -l mem=6G,time=24:: ${BPATH}/gatk_filter.sh -I $vcf.complete.annotated.vcf -g $GLOBAL -A AUTO" 
 	echo $cmd
 	$cmd
