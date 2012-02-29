@@ -15,12 +15,13 @@ RNABASE="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/RNA_seq/"
 
 for fq in `ls $fqdir/*_1.fastq`
 do
-	sampleid=`basename $fq | cut -f3 -d '_' ` ;	#acc to new convention.. for old change to -f4
-	lane=`basename $fq | cut -f2 -d '_' |sed 's/lane//' ` ; #acc to new convention.. for old change to -f3
+	#E.x. fq=/ifs/scratch/c2b2/ngs_lab/ngs/Fastq/120217_SN828_0119_BD07NDACXX/demultiplex/120217_SN828_0119_BD07NDACXX_lane1_2_1.fastq
+	sampleid=`basename $fq | cut -f6 -d '_' ` ;
+	lane=`basename $fq | cut -f5 -d '_' |sed 's/lane//' ` ; 
 
 	#search for sample in tsv file, return organism, application, capture, reads, service, projectID
 	#if any fields have blanks they are replaced with "_" for ease. Fields expected to have blanks are organism, capture, reads, application
-	eval arr=( $(awk -F '\t' '{if ( $2 == '${lane}' && $5 == "'${sampleid}'" ) {org =$6; app= $8; cap = $9; reads=$10; gsub(/ /, "_",org); gsub(/ /, "_",app); gsub(/ /, "_",cap); gsub(/ /, "_",reads);  print org ,app , cap, reads, $12, $13; }}' $SampleSheets/$runid.tsv ) )
+	arr=(`awk -F '\t' '{if ( $2 == '${lane}' && $5 == "'${sampleid}'" ) {org =$6; app= $8; cap = $9; reads=$10; gsub(/ /, "_",org); gsub(/ /, "_",app); gsub(/ /, "_",cap); gsub(/ /, "_",reads);  print tolower(org) ,tolower(app) , tolower(cap), reads, tolower($12), $13; }}' $SampleSheets/$runid.tsv |  tr " " "\n" `)
 
 	if [[ ${#arr[@]} == 0 ]];	
 	then
@@ -40,7 +41,7 @@ do
 	reads=${arr[3]}			#(SE,PE, SE100 etc)
 	projectid=${arr[5]}
 
-        if [[ $app =~ "RNA-seq" ]];
+        if [[ $app =~ "rna-seq" ]];
         then
 		APP="RNA-seq/"
 	elif  [[ $app =~ "exome" ]];
@@ -49,7 +50,7 @@ do
 	else
 		continue;
 	fi
-
+	
 	if [ ! -d $DIR/$APP/$projectid ];then mkdir -p $DIR/$APP/$projectid; fi
 	if [ ! -d $DIR/$APP/$projectid/$runid ];then mkdir -p $DIR/$APP/$projectid/$runid; fi
         if [ ! -d $DIR/$APP/$projectid/$runid/fastq ];then mkdir -p $DIR/$APP/$projectid/$runid/fastq; fi
@@ -70,19 +71,19 @@ do
 	cd $DIR/$APP/$projectid/$runid
 
 	#Initiate Pipelines according to app!
-	if [[ $app =~ "RNA-seq" ]];
+	if [[ $app =~ "rna-seq" ]];
 	then
 		#initiate RNA-seq pipeline ;send information organism and se & pe files.
 		flag=0
-		if [[ $organism =~ "Human" ]];then
+		if [[ $organism =~ "human" ]];then
 		     sh $RNABASE/RNA_pipeline.sh human $ln_fq $ln_fq_3
 			flag=1
 		fi
-		if  [[ $organism =~ "Mouse" ]];then
+		if  [[ $organism =~ "mouse" ]];then
         	     sh $RNABASE/RNA_pipeline.sh mouse $ln_fq $ln_fq_3
 			flag=1
 		fi
-		if  [[ $organism =~ "Xenograft" ]];then
+		if  [[ $organism =~ "xenograft" ]];then
         	     sh $RNABASE/RNA_pipeline.sh human $ln_fq $ln_fq_3
 	             sh $RNABASE/RNA_pipeline.sh mouse $ln_fq $ln_fq_3
 			flag=1
@@ -97,9 +98,9 @@ do
 		if [ ! -d $DIR/$APP/$projectid/$runid/mapping ]; then mkdir -p $DIR/$APP/$projectid/$runid/mapping; fi
 		if [ ! -e global_setting_b37.sh ];then
 		        cp $EXOMEBASE/global_setting_b37.sh $DIR/$APP/$projectid/$runid/.
-			if [[ $capture =~ "Mouse" ]]; then
+			if [[ $capture =~ "mouse" ]]; then
 	                        echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V1_with_annotation.Mouse.bed.mod"">> $DIR/$APP/$projectid/$runid/global_setting_b37.sh
-		        elif [[ $capture =~ "44Mb" ]]; then
+		        elif [[ $capture =~ "44mb" ]]; then
 		                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V2_with_annotation.hg19.bed.mod"" >> $DIR/$APP/$projectid/$runid/global_setting_b37.sh
 		        fi
 		fi
