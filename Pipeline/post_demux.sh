@@ -18,10 +18,11 @@ do
 	#E.x. fq=/ifs/scratch/c2b2/ngs_lab/ngs/Fastq/120217_SN828_0119_BD07NDACXX/demultiplex/120217_SN828_0119_BD07NDACXX_lane1_2_1.fastq
 	sampleid=`basename $fq | cut -f6 -d '_' ` ;
 	lane=`basename $fq | cut -f5 -d '_' |sed 's/lane//' ` ; 
+	barcode=`basename $fq | cut -f7 -d '_' ` ;
 
 	#search for sample in tsv file, return organism, application, capture, reads, service, projectID
 	#if any fields have blanks they are replaced with "_" for ease. Fields expected to have blanks are organism, capture, reads, application
-	arr=(`awk -F '\t' '{if ( $2 == '${lane}' && $5 == "'${sampleid}'" ) {org =$6; app= $8; cap = $9; reads=$10; gsub(/ /, "_",org); gsub(/ /, "_",app); gsub(/ /, "_",cap); gsub(/ /, "_",reads);  print tolower(org) ,tolower(app) , tolower(cap), reads, tolower($12), $13; }}' $SampleSheets/$runid.tsv |  tr " " "\n" `)
+	arr=(`awk -F '\t' '{if ( $2 == '${lane}' && $5 == "'${sampleid}'" && $7 == "'${barcode}'" ) {org =$6; app= $8; cap = $9; reads=$10; gsub(/ /, "_",org); gsub(/ /, "_",app); gsub(/ /, "_",cap); gsub(/ /, "_",reads);  print tolower(org) ,tolower(app) , tolower(cap), reads, tolower($12), $13; }}' $SampleSheets/$runid.tsv |  tr " " "\n" `)
 
 	if [[ ${#arr[@]} == 0 ]];	
 	then
