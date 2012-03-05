@@ -22,7 +22,9 @@ do
 
 	#search for sample in tsv file, return organism, application, capture, reads, service, projectID
 	#if any fields have blanks they are replaced with "_" for ease. Fields expected to have blanks are organism, capture, reads, application
-	arr=(`awk -F '\t' '{if ( $2 == '${lane}' && $5 == "'${sampleid}'" && $7 == "'${barcode}'" ) {org =$6; app= $8; cap = $9; reads=$10; gsub(/ /, "_",org); gsub(/ /, "_",app); gsub(/ /, "_",cap); gsub(/ /, "_",reads);  print tolower(org) ,tolower(app) , tolower(cap), reads, tolower($12), $13; }}' $SampleSheets/$runid.tsv |  tr " " "\n" `)
+
+	arr=(`awk -F '\t' '{sample=$5;  gsub(/ /, "-",sample); gsub(/_/, "-",sample); gsub(/\//, "-",sample);   if ( $2 == '${lane}' &&  sample == "'${sampleid}'" && $7 == "'${barcode}'"  ) {org =$6; app= $8; cap = $9; reads=$10; gsub(/ /, "_",org); gsub(/ /, "_",app); gsub(/ /, "_",cap); gsub(/ /, "_",reads);  print tolower(org) ,tolower(app) , tolower(cap), reads, tolower($12), $13; }}' $SampleSheets/$runid.tsv |  tr " " "\n" `)
+
 
 	if [[ ${#arr[@]} == 0 ]];	
 	then
@@ -41,6 +43,9 @@ do
 	capture=${arr[2]}		#(Agilent 44Mb, N/A, Agilent 50Mb)
 	reads=${arr[3]}			#(SE,PE, SE100 etc)
 	projectid=${arr[5]}
+
+echo "$lane $sampleid $barcode $projectid"
+continue;
 
         if [[ $app =~ "rna-seq" ]];
         then
