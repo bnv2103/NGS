@@ -172,7 +172,7 @@ else
 fi
 
 ## clean up
-## bzip2 s*qseq.txt  & 
+##bzip2 s*qseq.txt  & 
 
 
 popd 
