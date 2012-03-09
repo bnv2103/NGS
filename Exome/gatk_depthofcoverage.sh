@@ -99,7 +99,7 @@ then
         #Trigger automatic downstream steps : joint var calling
 	echo $INP > $INP.list.recalib_bam
 	path_inp=`dirname $INP`
-	cmd_varcalling="sh ${BPATH}/joint_SNV-indel_calling-split-by-intervals.sh -i $INP.list.recalib_bam -m 8 -s $GLOBAL -n 1 -j 100 -d 300 -v 10 -o $path_inp/VarCalling -A AUTO "
+	cmd_varcalling="sh ${BPATH}/joint_SNV-indel_calling-split-by-intervals.sh -i $INP.list.recalib_bam -m 8 -s $GLOBAL -n 2 -j 100 -d 300 -v 10 -o $path_inp/VarCalling -A AUTO "
 	echo $cmd_varcalling
 	$cmd_varcalling	
 fi
