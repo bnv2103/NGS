@@ -51,7 +51,7 @@ echo "" >summary.d
 
 for f in `cat list.recalib_bam.list.release`; do 
 	head -2 $f.coverage.sample_summary | tail -1 |cut -f1 >>summary.a
-	mappedreads=`head -1 $f.reads.mapped | sed 's/ \+/\t/'|cut -f1`
+	mappedreads=`grep total $f.reads.mapped | sed 's/ \+/\t/'|cut -f1`
 	echo $mappedreads >>summary.b
 	head -2 $f.coverage.sample_summary | tail -1 |cut -f2,3,5,7,8,9,10,11  >>summary.c
 	targetreads=`head -2 $f.coverage.sample_summary | tail -1 |cut -f2 ` 
