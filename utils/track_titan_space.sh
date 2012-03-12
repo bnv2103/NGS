@@ -5,7 +5,7 @@ suff=` date +%N`
 dir=`pwd`
 
 to_email="sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu" 
-to_email="sz2317@c2b2.columbia.edu"
+to_email="sz2317@c2b2.columbia.edu,yshen@c2b2.columbia.edu"
 
 total=`df -h /ifs/scratch/c2b2/ngs_lab/ngs/ |tail -1 | sed 's/ \+ /\t/g' |cut -f2`
 used=`df -h /ifs/scratch/c2b2/ngs_lab/ngs/ |tail -1 | sed 's/ \+ /\t/g'  |cut -f3`
@@ -23,8 +23,6 @@ elif  [[ $avail =~ "M" ]];then
 fi
 
 threshold=` echo "4*1024*1024*1024*1024.0" | bc  -l | awk -F '.' '{ print $1; exit; }'`
-echo $avail_byte
-echo $threshold
 
 if [[ $avail_byte -lt $threshold ]];then
 	echo "NGS Disk Space Alarm." > $dir/mailbody_$suff.txt	
