@@ -5,6 +5,7 @@ suff=` date +%N`
 dir=`pwd`
 
 to_email="sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu" 
+to_email="sz2317@c2b2.columbia.edu"
 
 total=`df -h /ifs/scratch/c2b2/ngs_lab/ngs/ |tail -1 | sed 's/ \+ /\t/g' |cut -f2`
 used=`df -h /ifs/scratch/c2b2/ngs_lab/ngs/ |tail -1 | sed 's/ \+ /\t/g'  |cut -f3`
@@ -26,17 +27,11 @@ echo $avail_byte
 echo $threshold
 
 if [[ $avail_byte -lt $threshold ]];then
-	echo "getting less";
-else
-	echo "doing fine";
+	echo "NGS Disk Space Alarm." > $dir/mailbody_$suff.txt	
+	echo "Available disk space : $avail " >> $dir/mailbody_$suff.txt
+        echo "Used disk space : $used " >> $dir/mailbody_$suff.txt
+        echo "Total disk space : $total " >> $dir/mailbody_$suff.txt
+	sh /ifs/data/c2b2/ngs_lab/ngs/code/NGS/Pipeline/sendMail.sh -s "NGS Disk Space Alarm" -t $to_email  -m $dir/mailbody_$suff.txt
+	rm $dir/mailbody_$suff.txt
 fi
-
-#then
-#	echo "NGS Disk Space Alarm." > $dir/mailbody_$suff.txt	
-#	echo "Available disk space : $avail " >> $dir/mailbody_$suff.txt
- #       echo "Used disk space : $used " >> $dir/mailbody_$suff.txt
-  #      echo "Total disk space : $total " >> $dir/mailbody_$suff.txt
-#	sh /ifs/data/c2b2/ngs_lab/ngs/code/NGS/Pipeline/sendMail.sh -s "NGS Disk Space Alarm" -t $to_email  -m $dir/mailbody_$suff.txt
-#	rm $dir/mailbody_$suff.txt
-#fi
 
