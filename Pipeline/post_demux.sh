@@ -45,7 +45,6 @@ do
 	projectid=${arr[5]}
 
 echo "$lane $sampleid $barcode $projectid"
-continue;
 
         if [[ $app =~ "rna-seq" ]];
         then
