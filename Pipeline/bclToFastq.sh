@@ -126,7 +126,7 @@ echo -e "qseq to fastq done"
 flag=1
 for i in `seq 1 8`
 do
-	for j in `seq 1 3`
+	for j in `seq 1 2`
 	do
 		if [ ! -e $fastqout/s_"$i"_"$j".fastq ] || [ ! -s  $fastqout/s_"$i"_"$j".fastq ]
 		then flag=0
