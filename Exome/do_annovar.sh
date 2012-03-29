@@ -12,13 +12,25 @@ DIR="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/"
 
 $DIR/convert2annovar.pl $1  -format vcf4 -allallele > $1.annovar
 $DIR/annotate_variation.pl --buildver hg19 $1.annovar  -filter -dbtype ljb_pp2 /ifs/data/c2b2/ngs_lab/ngs/resources/annovar_hg19/
+$DIR/annotate_variation.pl --buildver hg19 -filter -dbtype avsift $1.annovar  /ifs/data/c2b2/ngs_lab/ngs/resources/annovar_hg19/ &
 
-fname="$1.annovar"
+cut -f3,4,6,7 $1.annovar.hg19_ljb_pp2_dropped > $1.annovar.a
+cut -f2 $1.annovar.hg19_ljb_pp2_dropped > $1.annovar.b
+echo -e "Chr\tPos\tREF\tALT\tPP2_score" > $1.pp2
+paste $1.annovar.a $1.annovar.b >> $1.pp2 
+rm $1.annovar.a
+rm $1.annovar.b
 
-cut -f3,4,6,7 $fname.hg19_ljb_pp2_dropped > $fname.a
-cut -f2 $fname.hg19_ljb_pp2_dropped > $fname.b
-echo -e "Chr\tPos\tREF\tALT\tPP2_score" > $fname.pp2
-paste $fname.a $fname.b >> $fname.pp2 
-rm $fname.a
-rm $fname.b
+wait
+cut -f3,4,6,7 $1.annovar.hg19_avsift_dropped > $1.annovar.a
+cut -f2 $1.annovar.hg19_avsift_dropped > $1.annovar.b
+echo -e "Chr\tPos\tREF\tALT\tSIFT_score" > $1.sift
+paste $1.annovar.a $1.annovar.b >> $1.sift
+rm $1.annovar.a
+rm $1.annovar.b
+rm $1.annovar
+rm $1.annovar*filtered
+rm $1.annovar*droppped
+rm $1.annovar*invalid_input
+rm $1.annovar*log
 

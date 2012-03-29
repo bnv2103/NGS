@@ -74,7 +74,12 @@ $GATK \
  -L $CHR \
  -R $REF \
  -I $INP \
- -o $INP.coverage
+ -o $INP.coverage \
+ -ct 1 \
+ -ct 5 \
+ -ct 10 \
+ -ct 15 \
+ -ct 20
 
 rm -rf $TEMP
 
@@ -89,17 +94,17 @@ fi
 # Summary stats on depth:
 ## reads mapped to whole genome
 echo $INP > $INP.reads.mapped
-samtools flagstat $INP | head -3 | tail -1 >> $INP.reads.mapped 
+samtools flagstat $INP  >> $INP.reads.mapped
 ## information about the targeted regions.
-echo -e "sample_id\ttotal\tmean\tgranular_third_quartile\tgranular_median\tgranular_first_quartile\t%_bases_above_15" > $INP.reads.target
+echo -e "sample_id\ttotal\tmean\tgranular_third_quartile\tgranular_median\tgranular_first_quartile\tD1\tD5\tD10\tD15\tD20" > $INP.reads.target
 cat $INP.coverage.sample_summary  | grep -v total | grep -v Total >> $INP.reads.target 
 
 if [[ $AUTO != "" ]]
 then
         #Trigger automatic downstream steps : joint var calling
-	echo $INP > $INP.list.recalib_bam
+	echo $INP > $INP.list
 	path_inp=`dirname $INP`
-	cmd_varcalling="sh ${BPATH}/joint_SNV-indel_calling-split-by-intervals.sh -i $INP.list.recalib_bam -m 8 -s $GLOBAL -n 1 -j 100 -d 300 -v 10 -o $path_inp/VarCalling -A AUTO "
+	cmd_varcalling="sh ${BPATH}/joint_SNV-indel_calling-split-by-intervals.sh -i $INP.list -m 8 -s $GLOBAL -n 2 -j 100 -d 300 -v 10 -o $path_inp/VarCalling -A AUTO "
 	echo $cmd_varcalling
 	$cmd_varcalling	
 fi
