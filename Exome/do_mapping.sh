@@ -23,9 +23,9 @@ fi
   
 if [[ $automated == "" ]]; #was NOT triggered by automatic pipeline
 then
-  cmd="qsub -pe smp 2  -l mem=4G,time=48:: -o logs/mapping.$sampleName.o -e logs/mapping.$sampleName.e -N map.$job_id $BPATH/mapping-two-cores.sh -i $fq -p $g -z $sampleName -n $sampleName -s $setting -o mapping/$sampleName -t 2 -c 1 "
+  cmd="qsub -pe smp 2 -R y -l mem=4G,time=48:: -o logs/mapping.$sampleName.o -e logs/mapping.$sampleName.e -N map.$job_id $BPATH/mapping-two-cores.sh -i $fq -p $g -z $sampleName -n $sampleName -s $setting -o mapping/$sampleName -t 2 -c 1 "
 else	#trigger automatic process
-  cmd="qsub -pe smp 2  -l mem=4G,time=48:: -o logs/mapping.$sampleName.o -e logs/mapping.$sampleName.e -N map.$job_id.AUTO $BPATH/mapping-two-cores.sh -i $fq -p $g -z $sampleName -n $sampleName -s $setting -o mapping/$sampleName -t 2 -c 1 -A $automated"
+  cmd="qsub -pe smp 2 -R y -l mem=4G,time=48:: -o logs/mapping.$sampleName.o -e logs/mapping.$sampleName.e -N map.$job_id.AUTO $BPATH/mapping-two-cores.sh -i $fq -p $g -z $sampleName -n $sampleName -s $setting -o mapping/$sampleName -t 2 -c 1 -A $automated"
 fi
   echo $cmd >> logs/history.$sampleName.txt
   $cmd

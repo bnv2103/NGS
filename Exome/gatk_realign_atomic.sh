@@ -170,7 +170,7 @@ if [[ $chain != "" ]]; then
 	      ${SAMTOOLS} index $OUTDIR/all.realigned.bam  > $OUTDIR/log.index 2>&1
 
 	      if [[  -s $OUTDIR/all.realigned.bam  ]]; then
-		  rm -rf $INP  # delete original bam
+#		  rm -rf $INP  # delete original bam
 
 		  # trigger downstream analysis (dedup and recalibrate)
 		  echo "dedup"

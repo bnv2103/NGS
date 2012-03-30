@@ -7,7 +7,7 @@ PIPEBASE=/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Pipeline/
 StatusDir=/ifs/data/c2b2/ngs_lab/ngs/status/
 RUBY18="/ifs/data/c2b2/ngs_lab/ngs/usr/local/bin/ruby"
 setting="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Pipeline/global_setting.sh"
-
+NGSSHELL="/ifs/data/c2b2/ngs_lab/ngs/code/shell/"
 
 USAGE="Usage: $0 -i RunDir  -o OutDir  -s setting [-n num_threads]"
 
@@ -167,13 +167,22 @@ if [[ -s $sampleSheet ]]; then
     cmd="$RUBY18 $PIPEBASE/demultiplex.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv $nt"
     $cmd
     echo "$cmd" >> $StatusDir/history.txt
+
 else
     echo "SampleSheet is missing. Failed to start demultiplexing."
+    exit
 fi
 
 ## clean up
 ##bzip2 s*qseq.txt  & 
 
+for i in `seq 1 8`; do 
+ qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq 
+ qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=2:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq
+ if [[ -e $fastqout/s_"$i"_3.fastq ]];then
+   qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq
+ fi
+done  
 
 popd 
 echo -e "conversion done" > $absOUT/BclToFastq.complete.txt
