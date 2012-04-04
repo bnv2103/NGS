@@ -184,13 +184,16 @@ for i in `seq 1 8`; do
  fi
 done  
 
-popd 
+#  popd 
 echo -e "conversion done" > $absOUT/BclToFastq.complete.txt
+cd $demultiplexout
 
 #Trigger Automatic Pipeline
         cmd="sh $PIPEBASE/post_demux.sh $demultiplexout $runName "
         echo $cmd
         $cmd
+	
+	cd $demultiplexout
 
 	touch "mailBody.txt"
         echo "" > "mailBody.txt"
@@ -207,4 +210,4 @@ echo -e "conversion done" > $absOUT/BclToFastq.complete.txt
         $cmd1
         rm mailBody.txt
 
-
+popd
