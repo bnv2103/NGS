@@ -106,7 +106,7 @@ for r in $reads
     lane=`echo $f | cut -f2 -d '_'`
     
     # run in background (a new process)
-    $PIPEBASE/qseq2fastq.pl s_"$lane"_"$r"_*_qseq.txt > $fastqout/s_"$lane"_"$r".fastq &   
+    $PIPEBASE/qseq2fastq.pl s_"$lane"_"$r"_*_qseq.txt > $fastqout/s_"$lane"_"$r".fastq  2> $fastqout/s_"$lane"n_"$r".fastq &   
     let njobs=$njobs+1
 
     if [[ $njobs == $nt ]]; then
@@ -172,6 +172,9 @@ else
     echo "SampleSheet is missing. Failed to start demultiplexing."
     exit
 fi
+
+echo "Cluster Density PF for all lanes"
+awk 'BEGIN{lane=0;ct=0;sum=0} /^[0-9]/{if ($1==lane) {ct++; sum+=$3;} else{ print lane, sum/ct; lane=$1; ct=1;sum=$3;}}END{ print lane, sum/ct;}'  $absOUT/reports/NumClusters\ By\ Lane\ PF.txt 
 
 ## clean up
 ##bzip2 s*qseq.txt  & 
