@@ -102,16 +102,15 @@ echo "$lane $sampleid $barcode $projectid"
 		#initiate exome-seq pipeline
 		if [ ! -d $DIR/$APP/$projectid/$runid/mapping ]; then mkdir -p $DIR/$APP/$projectid/$runid/mapping; fi
 		if [ ! -e global_setting_b37.sh ];then
-		        cp $EXOMEBASE/global_setting_b37.sh $DIR/$APP/$projectid/$runid/.
+		        cp $EXOMEBASE/global_setting_b37.sh $DIR/$APP/$projectid/$runid/global_setting.sh
 			if [[ $capture =~ "mouse" ]]; then
-	                        echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V1_with_annotation.Mouse.bed.mod"">> $DIR/$APP/$projectid/$runid/global_setting_b37.sh
+				cp $EXOMEBASE/global_setting_mm9.sh $DIR/$APP/$projectid/$runid/global_setting.sh
 		        elif [[ $capture =~ "44mb" ]]; then
-		                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V2_with_annotation.hg19.bed.mod"" >> $DIR/$APP/$projectid/$runid/global_setting_b37.sh
+		                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V2_with_annotation.hg19.bed.mod"" >> $DIR/$APP/$projectid/$runid/global_setting.sh
 		        fi
 		fi
-
 		#Call Mapping
-		sh $EXOMEBASE/do_mapping.sh $ln_fq $DIR/$APP/$projectid/$runid/global_setting_b37.sh $projectid
+		sh $EXOMEBASE/do_mapping.sh $ln_fq $DIR/$APP/$projectid/$runid/global_setting.sh $projectid
 	fi
 
 done

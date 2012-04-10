@@ -55,7 +55,7 @@ date
 . $setting
 
 if [[ $readgroup == "" ]]; then
-    readgroup=`basename $fastq1 | sed 's/.fastq$//'  | sed s'/.txt$//'`
+    readgroup=`basename $fastq1 | sed 's/.fastq$//'  | sed 's/.txt$//'`
 fi
 
 if [[ $sampleName == "" ]]; then
@@ -69,7 +69,7 @@ fi
 
 ## read group specification:
 ##          -r STR   read group header line such as `@RG\tID:foo\tSM:bar' [null]
-rgheader="@RG\tID:$readgroup\tSM:$sampleName\tLB:$readgroup\tPL:$platform"
+rgheader="@RG\tID:$readgroup\tSM:$sampleName\tLB:$readgroup\tPL:$platform\tCN:NGSColumbia"
 
 ######### align step
 cmd="$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
