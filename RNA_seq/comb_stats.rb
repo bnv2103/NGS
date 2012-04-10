@@ -29,8 +29,9 @@ def main
   end
 
   # get number of unique reads
-  uqMapped = `samtools view #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 6G | wc -l`.to_i
- 
+  uqMapped = 0
+  uqMapped = `samtools view #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 10G | wc -l`.to_i
+  continueMap = `samtools view #{dir}/accepted_hits.bam |cut -f6 |grep "101M" | wc -l`.to_i
 
   if File.exist?(isoforms)
     a = `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/summaryR.R #{isoforms} #{genes} #{dirb}`
@@ -40,7 +41,7 @@ def main
     
     # print sample name with statistical result
     writer = CSV.open(output, 'a') do |csv|
-      csv << [sampleName_short[5], nreads, uqMapped,  b[1], b[2], b[3], b[4], b[5], b[6]]
+      csv << [sampleName_short[5], nreads, uqMapped, continueMap, b[1], b[2], b[3], b[4], b[5], b[6]]
       end
   end
 end

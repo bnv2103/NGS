@@ -15,8 +15,10 @@ for (i in 1:(length(fileList)) ){
         t2 = strsplit(fileList[j], "_")
    
 	
-	 title1 = t1[[1]][4]
-         title2 = t2[[1]][4]
+	 #title1 = t1[[1]][4]
+         #title2 = t2[[1]][4]
+	 title1 = fileList[i]
+	 title2 = fileList[j]
 	# title_sub1 = strsplit(title1, "-")
 	# title_sub2 = strsplit(title2, "-")
 	# if (title_sub1[[1]][2] == title_sub2[[1]][2]){

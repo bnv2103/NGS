@@ -34,7 +34,7 @@ def main
   while !io.eof?
     s = io.take(4)
     array << s
-
+    
     if array.size > chunk
       randomTake(array, num, totalN, o)
       array = []
