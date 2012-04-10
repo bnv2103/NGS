@@ -24,14 +24,13 @@ for (i in 1:length(fileList) ){
     
    # tempName = paste(B[[1]][5], B[[1]][6], sep="_")
    # tempName = paste(tempName, B[[1]][7], sep="_")
-    tempName = paste( B[[1]][6], B[[1]][9], sep="_")
+    tempName = paste( B[[1]][6], B[[1]][8], sep="_")
     
     #tempName = paste(fileList[i], ".csv", sep="")
     tempName = paste(tempName, ".csv", sep="")
     write.csv(a, tempName)
 
 }
-
 # print MA plot
 if (isMA ==1){
 for (i in 1:(length(fileList)) ){
@@ -64,7 +63,7 @@ for (i in 1:length(fileList) ){
     # tempName = paste(B[[1]][5], B[[1]][6], sep="_")
     # tempName = paste(tempName, B[[1]][7], sep="_")
     # tempName = paste(tempName, B[[1]][8], sep="_")
-    tempName = paste( B[[1]][6], B[[1]][9], sep="_")
+    tempName = paste( B[[1]][6], B[[1]][8], sep="_")
     tempName = paste(tempName, ".csv", sep="")
 
     # tempName = paste(fileList[i], ".csv", sep="")

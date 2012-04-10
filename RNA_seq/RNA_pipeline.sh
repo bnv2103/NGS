@@ -8,7 +8,8 @@ genome=$1
 f1=$2
 f2=$3
 
-RNABASE="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/RNA_seq/"
+#RNABASE="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/RNA_seq/"
+RNABASE="/ifs/scratch/c2b2/ngs_lab/xs2182/code/"
 RUBY18="/ifs/data/c2b2/ngs_lab/ngs/usr/local/bin/ruby"
 
 if [[ $genome == "mouse" ]];
@@ -21,9 +22,16 @@ if [[ $genome == "human" ]];
     setting_genome="$RNABASE/global_setting_human.sh"
 fi
 
+if [[ $genome == "rat" ]];
+    then
+    setting_genome="$RNABASE/global_setting_rat.sh"
+fi
+
+
 script_SE="$RNABASE/pipeline_cufflink-ref.sh"
 script_PE="$RNABASE/pipeline_cufflink-ref-PE.sh"
 
+if [ ! -d  logs ]; then mkdir -p logs; fi
 if [ ! -d  cufflinks ]; then mkdir -p cufflinks; fi
 # print title for statistical summary
 ruby $RNABASE/printTitle.rb "summary.csv"
