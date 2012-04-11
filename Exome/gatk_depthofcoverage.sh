@@ -95,6 +95,7 @@ fi
 ## reads mapped to whole genome
 echo $INP > $INP.reads.mapped
 samtools flagstat $INP  >> $INP.reads.mapped
+samtools idxstats $INP > $INP.idxstats
 ## information about the targeted regions.
 echo -e "sample_id\ttotal\tmean\tgranular_third_quartile\tgranular_median\tgranular_first_quartile\tD1\tD5\tD10\tD15\tD20" > $INP.reads.target
 cat $INP.coverage.sample_summary  | grep -v total | grep -v Total >> $INP.reads.target 
