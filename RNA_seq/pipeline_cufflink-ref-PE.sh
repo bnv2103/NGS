@@ -58,7 +58,7 @@ fi
 ## do cufflinks
 cuffout=$bam"_cufflinks_ref-guide"
 
-cmd="cufflinks -o $cuffout --GTF-guide  $GENES $bam"
+cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF-guide  $GENES $bam"
 
 echo -e "do cufflinks without ref genes: \n $cmd"
 $cmd
@@ -66,7 +66,7 @@ $cmd
 ## do cufflinks with guide
 cuffout=$bam"_cufflinks_ref"
 
-cmd="cufflinks -o $cuffout --GTF  $GENES $bam"
+cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF  $GENES $bam"
 
 echo -e "do cufflinks with ref genes: \n $cmd"
 $cmd

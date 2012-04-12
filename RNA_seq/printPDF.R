@@ -57,6 +57,8 @@ for (i in 1:(length(fileList)) ){
  }
 }
 dev.off()
+
+
 fileList = list.files(pattern="*genes")
 for (i in 1:length(fileList) ){
     a = read.table(fileList[i], header=T)
@@ -71,3 +73,5 @@ for (i in 1:length(fileList) ){
     
     write.csv(a, tempName)
 }
+
+

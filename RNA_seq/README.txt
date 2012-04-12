@@ -3,8 +3,8 @@ Three types of files are included for each group of data:
 1. summary.csv 
    - contains basic statistical information
 	Sample name
-	Number of raw reads
-	Number of mapped reads
+	Number of reads
+	Number of continually mapped reads
 	Median value of FPKM (isoforms)
 	Mean value of FPKM (isoforms)
 	Number of transcripts with FPKM > 1
@@ -18,6 +18,14 @@ Three types of files are included for each group of data:
    c.	(Optional) MA-plots of two replicates: diagnostic plots for assessing the reproducibility of technical or biological replicates.	
    
 3. sampleName_isoforms.csv and sampleName_genes.csv 
-   - General information of isoforms and genes: gene name, gene id, gene length, FPKM.
+   - General abundance information of isoforms and genes: gene name, gene id, gene length, FPKM.
  	
+4. sampleName_var 
+   variant calling analysis result
+   QUAL: Quality score
+   DP: Raw Read Depth
+   DP4: # high-quality ref-forward bases, ref-reverse bases, alt-forward bases, alt-reverse bases.
+   GT: The genotype of this sample
+   PL: Phred-scaled likelihoods for AA,AB,BB genotypes where A=ref and B=alt
+   GQ: The Genotype Quality
 

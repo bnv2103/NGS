@@ -18,8 +18,8 @@ echo "printing pdf"
  Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/printPDF.R $fileName  $isMA
  echo "done PDF"
 
-rm *genes
-rm *isoforms
+ rm *genes
+ rm *isoforms
 # rm *nonRef
 cp ../../summary.csv ./
 cp ../summary.csv ./

@@ -27,8 +27,14 @@ if [[ $genome == "rat" ]];
     setting_genome="$RNABASE/global_setting_rat.sh"
 fi
 
+if [[ $genome == "fruitfly" ]];
+    then
+    setting_genome="$RNABASE/global_setting_fruitfly.sh"
+fi
+
 
 script_SE="$RNABASE/pipeline_cufflink-ref.sh"
+# script_SE="$RNABASE/cufflinkOnly.sh"
 script_PE="$RNABASE/pipeline_cufflink-ref-PE.sh"
 
 if [ ! -d  logs ]; then mkdir -p logs; fi

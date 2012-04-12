@@ -61,13 +61,13 @@ cuffout=$bam"_cufflinks_ref"
 cuffout2=$bam"_cufflinks_ref-guide"
 
 cmd="cufflinks -o $cuffout --GTF  $GENES $bam"
-
+# cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF  $GENES $bam"
 echo -e "do cufflinks with ref genes: \n $cmd"
 $cmd
 
 ## reference-guided assembly
+# cmd2="cufflinks -o $cuffout2 --compatible-hits-norm --GTF-guide  $GENES $bam"
 cmd2="cufflinks -o $cuffout2 --GTF-guide  $GENES $bam"
-
 echo -e "do cufflinks with ref genes -guide: \n $cmd2"
 $cmd2
 

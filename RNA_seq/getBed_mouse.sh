@@ -15,6 +15,7 @@ outdir=$2
   bamToBed -i $infile | awk '{if ( $1 == "chrY"){print $0;} }' > $outdir"/"chrY.bed
   bamToBed -i $infile | awk '{if ( $1 == "chrX"){print $0;} }' > $outdir"/"chrX.bed
 
+cd $outdir
 mkdir bedFiles
 mv chr*.bed bedFiles
 # mkdir bedFiles
