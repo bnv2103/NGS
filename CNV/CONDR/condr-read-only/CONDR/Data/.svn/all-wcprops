@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 33
+/svn/!svn/ver/10/trunk/CONDR/Data
+END
+output
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/10/trunk/CONDR/Data/output
+END
+exonParsedUniq_chr21.txt
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/10/trunk/CONDR/Data/exonParsedUniq_chr21.txt
+END
+genes_chr21_sorted.expr
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/10/trunk/CONDR/Data/genes_chr21_sorted.expr
+END
+accepted_hits_chr21_sorted.sam
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/10/trunk/CONDR/Data/accepted_hits_chr21_sorted.sam
+END

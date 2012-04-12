@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 32
+/svn/!svn/ver/47/trunk/CONDR/src
+END
+Expression.java
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/25/trunk/CONDR/src/Expression.java
+END
+Probability.java
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/27/trunk/CONDR/src/Probability.java
+END
+State.java
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/47/trunk/CONDR/src/State.java
+END
+TabulateResults.java
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/25/trunk/CONDR/src/TabulateResults.java
+END
+CONDR.java
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/47/trunk/CONDR/src/CONDR.java
+END
+MappedReads.java
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/14/trunk/CONDR/src/MappedReads.java
+END
+TestLogSum.java
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/25/trunk/CONDR/src/TestLogSum.java
+END
+SimulateExonMeasurements.java
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/26/trunk/CONDR/src/SimulateExonMeasurements.java
+END
+ConvertToExonFormat.java
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/47/trunk/CONDR/src/ConvertToExonFormat.java
+END
+Exon.java
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/47/trunk/CONDR/src/Exon.java
+END
+NaiveCalling.java
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/47/trunk/CONDR/src/NaiveCalling.java
+END
+HiddenMarkovModel.java
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/47/trunk/CONDR/src/HiddenMarkovModel.java
+END
+CreateExonFile.java
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/27/trunk/CONDR/src/CreateExonFile.java
+END
+Pileup.java
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/47/trunk/CONDR/src/Pileup.java
+END

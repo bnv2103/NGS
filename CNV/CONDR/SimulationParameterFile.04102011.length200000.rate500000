@@ -1,0 +1,29 @@
+// rate of occurrence of CNV (lambda of the Poisson process)
+rate = .0000020000
+// Parameters
+
+// Normal state parameters
+NORMAL.rpkmRatio = 1
+NORMAL.snpRatio= 1
+NORMAL.E_LengthOfState = 500000
+
+// Homozygous deletion parameters
+HOMOZYGOUS_DELETE.rpkmRatio = 0
+HOMOZYGOUS_DELETE.snpRatio = 0
+HOMOZYGOUS_DELETE.E_LengthOfState = 200000
+
+// COPY_NEUTRAL_LOH.rpkmRatio = 1
+// COPY_NEUTRAL_LOH.snpRatio = 0
+// COPY_NEUTRAL_LOH.E_LengthOfState = 200000
+
+HETEROZYGOUS_DELETE.rpkmRatio = .5
+HETEROZYGOUS_DELETE.snpRatio = 0
+HETEROZYGOUS_DELETE.E_LengthOfState = 200000
+
+INSERTION.rpkmRatio = 1.5
+INSERTION.snpRatio = 1.5
+INSERTION.E_LengthOfState = 200000
+
+DOUBLE_INSERT.rpkmRatio = 2
+DOUBLE_INSERT.snpRatio = 2
+DOUBLE_INSERT.E_LengthOfState = 200000

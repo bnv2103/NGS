@@ -1,0 +1,2 @@
+ qsub -o test/outcondr/con.o -e test/outcondr/con.e runcondex.sh
+

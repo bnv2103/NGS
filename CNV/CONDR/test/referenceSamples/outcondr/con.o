@@ -1,0 +1,12 @@
+Number of baseline: 16
+Calculating expected values from given files....
+Reading exon with measurements file....
+Genomewide avg coverage:246.39696095974378
+Genomewide avg snps:0.16275823562255723
+K:0.1401199781554371	Theta:1758.4713058291522
+K:NaN	Theta:1.1615633813617012
+Calculating States....
+Finished running HMM
+Total Time: 31.085
+Time for reading exons file       : 0.291, 7164
+Time for calculating States       : 28.879
