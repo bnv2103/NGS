@@ -93,6 +93,19 @@ echo "$lane $sampleid $barcode $projectid"
 	             sh $RNABASE/RNA_pipeline.sh mouse $ln_fq $ln_fq_3
 			flag=1
 		fi
+                if  [[ $organism =~ "rat" ]];then
+                     sh $RNABASE/RNA_pipeline.sh rat $ln_fq $ln_fq_3
+                        flag=1
+                fi
+                if  [[ $organism =~ "fruitfly" ]];then
+                     sh $RNABASE/RNA_pipeline.sh fruitfly $ln_fq $ln_fq_3
+                        flag=1
+                fi
+#                if  [[ $organism =~ "yeast" ]];then
+#                     sh $RNABASE/RNA_pipeline.sh yeast $ln_fq $ln_fq_3
+#                        flag=1
+#                fi
+
 		if [[ $flag == 0 ]];then
 			echo "ERROR: Organism Unknown"
 		fi
