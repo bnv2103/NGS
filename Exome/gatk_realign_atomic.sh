@@ -148,9 +148,12 @@ fi
 ### "chain reaction": check the status of other chromosomes. If all chromosomes are complete, then proceed to the next step (merge and recalibrate etc). 
 if [[ $chain != "" ]]; then
 # wait for 6 seconds if not complete
-    for (( i=0; i<2; i++ ))
-      do 
-      completed=`wc -l $status | awk '{print $1}'`
+#    for (( i=0; i<2; i++ ))
+#      do 
+   completed=`wc -l $status | awk '{print $1}'`
+   while [[ $completed != "" ]]; 
+   do 
+
       if [[ $completed == "24" ]]; then  # all chromosomes completed, proceed to the next step (merge), 
 	  echo "all completed" >>  $status  # make it stop
 	  
@@ -198,11 +201,14 @@ if [[ $chain != "" ]]; then
 	  fi
 	  
 	  i=2
-	  
-      else
-	  sleep 3
-      fi
-    done
+	 
+     elif [[ $completed -lt "24" || $completed -gt "24" ]]; then exit; 
+ 
+     else
+	  sleep 20
+	  completed=`wc -l $status | awk '{print $1}'`
+     fi
+   done
 fi
 
 
