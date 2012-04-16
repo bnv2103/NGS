@@ -132,6 +132,9 @@ rm -f $output.bam.temp*
 # index
 $samtools index $output.bam
 
+# raw flagstat
+$samtools flagstat $output.bam > $output.flagstat
+
 date
 
 if [[ $chain != "0" ]]; then ## call realign
