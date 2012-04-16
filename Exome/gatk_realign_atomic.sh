@@ -153,6 +153,7 @@ if [[ $chain != "" ]]; then
    completed=`wc -l $status | awk '{print $1}'`
    while [[ $completed != "" ]]; 
    do 
+	completed=`wc -l $status | awk '{print $1}'`
 
       if [[ $completed == "24" ]]; then  # all chromosomes completed, proceed to the next step (merge), 
 	  echo "all completed" >>  $status  # make it stop
@@ -195,18 +196,9 @@ if [[ $chain != "" ]]; then
 		  echo $cmd
 		  $cmd
 	      fi
-	      
-
-
 	  fi
-	  
-	  i=2
-	 
      elif [[ $completed -lt "24" || $completed -gt "24" ]]; then exit; 
- 
-     else
-	  sleep 20
-	  completed=`wc -l $status | awk '{print $1}'`
+     else sleep 20
      fi
    done
 fi
