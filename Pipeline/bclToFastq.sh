@@ -135,7 +135,7 @@ do
 done
 if [ $flag -eq "1" ]
 then
- 	cp -r $absIN/Data/reports/ .
+ 	cp -r $absIN/Data/reports/ $absOUT/
 	rm s_*.txt
 	rm -rf Matrix/
 	rm -rf Phasing/
