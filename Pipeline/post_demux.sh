@@ -60,10 +60,10 @@ echo "$lane $sampleid $barcode $projectid"
 	if [ ! -d $DIR/$APP/$projectid/$runid ];then mkdir -p $DIR/$APP/$projectid/$runid; fi
         if [ ! -d $DIR/$APP/$projectid/$runid/fastq ];then mkdir -p $DIR/$APP/$projectid/$runid/fastq; fi
 
-	#make links to  fastq files in destination dir
-	ln -s $fq $DIR/$APP/$projectid/$runid/fastq/
+	#move fastq files to destination dir
+	mv  $fq $DIR/$APP/$projectid/$runid/fastq/
 	fq_3=`echo $fq | sed 's/_1.fastq/_3.fastq/' `
-	if [ -e $fq_3 ];then ln -s $fq_3 $DIR/$APP/$projectid/$runid/fastq/; fi 	#if the _3.fastq exists, link it also
+	if [ -e $fq_3 ];then mv $fq_3 $DIR/$APP/$projectid/$runid/fastq/; fi 	#if the _3.fastq exists, link it also
 	base_fq=`basename $fq`
 	ln_fq="$DIR/$APP/$projectid/$runid/fastq/$base_fq"
 	if [ -e $fq_3 ]; then
