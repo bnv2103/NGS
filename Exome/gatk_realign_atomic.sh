@@ -174,7 +174,12 @@ if [[ $chain != "" ]]; then
 	      ${SAMTOOLS} index $OUTDIR/all.realigned.bam  > $OUTDIR/log.index 2>&1
 
 	      if [[  -s $OUTDIR/all.realigned.bam  ]]; then
-#		  rm -rf $INP  # delete original bam
+		  if [ -s $INP.flagstat ]; then
+			rm -rf $INP  # delete original bam
+		  else
+			samtools flagstat $INP > $INP.flagstat
+			rm -rf $INP
+		  fi
 
 		  # trigger downstream analysis (dedup and recalibrate)
 		  echo "dedup"
@@ -189,9 +194,9 @@ if [[ $chain != "" ]]; then
 		  mkdir -p $OUTDIR/logs/
 		job_name=`basename $OUTDIR`
 		if [[ $AUTO == "" ]]; then
-                  cmd="qsub -l mem=8G,time=55:: -N recaliberate.$job_name -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 "
+                  cmd="qsub -l mem=8G,time=30:: -N recaliberate.$job_name -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 "
 		else
-		  cmd="qsub -l mem=8G,time=55:: -N recaliberate.$job_name.AUTO -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 -A AUTO"
+		  cmd="qsub -l mem=8G,time=30:: -N recaliberate.$job_name.AUTO -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 -A AUTO"
 		fi
 		  echo $cmd
 		  $cmd

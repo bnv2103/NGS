@@ -153,18 +153,20 @@ if [[ $chain != "0" ]]; then ## call realign
     mkdir -p $OUTDIR/logs/
     qmem=5 # default
     heapm=4
+    qtime=24
     for (( i=1; i<=24; i++))
       do 
       if [[ $i -lt 7 ]]; then  # mem=8 for large chr
 	  qmem=8
 	  heapm=7
+	  qtime=30
       fi
       
       g=`basename $output.bam | sed 's/\//_/g'`
 	if [[ $AUTO == "" ]];then
-              cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm "
+              cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=${qtime}:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm "
   	else
-	      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
+	      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=${qtime}:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
 	fi
       echo $cmd
       $cmd
