@@ -1,6 +1,7 @@
 #!/bin/sh
 #$ -S /bin/sh
 #$ -cwd
+uname -a
 
 # Filter SNPs in indel regions
 # Load all samples from chromosome in a single $INP vcf file

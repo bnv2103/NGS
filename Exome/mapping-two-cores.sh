@@ -1,6 +1,6 @@
 #!/bin/bash
 #$ -cwd
-
+uname -a
 ## NOTE: this require two cores. For titan as of June 2011, to get two cores for bwa requires set "-l mem=8G" or larger. 
 
 # default values

@@ -1,6 +1,7 @@
 #!/bin/sh
 #$ -cwd
 # Findmem
+uname -a
 
 # Recalibrate base quality score
 # INPUT:	Run with a single read-group/lane in $INP.list

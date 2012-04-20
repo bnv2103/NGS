@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -cwd
 # Findmem
-
+uname -a
 
 HEAP=4000
 

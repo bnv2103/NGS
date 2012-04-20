@@ -1,5 +1,6 @@
 #!/bin/bash
 #$ -cwd
+uname -a
 
 # Filter indels
 # Load all samples from chromosome in a single $INP vcf file

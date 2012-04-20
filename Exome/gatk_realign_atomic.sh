@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -cwd
 # Findmem
-
+uname -a
 # Realign reads locally around indels
 # Run with all samples from a single chromosome together in $INP.list
 

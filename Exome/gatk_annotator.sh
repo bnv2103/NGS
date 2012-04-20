@@ -1,5 +1,6 @@
 #!/bin/bash
 #$ -cwd
+uname -a
 
 heap=4
 
