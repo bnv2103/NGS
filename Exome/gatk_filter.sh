@@ -104,11 +104,12 @@ $GATK \
 ${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP
 ${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP.filtered.vcf
 
+
 ## filter indels:
 if [[ $AUTO == "" ]]; then
-	cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o logs/filter-indel.o -e logs/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL "
+	cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o $dname/filter-indel.o -e $dname/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL "
 else
-        cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o logs/filter-indel.o -e logs/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL  -A AUTO"
+        cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o $dname/filter-indel.o -e $dname/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL  -A AUTO"
 fi
 echo $cmd
 $cmd
