@@ -33,7 +33,7 @@ ln -s $DIR/VarCalling/list.vcf-files.txt.vcf.complete.annotated.vcf.filtered.vcf
 ln -s $DIR/VarCalling/list.vcf-files.txt.vcf.complete.annotated.vcf.indel.filtered.vcf.release indels.vcf 
 
 # Polyphen2 and SIFT scores. (use annovar)
-qsub -o $DIR/logs/annovar.o -e $DIR/logs/annovar.e $EXOMEBASE/do_annovar.sh $DIR/$release/SNV.vcf
+qsub -o $DIR/logs/annovar.o -e $DIR/logs/annovar.e $EXOMEBASE/do_annovar.sh $release/SNV.vcf
 
 
 ## SNV summary stats:
