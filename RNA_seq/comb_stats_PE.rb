@@ -26,7 +26,7 @@ def main
   end
 
   uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 6G | wc -l`.to_i
-  mapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 6G | wc -l`.to_i
+#  mapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 6G | wc -l`.to_i
   #o = File.new("readsName", 'w')
   #rawLines = `samtools view #{dir}/accepted_hits.bam | cut -f1`
   #o.puts rawLines
@@ -48,7 +48,7 @@ def main
         
     writer = CSV.open(output, 'a') do |csv|
       # csv << [#{dir},#{sampleName},#{nreads},#{mapped},#{a}]
-      csv << [sampleName_short[3], nreads, uqMapped, mapped, b[1], b[2], b[3], b[4], b[5], b[6]]
+      csv << [sampleName_short[3], nreads, uqMapped, b[1], b[2], b[3], b[4], b[5], b[6]]
       end
   end
 end
