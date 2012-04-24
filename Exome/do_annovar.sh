@@ -30,7 +30,7 @@ rm $1.annovar.a
 rm $1.annovar.b
 rm $1.annovar
 rm $1.annovar*filtered
-rm $1.annovar*droppped
+rm $1.annovar*dropped
 rm $1.annovar*invalid_input
 rm $1.annovar*log
 
