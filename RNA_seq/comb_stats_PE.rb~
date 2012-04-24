@@ -25,7 +25,7 @@ def main
     isoforms = "#{dir}/accepted_hits.bam_cufflinks_ref/genes.fpkm_tracking"
   end
 
-  uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 16G | wc -l`.to_i
+  uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 6G | wc -l`.to_i
 #  mapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 6G | wc -l`.to_i
   #o = File.new("readsName", 'w')
   #rawLines = `samtools view #{dir}/accepted_hits.bam | cut -f1`
