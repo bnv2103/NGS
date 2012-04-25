@@ -48,7 +48,7 @@ def main
         
     writer = CSV.open(output, 'a') do |csv|
       # csv << [#{dir},#{sampleName},#{nreads},#{mapped},#{a}]
-      csv << [sampleName_short[3], nreads, uqMapped, b[1], b[2], b[3], b[4], b[5], b[6]]
+      csv << [sampleName_short[5], nreads, uqMapped, b[1], b[2], b[3], b[4], b[5], b[6]]
       end
   end
 end
