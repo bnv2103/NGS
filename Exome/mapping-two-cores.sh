@@ -133,7 +133,8 @@ rm -f $output.bam.temp*
 $samtools index $output.bam
 
 # raw flagstat
-$samtools flagstat $output.bam > $output.flagstat
+$samtools flagstat $output.bam > $output.bam.flagstat
+$samtools idxstats $output.bam > $output.bam.idxstats
 
 date
 
