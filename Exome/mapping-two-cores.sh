@@ -72,15 +72,15 @@ fi
 rgheader="@RG\tID:$readgroup\tSM:$sampleName\tLB:$readgroup\tPL:$platform\tCN:NGSColumbia"
 
 ######### align step
-cmd="$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
+cmd="$bwa aln -I  -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
 echo $cmd
-$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai  &  ### run in background
+$bwa aln -I  -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai  &  ### run in background
 
 
 if [[ ! $fastq2 == "" ]]; then  # paired-ends
-    cmd="$bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist -t  $threads  $REF  $fastq2 > $fastq2.sai"
+    cmd="$bwa aln -I -q $qualtrim -o $maxgaps  -n $maxeditdist -t  $threads  $REF  $fastq2 > $fastq2.sai"
     echo $cmd
-    $bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  $fastq2 > $fastq2.sai 
+    $bwa aln -I -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  $fastq2 > $fastq2.sai 
 
 # view -bS -o #{output} -
 
