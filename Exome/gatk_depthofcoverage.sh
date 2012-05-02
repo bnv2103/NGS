@@ -103,7 +103,7 @@ cat $INP.coverage.sample_summary  | grep -v total | grep -v Total >> $INP.reads.
 if [[ $AUTO != "" ]]
 then
         #Trigger automatic downstream steps : joint var calling
-	echo $INP > $INP.list
+	readlink -f $INP > $INP.list
 	path_inp=`dirname $INP`
 	cmd_varcalling="sh ${BPATH}/joint_SNV-indel_calling-split-by-intervals.sh -i $INP.list -m 6 -s $GLOBAL -n 2 -j 100 -d 300 -v 7 -t 30 -o $path_inp/VarCalling -A AUTO "
 	echo $cmd_varcalling
