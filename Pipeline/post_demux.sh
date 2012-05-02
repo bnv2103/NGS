@@ -66,9 +66,8 @@ echo "$lane $sampleid $barcode $projectid"
 	if [ -e $fq_3 ];then mv $fq_3 $DIR/$APP/$projectid/$runid/fastq/; fi 	#if the _3.fastq exists, link it also
 	base_fq=`basename $fq`
 	ln_fq="$DIR/$APP/$projectid/$runid/fastq/$base_fq"
-	if [ -e $fq_3 ]; then
-		ln_fq_3=`echo $ln_fq | sed 's/_1.fastq/_3.fastq/' `
-	else
+	ln_fq_3=`echo $ln_fq | sed 's/_1.fastq/_3.fastq/' `
+	if [ ! -e $ln_fq_3 ]; then
 		ln_fq_3=""
 	fi
 
