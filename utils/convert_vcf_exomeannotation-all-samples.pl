@@ -151,7 +151,7 @@ while(<vcf>) {
 		$buffer.= $field[6]."\t";        	#Filter
 
 		$i=0;
-		while ($info[$i] !~ m/^DP/) {				#DP coverage
+		while ($info[$i] !~ m/^DP=/) {				#DP coverage
 			$i++;
 		}
 		$buffer.= ($i >= scalar(@info)) ? "-" : (split("=",$info[$i]))[1] ;
