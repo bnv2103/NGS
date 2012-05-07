@@ -64,7 +64,7 @@ then
 fi
 
 JAVA="java -Xmx${HEAP}g -Djava.io.tmpdir="${TEMP}
-GATK="$JAVA -jar "${GATKJAR}
+GATK="$JAVA -jar "${GATKJAR15}
 
 #  $GATK -T CombineVariants -R $REF -I $INPLIST  -o $OUTVCF.vcf -genotypeMergeOptions UNSORTED -filteredRecordsMergeType KEEP_UNCONDITIONAL
 cmd=" $GATK -T CombineVariants -R $REF "
