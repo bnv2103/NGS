@@ -40,7 +40,7 @@ fi
 
         dname=`dirname $INP`
         d1=`dirname $dname`
-        sname=`basename d1`
+        sname=`basename $d1`
 if [ $AUTO == "" ]; then
 	job_ext="$sname"
 else
