@@ -50,7 +50,6 @@ if [ $JOB_ID == "" ]; then
 fi
 
 cd $dname
-# JOB_ID is the qsub job ID
 TEMP=$INPLIST"_"$JOB_ID"/"
 
 if [ ! -d $TEMP ]; 
@@ -66,7 +65,6 @@ fi
 JAVA="java -Xmx${HEAP}g -Djava.io.tmpdir="${TEMP}
 GATK="$JAVA -jar "${GATKJAR15}
 
-#  $GATK -T CombineVariants -R $REF -I $INPLIST  -o $OUTVCF.vcf -genotypeMergeOptions UNSORTED -filteredRecordsMergeType KEEP_UNCONDITIONAL
 cmd=" $GATK -T CombineVariants -R $REF "
  for i in `cat $INPLIST`;do 
 	cmd="$cmd --variant $i "

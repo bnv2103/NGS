@@ -65,3 +65,6 @@ $GATK \
     --filterName "StrandBiasFilter" \
     --filterExpression "QUAL < 10" \
     --filterName "QualFilter"
+
+sh ${BPATH}/do_release.sh $INP.filtered.vcf
+

@@ -103,7 +103,7 @@ $GATK \
 ## separate indel from SNV:
 ${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP
 ${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP.filtered.vcf
-
+sh ${BPATH}/do_release.sh $INP.filtered.vcf.snv
 
 ## filter indels:
 if [[ $AUTO == "" ]]; then
