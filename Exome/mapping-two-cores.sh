@@ -21,9 +21,9 @@ setting=""
 
 ### Note: bwa sample uses about 3.5G RAM
 
-USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
+USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -y ID] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
 
-while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A: opt
+while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A:y: opt
   do      
   case "$opt" in
       i) fastq1="$OPTARG";;
@@ -32,9 +32,10 @@ while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A: opt
       g) maxgaps="$OPTARG";;
       d) maxeditdist="$OPTARG";;
       q) qualtrim="$OPTARG";;
-      n) sampleName="$OPTARG";;
       t) threads="$OPTARG";;
+      y) ID="$OPTARG";;
       z) readgroup="$OPTARG";;
+      n) sampleName="$OPTARG";;
       f) platform="$OPTARG";;
       o) output="$OPTARG";;
       c) chain="$OPTARG";;
@@ -62,6 +63,10 @@ if [[ $sampleName == "" ]]; then
     sampleName=$readgroup
 fi
 
+if [[ $ID == "" ]]; then
+    ID=$readgroup
+fi
+
 if [[ $output == "" ]]; then
     output=$fastq1.sorted
 fi
@@ -69,7 +74,7 @@ fi
 
 ## read group specification:
 ##          -r STR   read group header line such as `@RG\tID:foo\tSM:bar' [null]
-rgheader="@RG\tID:$readgroup\tSM:$sampleName\tLB:$readgroup\tPL:$platform\tCN:NGSColumbia"
+rgheader="@RG\tID:$ID\tSM:$sampleName\tLB:$readgroup\tPL:$platform\tCN:NGSColumbia"
 
 ######### align step
 cmd="$bwa aln -I  -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
