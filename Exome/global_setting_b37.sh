@@ -14,6 +14,7 @@ export SAMTOOLS="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/samtools"
 # export TEMP="/ifs/scratch/c2b2/af_lab/saec/temp/"  # temp dir for Java
 export GATKJAR="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK/Sting/dist/GenomeAnalysisTK.jar" 
 export GATKJAR12="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK-1.2-1/GenomeAnalysisTK.jar"
+export GATKJAR15="/ifs/scratch/c2b2/ngs_lab/sz2317/softwares/GenomeAnalysisTK-1.5-21-g979a84a/GenomeAnalysisTK.jar"
 export PICARD="/ifs/data/c2b2/ngs_lab/ngs/usr/picard-tools"
 export BWA="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/bwa"  
 export BPATH="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome"

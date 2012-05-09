@@ -74,3 +74,6 @@ cmd=" $GATK -T CombineVariants -R $REF "
 echo $cmd
 $cmd
 
+  cmd2="qsub -N gatk_filter.$sname.AUTO -o $dname/filter.SNV.o -e $dname/filter.SNV.e -l mem=6G,time=24:: ${BPATH}/gatk_filter.sh -I $OUTVCF.vcf -g $GLOBAL -A AUTO"
+echo $cmd2
+$cmd2
