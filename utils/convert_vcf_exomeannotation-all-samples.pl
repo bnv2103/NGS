@@ -2,7 +2,7 @@
 
 #$ -cwd
 
-## Use as  perl /ifs/scratch/c2b2/ngs_lab/sz2317/runs/ALI_GHARAVI/convert_vcf_exomeannotation.pl infilename [indel] 
+## Use as  perl /ifs/scratch/c2b2/ngs_lab/sz2317/runs/ALI_GHARAVI/convert_vcf_exomeannotation-all-samples.pl infilename [indel] 
 # give the indel option for indel  input file  
 
  use File::Basename;
@@ -23,8 +23,8 @@ open(out, ">" . $outfile . ".xls" )|| die("Could not open outfile.xls  file!");
 print  "\nBeginning convrsion";
 
 ### header of vcf file has 10 fields as follows
-# #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  136-04
-# 1       871146  .       C       T       923.51  PASS    AB=0.492;AC=1;AF=0.042;AN=24;BaseQRankSum=1.084;DP=1029;Dels=0.00;FS=1.545;HRun=2;HaplotypeScore=5.5593;InbreedingCoeff=-0.0435;MQ=57.01;MQ0=0;MQRankSum=-0.674;QD=15.65;ReadPosRankSum=1.003;SB=-332.61;refseq.chr=1;refseq.codingCoordStr=c.306-6;refseq.end=871146;refseq.haplotypeAlternate=T;refseq.haplotypeReference=C;refseq.inCodingRegion=false;refseq.name=NM_152486;refseq.name2=SAMD11;refseq.positionType=intron;refseq.spliceDist=-6;refseq.spliceInfo=splice-acceptor_-6;refseq.start=871146;refseq.transcriptStrand=+  GT:AD:DP:GQ:PL   0/0:117,0:117:99:0,343,4408
+# #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  136-04i ...
+# 1       871146  .       C       T       923.51  PASS    AB=0.492;AC=1;AF=0.042;AN=24;BaseQRankSum=1.084;DP=1029;Dels=0.00;FS=1.545;HRun=2;HaplotypeScore=5.5593;InbreedingCoeff=-0.0435;MQ=57.01;MQ0=0;MQRankSum=-0.674;QD=15.65;ReadPosRankSum=1.003;SB=-332.61;refseq.chr=1;refseq.codingCoordStr=c.306-6;refseq.end=871146;refseq.haplotypeAlternate=T;refseq.haplotypeReference=C;refseq.inCodingRegion=false;refseq.name=NM_152486;refseq.name2=SAMD11;refseq.positionType=intron;refseq.spliceDist=-6;refseq.spliceInfo=splice-acceptor_-6;refseq.start=871146;refseq.transcriptStrand=+  GT:AD:DP:GQ:PL   0/0:117,0:117:99:0,343,4408 ... 
 
 # header for output file is
 print out "Chr\tPosition\tRS no\tBase change\tPresent 1000 genome\?\tPresent other DB\?\tPresent EVS\?\tGene Symbol\t";
@@ -151,7 +151,7 @@ while(<vcf>) {
 		$buffer.= $field[6]."\t";        	#Filter
 
 		$i=0;
-		while ($info[$i] !~ m/^DP=/) {				#DP coverage
+		while ($info[$i] !~ m/^DP/) {				#DP coverage
 			$i++;
 		}
 		$buffer.= ($i >= scalar(@info)) ? "-" : (split("=",$info[$i]))[1] ;
@@ -160,6 +160,7 @@ while(<vcf>) {
 	   my $iter=9;
 	   while ($iter < $sampleCount){
 		$buffer.= "\t";
+		if ( $field[$iter] !~ m/\.\/\./){
 		my @data = split(":",$field[$iter]);
                 $buffer.=  ($data[0] =~ m/^0\// ) ? $field[3] :  $field[4];	#GT (sample Genotype)
                 $buffer.= "/";
@@ -186,7 +187,10 @@ while(<vcf>) {
 		while ($format[$i] !~ m/^AD/) {				#AD Allelic depth for samples
 			$i++; }
                 $buffer.= ($i >= scalar(@format)) ? "-" : $data[$i];
-
+		}
+		else{
+			$buffer.= "-\t-\t-\t-"; 
+		}
 		$iter++;
 	    }
 	$buffer.= "\n";
