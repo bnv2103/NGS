@@ -35,9 +35,9 @@ do
       $SAMTOOLS view -H  $i > temp.header
 	grep "@HD" temp.header > final.header
         grep "@SQ" temp.header >> final.header
-	grep "@RG" temp.header |sed "s/ID:.\+\tPL/ID:$count\tPL/" >> rg.header
+	grep "@RG" temp.header |sed "s/ID:.\+\t/ID:$count\t/" >> rg.header
   else
-  	$SAMTOOLS view -H  $i |grep "@RG"|sed "s/ID:.\+\tPL/ID:$count\tPL/"  >> rg.header
+  	$SAMTOOLS view -H  $i |grep "@RG"|sed "s/ID:.\+\t/ID:$count\t/"  >> rg.header
   fi
   mv $i $idir"/"$count".bam"
   infiles_final="$infiles_final $idir/$count.bam"

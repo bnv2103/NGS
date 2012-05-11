@@ -23,10 +23,11 @@ cd $dirname
 
 nofiles=$#
 infiles=$@
-if [ -e all.header ]; then rm all.header ; fi
+if [ -e temp.header ]; then rm temp.header ; fi
 if [ -e rg.header ]; then rm rg.header ; fi
+
 count=0
-infiles_final=""
+# infiles_final=""
 for i in $infiles 
 do
   count=`expr $count + 1`
@@ -35,18 +36,18 @@ do
       $SAMTOOLS view -H  $i > temp.header
 	grep "@HD" temp.header > final.header
         grep "@SQ" temp.header >> final.header
-	grep "@RG" temp.header |sed "s/ID:.\+\tPL/ID:$count\tPL/" >> rg.header
+	grep "@RG" temp.header  > rg.header
   else
-  	$SAMTOOLS view -H  $i |grep "@RG"|sed "s/ID:.\+\tPL/ID:$count\tPL/"  >> rg.header
+  	$SAMTOOLS view -H  $i |grep "@RG"  >> rg.header
   fi
-  mv $i $idir"/"$count".bam"
-  infiles_final="$infiles_final $idir/$count.bam"
+#  mv $i $idir"/"$count".bam"
+#  infiles_final="$infiles_final $idir/$count.bam"
 done
 	cat rg.header >>final.header
 	grep "@PG" temp.header >> final.header
-rm temp.header
+rm temp.header rg.header
 
-$SAMTOOLS merge -f -r -h final.header $outfile $infiles_final
+$SAMTOOLS merge -f -h final.header $outfile $infiles
  echo "Merge Complete"
 $SAMTOOLS sort $outfile $outfile.sorted 
 mv $outfile.sorted.bam $outfile
