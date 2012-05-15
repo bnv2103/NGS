@@ -4,7 +4,7 @@
 suff=` date +%N`
 dir=`pwd`
 
-to_email="sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,wsd2102@c2b2.columbia.edu" 
+to_email="oc2121@c2b2.columbia.edu,sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,wsd2102@c2b2.columbia.edu" 
 
 total=`df -h /ifs/scratch/c2b2/ngs_lab/ngs/ |tail -1 | sed 's/ \+ /\t/g' |cut -f2`
 used=`df -h /ifs/scratch/c2b2/ngs_lab/ngs/ |tail -1 | sed 's/ \+ /\t/g'  |cut -f3`
