@@ -12,7 +12,7 @@ outdir=$2
 
 ## do cufflinks
 cuffout=$bam"_cufflinks_ref"
-# cuffout2=$bam"_cufflinks_ref-guide"
+cuffout2=$bam"_cufflinks_ref-guide"
 
 cmd="cufflinks -o $cuffout --GTF $GENES $bam"
 # cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF  $GENES $bam"
