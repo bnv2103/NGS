@@ -164,6 +164,13 @@ if [[ -s $sampleSheet ]]; then
     fi
     cp $sampleSheet $demultiplexout/$runName.csv
     outprefix=`echo $runName`		# outprefix=`echo $runName | cut -f1 -d '_' `
+
+#Demultiplex not passed filter reads to get stats only
+    cmd="$RUBY18 $PIPEBASE/demultiplex_n.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv 4 &"
+    $cmd
+    echo "$cmd" >> $StatusDir/history.txt
+
+#Demultipex PF reads
     cmd="$RUBY18 $PIPEBASE/demultiplex.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv $nt"
     $cmd
     echo "$cmd" >> $StatusDir/history.txt
@@ -176,12 +183,13 @@ fi
 echo "Cluster Density PF for all lanes"
 awk 'BEGIN{lane=0;ct=0;sum=0} /^[0-9]/{if ($1==lane) {ct++; sum+=$3;} else{ print lane, sum/ct; lane=$1; ct=1;sum=$3;}}END{ print lane, sum/ct;}'  $absOUT/reports/NumClusters\ By\ Lane\ PF.txt 
 
+
 ## clean up
 ##bzip2 s*qseq.txt  & 
 
 for i in `seq 1 8`; do 
  qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq  $fastqout/s_"$i"n_1.fastq
- qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=2:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq
+ qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=2:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq $fastqout/s_"$i"n_2.fastq
  if [[ -e $fastqout/s_"$i"_3.fastq ]];then
    qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq  $fastqout/s_"$i"n_3.fastq
  fi
