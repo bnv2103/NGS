@@ -100,14 +100,14 @@ def decode(inputdir, multiplex, outprefix, barcodesize, nt )
   
   # get the list of files in the dir
   #   puts inputdir
-  barcodefq = Dir.new(inputdir).select {|a| a.match(/s\_\d+n\_2\.fastq$/) }
+  barcodefq = Dir.new(inputdir).select {|a| a.match(/s\_(\d+)n\_2\.fastq$/) }
   
   $stderr.puts "barcode files: \n#{barcodefq.join("\n")}"
 
   nprocess = 0
 
   barcodefq.sort.each do |bfq|
-    if bfq.match(/s\_(\d+)\_2\.(\S+)/)
+    if bfq.match(/s\_(\d+)n\_2\.(\S+)/)
       lane = "#{$1}"
       targetfq1 = "#{inputdir}/s_#{lane}n_1.#{$2}"
       targetfq3 = "#{inputdir}/s_#{lane}n_3.#{$2}"
