@@ -44,6 +44,7 @@ script_PE="$RNABASE/pipeline_cufflink-ref-PE.sh"
 
 if [ ! -d  logs ]; then mkdir -p logs; fi
 if [ ! -d  cufflinks ]; then mkdir -p cufflinks; fi
+if [ ! -d  spikeIn ]; then mkdir -p spikeIn; fi
 # print title for statistical summary
 # ruby $RNABASE/printTitle.rb "summary.csv"
 
@@ -59,7 +60,7 @@ fi
 
 
 
-qsub -o logs/pipe.$f1.o -e logs/pipe.$f1.e  -l mem=8G,time=20:: -N do.$f1 /ifs/scratch/c2b2/ngs_lab/xs2182/code/pipeline_spikein.sh  -i $f1 -s /ifs/scratch/c2b2/ngs_lab/xs2182/code/global_setting_spike.sh -n 1 -o $f1"_spikein";
+qsub -o logs/pipe.$f1.o -e logs/pipe.$f1.e  -l mem=8G,time=20:: -N do.$f1 /ifs/scratch/c2b2/ngs_lab/xs2182/code/pipeline_spikein.sh  -i $f1 -s /ifs/scratch/c2b2/ngs_lab/xs2182/code/global_setting_spike.sh -n 1 -o "spikeIn/"$f1"_spikein";
 
 
 
