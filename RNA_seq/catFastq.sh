@@ -1,17 +1,23 @@
 #!/bin/bash
 #$ -cwd
-file1=$1
-file2=$2
-dir=$3
+# inputs: fastq file directory
 
-cd $dir 
+# file1=$1
+# file2=$1
+ dir="./"
 
-for f in $file1
+# cd $dir 
+
+# echo $file1
+# echo $file2
+# echo $dir
+
+for f in *120420*fastq
 do  
     
-    for g in $file2
+    for g in *120502*fastq
     do
-       
+	# echo $f
 	ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/checkName.rb $f $g $dir
 
     done

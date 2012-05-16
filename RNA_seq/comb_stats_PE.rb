@@ -26,14 +26,6 @@ def main
   end
 
   uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 16G | wc -l`.to_i
-#  mapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 6G | wc -l`.to_i
-  #o = File.new("readsName", 'w')
-  #rawLines = `samtools view #{dir}/accepted_hits.bam | cut -f1`
-  #o.puts rawLines
-  #o.close
-  #uqMapped = `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/sortData.R`
-  #qMapped = `samtools view -q1 #{dir}/accepted_hits.bam | cut -f1 | wc -l`.to_i
-  # mapped = 0;
   # mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
   # if mappedline =~ /^(\d+)\s+/
   #  mapped = $1

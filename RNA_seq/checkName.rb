@@ -9,8 +9,8 @@ sampleName2 = name2.split('_')
 
 if name1!=name2 &&  sampleName1[5]==sampleName2[5] && sampleName1[6]==sampleName2[6]
     `cat #{name1} #{name2} > #{dir}"/combine"#{name2}`
-# puts name1
-# puts name2
+ puts name1
+ puts name2
 end
 
 
