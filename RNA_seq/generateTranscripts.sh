@@ -2,7 +2,7 @@
 #$ -cwd
 
 
-for f in *cufflinks; do ruby generateTranscripts.rb $f; done
+for f in *cufflinks; do ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/generateTranscripts.rb $f; done
 
 if [[ $1 == "mouse" ]];
     then

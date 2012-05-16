@@ -51,7 +51,7 @@ if [[ $genome == "rat" ]];
 fi
 
 
- # annotate_variation.pl -geneanno -buildver hg19 var_flt_vcf /ifs/data/c2b2/ngs_lab/ngs/usr/src/annovar/humandb
+# annotate_variation.pl -geneanno -buildver hg19 var_flt_vcf /ifs/data/c2b2/ngs_lab/ngs/usr/src/annovar/humandb
 
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/mergeVPC.rb
 
