@@ -161,19 +161,31 @@ if [[ -s $sampleSheet ]]; then
     
     if [[ ! -e $demultiplexout ]]; then
 	mkdir $demultiplexout
+	mkdir $demultiplexout"_n" 
     fi
     cp $sampleSheet $demultiplexout/$runName.csv
+    cp $sampleSheet $demultiplexout"_n"/$runName.csv
     outprefix=`echo $runName`		# outprefix=`echo $runName | cut -f1 -d '_' `
 
 #Demultiplex not passed filter reads to get stats only
-    cmd="$RUBY18 $PIPEBASE/demultiplex_n.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv 4 &"
-    $cmd
+    cmd="$RUBY18 $PIPEBASE/demultiplex_n.rb $fastqout "$demultiplexout"_n $outprefix "$demultiplexout"_n/$runName.csv 4 &"
     echo "$cmd" >> $StatusDir/history.txt
+    $cmd
 
 #Demultipex PF reads
     cmd="$RUBY18 $PIPEBASE/demultiplex.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv $nt"
-    $cmd
     echo "$cmd" >> $StatusDir/history.txt
+    $cmd
+
+echo "" > Reads.summary
+for sm in `ls $demultiplexout"\*summary*" `; do
+	head -2 $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> Reads.summary
+done
+echo "" > Reads_n.summary
+for sm in `ls $demultiplexout"_n\*summary*" `; do
+	head -2 $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> Reads_n.summary
+done
+
 
 else
     echo "SampleSheet is missing. Failed to start demultiplexing."
