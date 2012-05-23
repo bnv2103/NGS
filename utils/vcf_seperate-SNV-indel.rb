@@ -11,8 +11,8 @@ def main
       snvo.puts line
       indelo.puts line
     else
-      cols = line.split(/\s+/)
-      ref,alt = cols[3], cols[4]
+      cols = line.split(/\t/)
+      ref,alt = cols[3], cols[4].split(/,/)[0]
       if ref.size != alt.size ## indels
         indelo.puts line
       else
