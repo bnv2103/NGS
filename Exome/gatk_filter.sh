@@ -1,6 +1,7 @@
 #!/bin/sh
 #$ -S /bin/sh
 #$ -cwd
+uname -a
 
 # Filter SNPs in indel regions
 # Load all samples from chromosome in a single $INP vcf file
@@ -39,7 +40,7 @@ fi
 
         dname=`dirname $INP`
         d1=`dirname $dname`
-        sname=`basename d1`
+        sname=`basename $d1`
 if [ $AUTO == "" ]; then
 	job_ext="$sname"
 else
@@ -102,12 +103,13 @@ $GATK \
 ## separate indel from SNV:
 ${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP
 ${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP.filtered.vcf
+sh ${BPATH}/do_release.sh $INP.filtered.vcf.snv
 
 ## filter indels:
 if [[ $AUTO == "" ]]; then
-	cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o logs/filter-indel.o -e logs/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL "
+	cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o $dname/filter-indel.o -e $dname/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL "
 else
-        cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o logs/filter-indel.o -e logs/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL  -A AUTO"
+        cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o $dname/filter-indel.o -e $dname/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL  -A AUTO"
 fi
 echo $cmd
 $cmd

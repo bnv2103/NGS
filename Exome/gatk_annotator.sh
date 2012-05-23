@@ -1,5 +1,6 @@
 #!/bin/bash
 #$ -cwd
+uname -a
 
 heap=4
 
@@ -36,6 +37,8 @@ awk '{print $1":"$2"-"$3}' $ExonFile > $targets
 
 TEMP=$vcf"_anno-temp"
 mkdir -p $TEMP
+
+if [ -e $vcf".idx" ];then rm  $vcf".idx";fi 	#in case of resubmission of this job.
 
 JAVA="java -Xmx${heap}g -Djava.io.tmpdir="${TEMP}
 GATK="$JAVA -jar "${GATKJAR}

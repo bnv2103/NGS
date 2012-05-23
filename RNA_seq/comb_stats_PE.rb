@@ -25,15 +25,7 @@ def main
     isoforms = "#{dir}/accepted_hits.bam_cufflinks_ref/genes.fpkm_tracking"
   end
 
-  uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 6G | wc -l`.to_i
-  mapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 6G | wc -l`.to_i
-  #o = File.new("readsName", 'w')
-  #rawLines = `samtools view #{dir}/accepted_hits.bam | cut -f1`
-  #o.puts rawLines
-  #o.close
-  #uqMapped = `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/sortData.R`
-  #qMapped = `samtools view -q1 #{dir}/accepted_hits.bam | cut -f1 | wc -l`.to_i
-  # mapped = 0;
+  uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 16G | wc -l`.to_i
   # mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
   # if mappedline =~ /^(\d+)\s+/
   #  mapped = $1
@@ -48,7 +40,7 @@ def main
         
     writer = CSV.open(output, 'a') do |csv|
       # csv << [#{dir},#{sampleName},#{nreads},#{mapped},#{a}]
-      csv << [sampleName_short[3], nreads, uqMapped, mapped, b[1], b[2], b[3], b[4], b[5], b[6]]
+      csv << [sampleName_short[5], nreads, uqMapped, b[1], b[2], b[3], b[4], b[5], b[6]]
       end
   end
 end

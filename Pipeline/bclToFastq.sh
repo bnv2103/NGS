@@ -135,7 +135,7 @@ do
 done
 if [ $flag -eq "1" ]
 then
- 	cp -r $absIN/Data/reports/ .
+ 	cp -r $absIN/Data/reports/ $absOUT/
 	rm s_*.txt
 	rm -rf Matrix/
 	rm -rf Phasing/
@@ -161,12 +161,31 @@ if [[ -s $sampleSheet ]]; then
     
     if [[ ! -e $demultiplexout ]]; then
 	mkdir $demultiplexout
+	mkdir $demultiplexout"_n" 
     fi
     cp $sampleSheet $demultiplexout/$runName.csv
+    cp $sampleSheet $demultiplexout"_n"/$runName.csv
     outprefix=`echo $runName`		# outprefix=`echo $runName | cut -f1 -d '_' `
-    cmd="$RUBY18 $PIPEBASE/demultiplex.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv $nt"
-    $cmd
+
+#Demultiplex not passed filter reads to get stats only
+    cmd="$RUBY18 $PIPEBASE/demultiplex_n.rb $fastqout "$demultiplexout"_n $outprefix "$demultiplexout"_n/$runName.csv 4 &"
     echo "$cmd" >> $StatusDir/history.txt
+    $cmd
+
+#Demultipex PF reads
+    cmd="$RUBY18 $PIPEBASE/demultiplex.rb $fastqout $demultiplexout $outprefix $demultiplexout/$runName.csv $nt"
+    echo "$cmd" >> $StatusDir/history.txt
+    $cmd
+
+echo "" > Reads.summary
+for sm in `ls $demultiplexout"\*summary*" `; do
+	head -2 $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> Reads.summary
+done
+echo "" > Reads_n.summary
+for sm in `ls $demultiplexout"_n\*summary*" `; do
+	head -2 $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> Reads_n.summary
+done
+
 
 else
     echo "SampleSheet is missing. Failed to start demultiplexing."
@@ -176,12 +195,13 @@ fi
 echo "Cluster Density PF for all lanes"
 awk 'BEGIN{lane=0;ct=0;sum=0} /^[0-9]/{if ($1==lane) {ct++; sum+=$3;} else{ print lane, sum/ct; lane=$1; ct=1;sum=$3;}}END{ print lane, sum/ct;}'  $absOUT/reports/NumClusters\ By\ Lane\ PF.txt 
 
+
 ## clean up
 ##bzip2 s*qseq.txt  & 
 
 for i in `seq 1 8`; do 
  qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq  $fastqout/s_"$i"n_1.fastq
- qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=2:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq
+ qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=2:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq $fastqout/s_"$i"n_2.fastq
  if [[ -e $fastqout/s_"$i"_3.fastq ]];then
    qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq  $fastqout/s_"$i"n_3.fastq
  fi
@@ -208,7 +228,7 @@ cd $demultiplexout
         echo ""  >> mailBody.txt
 
  #       qstat -j process.$f >>  mailBody.txt
-        cmd1="sh $PIPEBASE/sendMail.sh -t sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
+        cmd1="sh $PIPEBASE/sendMail.sh -t sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu,ecb2152@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
         echo $cmd1
         $cmd1
         rm mailBody.txt

@@ -28,9 +28,14 @@ def main
     isoforms = "#{dir}/accepted_hits.bam_cufflinks_ref/genes.fpkm_tracking"
   end
 
+  # mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
+  # if mappedline =~ /^(\d+)\s+/
+  #   mapped = $1
+  # end
+
   # get number of unique reads
   uqMapped = 0
-  # uqMapped = `samtools view #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 10G | wc -l`.to_i
+  uqMapped = `samtools view #{dir}/accepted_hits.bam | cut -f1 | sort -u -S 10G | wc -l`.to_i
   continueMap = `samtools view #{dir}/accepted_hits.bam |cut -f6 |grep "101M" | wc -l`.to_i
 
   if File.exist?(isoforms)
@@ -41,7 +46,7 @@ def main
     
     # print sample name with statistical result
     writer = CSV.open(output, 'a') do |csv|
-      csv << [sampleName_short[5], nreads, continueMap, b[1], b[2], b[3], b[4], b[5], b[6]]
+      csv << [sampleName_short[5], nreads, uqMapped, continueMap, b[1], b[2], b[3], b[4], b[5], b[6]]
       end
   end
 end

@@ -124,7 +124,7 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
   echo "while [[ \$completed != \"\" ]]; do " >> $out
   echo "if [[ \$completed -eq \"100\" ]];then  echo \"all completed\" >>  $temp/status.Varcalling; break;" >> $out
-  echo "elif [[ \$completed -lt \"99\" || \$completed -gt \"100\" ]]; then exit; " >>$out
+  echo "elif [[ \$completed -lt \"100\" || \$completed -gt \"100\" ]]; then exit; " >>$out
   echo "else " >> $out
   echo "sleep 60 " >> $out
   echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
@@ -138,6 +138,6 @@ else
   echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o $temp/annotation.o -e $temp/annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist -A AUTO " >> $out
 fi
 
-  qsub -pe smp $nt -R y -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out 
+  qsub -pe smp $nt -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out 
   # echo $qmem
 done

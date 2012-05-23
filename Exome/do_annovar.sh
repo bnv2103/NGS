@@ -4,7 +4,7 @@
 #$ -l h_vmem=1G,time=1::
 
 DIR="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/"
-
+UTILS="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/utils/"
 ##This script converts a  vcf file with one or more samples into a format required by annovar and then fires annovar's tool to get the variants.
 #INPUT - $1 - a VCF file containing
 #OUTPUT - $1.exome (the input require for annovar)
@@ -30,7 +30,11 @@ rm $1.annovar.a
 rm $1.annovar.b
 rm $1.annovar
 rm $1.annovar*filtered
-rm $1.annovar*droppped
+rm $1.annovar*dropped
 rm $1.annovar*invalid_input
 rm $1.annovar*log
+
+perl ${UTILS}/convert_vcf_exomeannotation-all-samples.pl $1
+perl ${UTILS}/merge_sift_pp2.pl $1.xls $1.sift $1.pp2 > $1.sift_pp2
+paste $1.xls <(cut -f3,4 $1.sift_pp2 ) > $1.withScores.xls
 

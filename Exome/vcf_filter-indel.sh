@@ -1,5 +1,6 @@
 #!/bin/bash
 #$ -cwd
+uname -a
 
 # Filter indels
 # Load all samples from chromosome in a single $INP vcf file
@@ -64,3 +65,6 @@ $GATK \
     --filterName "StrandBiasFilter" \
     --filterExpression "QUAL < 10" \
     --filterName "QualFilter"
+
+sh ${BPATH}/do_release.sh $INP.filtered.vcf
+

@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -cwd
 # Findmem
-
+uname -a
 # Realign reads locally around indels
 # Run with all samples from a single chromosome together in $INP.list
 
@@ -148,9 +148,13 @@ fi
 ### "chain reaction": check the status of other chromosomes. If all chromosomes are complete, then proceed to the next step (merge and recalibrate etc). 
 if [[ $chain != "" ]]; then
 # wait for 6 seconds if not complete
-    for (( i=0; i<2; i++ ))
-      do 
-      completed=`wc -l $status | awk '{print $1}'`
+#    for (( i=0; i<2; i++ ))
+#      do 
+   completed=`wc -l $status | awk '{print $1}'`
+   while [[ $completed != "" ]]; 
+   do 
+	completed=`wc -l $status | awk '{print $1}'`
+
       if [[ $completed == "24" ]]; then  # all chromosomes completed, proceed to the next step (merge), 
 	  echo "all completed" >>  $status  # make it stop
 	  
@@ -170,7 +174,13 @@ if [[ $chain != "" ]]; then
 	      ${SAMTOOLS} index $OUTDIR/all.realigned.bam  > $OUTDIR/log.index 2>&1
 
 	      if [[  -s $OUTDIR/all.realigned.bam  ]]; then
-#		  rm -rf $INP  # delete original bam
+		  if [ -s $INP.flagstat ]; then
+			rm -rf $INP  # delete original bam
+		  else
+			samtools flagstat $INP > $INP.flagstat
+			samtools idxstats $INP > $INP.idxstats
+			rm -rf $INP
+		  fi
 
 		  # trigger downstream analysis (dedup and recalibrate)
 		  echo "dedup"
@@ -185,24 +195,18 @@ if [[ $chain != "" ]]; then
 		  mkdir -p $OUTDIR/logs/
 		job_name=`basename $OUTDIR`
 		if [[ $AUTO == "" ]]; then
-                  cmd="qsub -l mem=8G,time=55:: -N recaliberate.$job_name -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 "
+                  cmd="qsub -l mem=7G,time=30:: -N recaliberate.$job_name -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 "
 		else
-		  cmd="qsub -l mem=8G,time=55:: -N recaliberate.$job_name.AUTO -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 -A AUTO"
+		  cmd="qsub -l mem=7G,time=30:: -N recaliberate.$job_name.AUTO -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 -A AUTO"
 		fi
 		  echo $cmd
 		  $cmd
 	      fi
-	      
-
-
 	  fi
-	  
-	  i=2
-	  
-      else
-	  sleep 3
-      fi
-    done
+     elif [[ $completed -lt "24" || $completed -gt "24" ]]; then exit; 
+     else sleep 20
+     fi
+   done
 fi
 
 

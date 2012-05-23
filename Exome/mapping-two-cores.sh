@@ -1,6 +1,6 @@
 #!/bin/bash
 #$ -cwd
-
+uname -a
 ## NOTE: this require two cores. For titan as of June 2011, to get two cores for bwa requires set "-l mem=8G" or larger. 
 
 # default values
@@ -21,9 +21,9 @@ setting=""
 
 ### Note: bwa sample uses about 3.5G RAM
 
-USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
+USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -y ID] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
 
-while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A: opt
+while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A:y: opt
   do      
   case "$opt" in
       i) fastq1="$OPTARG";;
@@ -32,9 +32,10 @@ while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A: opt
       g) maxgaps="$OPTARG";;
       d) maxeditdist="$OPTARG";;
       q) qualtrim="$OPTARG";;
-      n) sampleName="$OPTARG";;
       t) threads="$OPTARG";;
+      y) ID="$OPTARG";;
       z) readgroup="$OPTARG";;
+      n) sampleName="$OPTARG";;
       f) platform="$OPTARG";;
       o) output="$OPTARG";;
       c) chain="$OPTARG";;
@@ -62,6 +63,10 @@ if [[ $sampleName == "" ]]; then
     sampleName=$readgroup
 fi
 
+if [[ $ID == "" ]]; then
+    ID=$readgroup
+fi
+
 if [[ $output == "" ]]; then
     output=$fastq1.sorted
 fi
@@ -69,18 +74,18 @@ fi
 
 ## read group specification:
 ##          -r STR   read group header line such as `@RG\tID:foo\tSM:bar' [null]
-rgheader="@RG\tID:$readgroup\tSM:$sampleName\tLB:$readgroup\tPL:$platform\tCN:NGSColumbia"
+rgheader="@RG\tID:$ID\tSM:$sampleName\tLB:$readgroup\tPL:$platform\tCN:NGSColumbia"
 
 ######### align step
-cmd="$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
+cmd="$bwa aln -I  -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
 echo $cmd
-$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai  &  ### run in background
+$bwa aln -I  -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai  &  ### run in background
 
 
 if [[ ! $fastq2 == "" ]]; then  # paired-ends
-    cmd="$bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist -t  $threads  $REF  $fastq2 > $fastq2.sai"
+    cmd="$bwa aln -I -q $qualtrim -o $maxgaps  -n $maxeditdist -t  $threads  $REF  $fastq2 > $fastq2.sai"
     echo $cmd
-    $bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  $fastq2 > $fastq2.sai 
+    $bwa aln -I -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  $fastq2 > $fastq2.sai 
 
 # view -bS -o #{output} -
 
@@ -132,6 +137,10 @@ rm -f $output.bam.temp*
 # index
 $samtools index $output.bam
 
+# raw flagstat
+$samtools flagstat $output.bam > $output.bam.flagstat
+$samtools idxstats $output.bam > $output.bam.idxstats
+
 date
 
 if [[ $chain != "0" ]]; then ## call realign
@@ -150,18 +159,20 @@ if [[ $chain != "0" ]]; then ## call realign
     mkdir -p $OUTDIR/logs/
     qmem=5 # default
     heapm=4
+    qtime=24
     for (( i=1; i<=24; i++))
       do 
       if [[ $i -lt 7 ]]; then  # mem=8 for large chr
 	  qmem=8
 	  heapm=7
+	  qtime=30
       fi
       
       g=`basename $output.bam | sed 's/\//_/g'`
 	if [[ $AUTO == "" ]];then
-              cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm "
+              cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=${qtime}:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm "
   	else
-	      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
+	      cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=${qtime}:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
 	fi
       echo $cmd
       $cmd

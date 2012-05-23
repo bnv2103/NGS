@@ -58,7 +58,7 @@ for f in $runs
         echo ""  >> mailBody.txt
 
         qstat -j process.$f >>  mailBody.txt
-	cmd1="sh $PIPEBASE/sendMail.sh -t wsd2102@c2b2.columbia.edu,sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu,xf2118@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
+	cmd1="sh $PIPEBASE/sendMail.sh -t wsd2102@c2b2.columbia.edu,sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu,xf2118@c2b2.columbia.edu,ecb2152@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
         echo $cmd1
         $cmd1
         rm mailBody.txt

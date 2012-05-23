@@ -1,6 +1,7 @@
 #!/bin/sh
 #$ -cwd
 # Findmem
+uname -a
 
 # Recalibrate base quality score
 # INPUT:	Run with a single read-group/lane in $INP.list
@@ -119,9 +120,9 @@ if [[ $chain != ""  ]]; then
     # trigger downstream analysis 
     date
 	if [[ $AUTO == "" ]]; then
-	    cmd="qsub -N depth.$job_name -l mem=5G,time=48:: -o $OUTPUT.depth.log.o -e $OUTPUT.depth.log.e ${BPATH}/gatk_depthofcoverage.sh  -g $GLOBAL -I $OUTPUT  -m 3000 "
+	    cmd="qsub -N depth.$job_name -l mem=6G,time=30:: -o $OUTPUT.depth.log.o -e $OUTPUT.depth.log.e ${BPATH}/gatk_depthofcoverage.sh  -g $GLOBAL -I $OUTPUT  -m 5000 "
 	else
-	    cmd="qsub -N depth.$job_name.AUTO -l mem=5G,time=48:: -o $OUTPUT.depth.log.o -e $OUTPUT.depth.log.e ${BPATH}/gatk_depthofcoverage.sh  -g $GLOBAL -I $OUTPUT  -m 3000 -A AUTO"
+	    cmd="qsub -N depth.$job_name.AUTO -l mem=6G,time=30:: -o $OUTPUT.depth.log.o -e $OUTPUT.depth.log.e ${BPATH}/gatk_depthofcoverage.sh  -g $GLOBAL -I $OUTPUT  -m 5000 -A AUTO"
 	fi
     echo $cmd
     $cmd

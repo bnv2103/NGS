@@ -1,4 +1,5 @@
 ## count the number of reads from fastq file
+require 'csv'
 
 $VERBOSE = nil
 
@@ -10,7 +11,7 @@ def main
   io = File.new(fq, 'r')
 
   o = File.new(output, 'a+')
-
+  
   num = 0
   while !io.eof?
     s = io.take(4)
@@ -19,11 +20,16 @@ def main
   end
   puts fq
   puts num
-  o.puts fq
-  o.puts num
+
+  # writer = CSV.open(output, 'a+') do |csv|
+  #    csv << [fq, num]
+  #     end
+
+  o.puts fq + " #{num}" 
+  # o.puts num
   io.close
 
-  o.close
+   o.close
 
 end
 

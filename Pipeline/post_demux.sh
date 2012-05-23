@@ -60,15 +60,14 @@ echo "$lane $sampleid $barcode $projectid"
 	if [ ! -d $DIR/$APP/$projectid/$runid ];then mkdir -p $DIR/$APP/$projectid/$runid; fi
         if [ ! -d $DIR/$APP/$projectid/$runid/fastq ];then mkdir -p $DIR/$APP/$projectid/$runid/fastq; fi
 
-	#make links to  fastq files in destination dir
-	ln -s $fq $DIR/$APP/$projectid/$runid/fastq/
+	#move fastq files to destination dir
+	mv  $fq $DIR/$APP/$projectid/$runid/fastq/
 	fq_3=`echo $fq | sed 's/_1.fastq/_3.fastq/' `
-	if [ -e $fq_3 ];then ln -s $fq_3 $DIR/$APP/$projectid/$runid/fastq/; fi 	#if the _3.fastq exists, link it also
+	if [ -e $fq_3 ];then mv $fq_3 $DIR/$APP/$projectid/$runid/fastq/; fi 	#if the _3.fastq exists, link it also
 	base_fq=`basename $fq`
 	ln_fq="$DIR/$APP/$projectid/$runid/fastq/$base_fq"
-	if [ -e $fq_3 ]; then
-		ln_fq_3=`echo $ln_fq | sed 's/_1.fastq/_3.fastq/' `
-	else
+	ln_fq_3=`echo $ln_fq | sed 's/_1.fastq/_3.fastq/' `
+	if [ ! -e $ln_fq_3 ]; then
 		ln_fq_3=""
 	fi
 
@@ -120,6 +119,8 @@ echo "$lane $sampleid $barcode $projectid"
 				cp $EXOMEBASE/global_setting_mm9.sh $DIR/$APP/$projectid/$runid/global_setting.sh
 		        elif [[ $capture =~ "44mb" ]]; then
 		                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V2_with_annotation.hg19.bed.mod"" >> $DIR/$APP/$projectid/$runid/global_setting.sh
+                        elif [[ $capture =~ "51mb" ]]; then
+                                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V4_hg19.bed"" >> $DIR/$APP/$projectid/$runid/global_setting.sh
 		        fi
 		fi
 		#Call Mapping
