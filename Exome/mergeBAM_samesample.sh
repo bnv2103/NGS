@@ -12,7 +12,7 @@ outfile=$1
 shift
 if [ $# -lt 2 ]
 then
-  echo "Usage: $0 arg1 arg2 .. argN"
+  echo "Usage: $0 PATH/Global_setting.sh PATH/OUTPUT.bam  inp1.realigned.bam inp2.realigned.bam  .. inpN"
   echo "qsub -o log.cdh632.o -e log.cdh632.e mergeBAM.sh  /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/combineReads120418_120316/global_setting.sh   /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/combineReads120418_120316/mapping/CDH632.bam /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/120418_SN650_0270_AD0JGRACXX/mapping/CDH632.bam_refine/all.realigned.bam /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/120316_SN650_0258_AC0EAMACXX/mapping/CDH632.bam_refine/all.realigned.bam "
   exit
 fi
