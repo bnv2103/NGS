@@ -2,59 +2,108 @@
 #$ -cwd
 #$ -l mem=2G,time=4::
 
-##give full path
+
+## New merge BAM script to minimize typo error, and validates existant of all files.
+
+#  $1 Path/Project 
+# $2 SAMPLE-NAME
+# $3 $4 ... All RUN-ID to merge
 	
 SAMTOOLS="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/samtools"
 BPATH="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/Exome/"
-setting=$1
+
+
+proj=$1
 shift
-outfile=$1
+sample=$1
 shift
-if [ $# -lt 2 ]
+numruns=$#
+runs=$@
+if [ $numruns -lt 2 ]
 then
-  echo "Usage: $0 PATH/Global_setting.sh PATH/OUTPUT.bam  inp1.realigned.bam inp2.realigned.bam  .. inpN"
-  echo "qsub -o log.cdh632.o -e log.cdh632.e mergeBAM.sh  /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/combineReads120418_120316/global_setting.sh   /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/combineReads120418_120316/mapping/CDH632.bam /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/120418_SN650_0270_AD0JGRACXX/mapping/CDH632.bam_refine/all.realigned.bam /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/120316_SN650_0258_AC0EAMACXX/mapping/CDH632.bam_refine/all.realigned.bam "
+  echo "Usage: $0 PATH/project-id  SAMPLE-ID  RUN-ID1 RUN-ID2 ... RUN-IDN"
+  echo "qsub -o log.sample-id.o -e log.sample-id.e mergeBAM.sh  /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120129_WENDY_WENDY_24_HUMAN_EXOME_60X_PE_HISEQ/ CDH632 120418_SN650_0270_AD0JGRACXX 120316_SN650_0258_AC0EAMACXX "
   exit
 fi
 
-dirname=`echo $outfile | sed 's/.bam//'`
-if [[ ! -e $dirname ]]; then mkdir $dirname; fi
-cd $dirname
+cd $proj
 
-nofiles=$#
-infiles=$@
-if [ -e temp.header ]; then rm temp.header ; fi
-if [ -e rg.header ]; then rm rg.header ; fi
+#Sanity Check
+flag=0
+for arun in $runs
+do
+	if [[ ! -e "$arun/mapping/$sample.bam_refine/all.realigned.bam" ]]
+	then
+		echo "ERROR: $arun/mapping/$sample.bam_refine/all.realigned.bam does not exist ";
+		flag=1
+	fi
+done
+if [[ $flag == 1 ]]
+then
+	echo "ABORT: Some input file doesn't exist"
+	exit
+fi
+
+#Create working directory
+
+dirname="combined"
+for arun in $runs
+do
+	x=`echo $arun | cut -f1 -d"_" `
+	dirname=$dirname"_$x"
+done
+echo "working dir = $dirname "
+
+if [ ! -e $dirname ]; then mkdir $dirname; fi
+cd $dirname
+if [ ! -e mapping ]; then mkdir mapping; fi
+if [ ! -e logs ]; then mkdir logs;  fi
+if [ ! -e global_setting.sh ]
+then
+	for arun in $runs
+	do
+		cat $proj/$arun/global_setting* >> global_setting.sh
+	done
+fi
+
+setting="$proj/$dirname/global_setting.sh"
+outfile="$proj/$dirname/mapping/$sample.bam"
+
+sampledirname=`echo $outfile | sed 's/.bam//'`
 
 count=0
-# infiles_final=""
-for i in $infiles 
+suff=".bam_refine/all.realigned.bam"
+infiles=""
+for arun in $runs 
 do
   count=`expr $count + 1`
-  idir=`dirname $i `
   if [[ $count == 1 ]];then
-      $SAMTOOLS view -H  $i > temp.header
-	grep "@HD" temp.header > final.header
-        grep "@SQ" temp.header >> final.header
-	grep "@RG" temp.header  > rg.header
+      $SAMTOOLS view -H $proj/$arun/mapping/$sample$suff  > $sample.temp.header
+	grep "@HD" $sample.temp.header > $sample.final.header
+        grep "@SQ" $sample.temp.header >> $sample.final.header
+	grep "@RG" $sample.temp.header  > $sample.rg.header
   else
-  	$SAMTOOLS view -H  $i |grep "@RG"  >> rg.header
+  	$SAMTOOLS view -H $proj/$arun/mapping/$sample$suff |grep "@RG"  >> $sample.rg.header
   fi
-#  mv $i $idir"/"$count".bam"
-#  infiles_final="$infiles_final $idir/$count.bam"
+  infiles=$infiles" $proj/$arun/mapping/$sample$suff "
 done
-	cat rg.header >>final.header
-	grep "@PG" temp.header >> final.header
-rm temp.header rg.header
 
-$SAMTOOLS merge -f -h final.header $outfile $infiles
- echo "Merge Complete"
+echo "infiles = $infiles"
+echo "settings = $setting "
+
+cat $sample.rg.header >>$sample.final.header
+grep "@PG" $sample.temp.header >> $sample.final.header
+rm $sample.temp.header $sample.rg.header
+
+
+$SAMTOOLS merge -f -h $sample.final.header $outfile $infiles
+echo "Merge Complete"
 $SAMTOOLS sort $outfile $outfile.sorted 
 mv $outfile.sorted.bam $outfile
 echo "Sort Complete"
 $SAMTOOLS index $outfile
 echo "Index Complete"
-
+ 
 
     OUTDIRNAME=$outfile"_refine"
 
@@ -66,11 +115,8 @@ echo "Index Complete"
     if [ -e $status ] ; then
         rm -f $status
     fi
-glodir=`dirname $OUTDIR`        
-glodir1=`dirname $glodir`
-echo $OUTDIR
-echo $setting
-echo $outfile
+echo "Out directory = $OUTDIR "
+echo "Output file = $outfile "
     touch $status
     mkdir -p $OUTDIR/logs/
     qmem=5 # default
@@ -84,11 +130,10 @@ echo $outfile
           qtime=30
       fi
 
-      g=`basename $outfile | sed 's/\//_/g'`
-if [[ $AUTO == "" ]];then
-              cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=${qtime}:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $outfile -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
+	if [[ $AUTO == "" ]];then
+              cmd="qsub -N realign.$i.$sample -l mem=${qmem}G,time=${qtime}:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $outfile -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
         else
-              cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=${qtime}:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
+              cmd="qsub -N realign.$i.$sample -l mem=${qmem}G,time=${qtime}:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm -A AUTO"
         fi
       echo $cmd
       $cmd
