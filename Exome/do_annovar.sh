@@ -36,5 +36,7 @@ rm $1.annovar*log
 
 perl ${UTILS}/convert_vcf_exomeannotation-all-samples.pl $1
 perl ${UTILS}/merge_sift_pp2.pl $1.xls $1.sift $1.pp2 > $1.sift_pp2
-paste $1.xls <(cut -f3,4 $1.sift_pp2 ) > $1.withScores.xls
+cut -f3,4 $1.sift_pp2 > $1.onlyscores
+paste $1.xls $1.onlyscores > $1.withScores.xls
+rm $1.onlyscores
 
