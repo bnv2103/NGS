@@ -138,6 +138,7 @@ else
   echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o $temp/annotation.o -e $temp/annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist -A AUTO " >> $out
 fi
 
-  qsub -pe smp $nt -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out 
+echo " qsub -pe smp $nt -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out "
+qsub -pe smp $nt -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out 
   # echo $qmem
 done
