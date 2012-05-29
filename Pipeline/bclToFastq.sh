@@ -178,11 +178,11 @@ if [[ -s $sampleSheet ]]; then
     $cmd
 
 echo "" > Reads.summary
-for sm in `ls $demultiplexout"\*summary*" `; do
+for sm in `ls $demultiplexout"/*summary*" `; do
 	head -2 $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> Reads.summary
 done
 echo "" > Reads_n.summary
-for sm in `ls $demultiplexout"_n\*summary*" `; do
+for sm in `ls $demultiplexout"_n/*summary*" `; do
 	head -2 $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> Reads_n.summary
 done
 
