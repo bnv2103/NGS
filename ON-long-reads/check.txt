@@ -1,0 +1,6 @@
+Simulate using simulate_reads.c/sh
+Align read using bwa/samtools/long_read_map.sh to give bam file
+Create small bam file manually
+Modify bam file for snps
+Create vcf using snp_calling.sh
+Run HMM
