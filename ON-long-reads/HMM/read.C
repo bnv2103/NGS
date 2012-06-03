@@ -11,6 +11,7 @@ using namespace std;
 
 #include "read.h"
 
+//REVISIT: Modify sizes proportional to number of reads
 READ::READ(void)
 {
 	snp_count = -1;
@@ -35,8 +36,8 @@ READ::READ(long st, int len)
 	start = st;
 	length = len;
 	snp_count = -1;
-	snps = new SNP*[500];
-	alleles = new char[500];
+	snps = new SNP*[1000];
+	alleles = new char[1000];
 }
 
 void READ::addsnp(SNP *snp, char allele)
@@ -48,6 +49,11 @@ void READ::addsnp(SNP *snp, char allele)
 long READ::GetPos(void)
 {
 	return start;
+}
+
+int READ::GetLen(void)
+{
+	return length;
 }
 
 SNP* READ::GetSnp(int pos)

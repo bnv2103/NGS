@@ -25,11 +25,6 @@ SNP::SNP(long snp_pos, char snp_ref, char snp_alt, int type, READ *read, vector<
 	gl[1] = pow(10, -(atof(gl3[1].c_str()))/10);
 	gl[2] = pow(10, -(atof(gl3[2].c_str()))/10);
 	known = known_par;
-
-	double glsum = 0.0;
-	glsum += gl[0];
-	glsum += gl[1];
-	glsum += gl[2];
 }
 
 long SNP::GetPos()

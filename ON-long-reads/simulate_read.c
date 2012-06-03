@@ -8,7 +8,7 @@
 #include<string.h>
 
 
-int reads_hap[34] = {1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1};
+int reads_hap[250] = {1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1};
 
 struct snp_struct {
 	int position;
@@ -56,6 +56,7 @@ int main(int argc, char **argv)
 		reads[c] = NULL;
 	}
 #endif
+	//REVISIT: Phased snps needed here
 	//const char *snp_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/phased_indi_snps.txt";
 	const char *ref_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/bcm_hg18_chr21.fasta";
 	const char *file_base = "simulated_reads";
@@ -268,7 +269,12 @@ int main(int argc, char **argv)
 		del_errorsi = sum/(CLT*10);
 		snp_errorsi = ssum/(CLT*10);
 		int j, k = 0;
+
+#ifdef DEBUG
 printf("%d\t%d\n",startsi,lensi);
+#endif
+
+/* REVISIT: This piece deletes any common snps as well. Skipping for prototype.
 		for(j=0;j<lensi;j++) {
 			int ct = 0, common_snp = 0;
 			for(ct=0;ct<=ctr;ct++) {
@@ -305,6 +311,55 @@ printf("inserting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k,j
 printf("replacing %c with %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),readsi[k-1],i,k,j+1,startsi+j+1);
 			} else {
 printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k+1,j+1,startsi+j+1);
+			}
+		}
+*/
+
+
+// REVISIT: This piece does not delete common snps. Using for prototype only
+		for(j=0;j<lensi;j++) {
+			int ct = 0, common_snp = 0;
+			for(ct=0;ct<=ctr;ct++) {
+				common_snp = 0;
+				if(snps[ct].position==startsi+j+1) {
+					if(reads_hap[i]==snps[ct].hap) {
+						readsi[k] = snps[ct].alt;
+						common_snp = 1;
+						k++;
+#ifdef DEBUG
+printf("Replacing common snp %c/%c with %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),snps[ct].ref,snps[ct].alt,i,k+1,j+1,startsi+j+1);
+#endif
+						break;
+					}
+				}
+			}
+			if(common_snp==1) continue;
+
+			double check = (100*(double)rand())/RAND_MAX;
+			if(check > del_errorsi) {
+				readsi[k] = *(ref_s+startsi+j);
+#ifdef DEBUG
+printf("inserting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k,j+1,startsi+j+1);
+#endif
+				k++;
+			} else if(check <= snp_errorsi) {
+				if(*(ref_s+startsi+j) == 'A'||*(ref_s+startsi+j) == 'a') {
+					readsi[k] = A[(int)((long int)3*rand()/RAND_MAX)];
+				} else if(*(ref_s+startsi+j) == 'T'||*(ref_s+startsi+j) == 't') {
+					readsi[k] = T[(int)((long int)3*rand()/RAND_MAX)];
+				} else if(*(ref_s+startsi+j) == 'C'||*(ref_s+startsi+j) == 'c') {
+					readsi[k] = C[(int)((long int)3*rand()/RAND_MAX)];
+				} else if(*(ref_s+startsi+j) == 'G'||*(ref_s+startsi+j) == 'g') {
+					readsi[k] = G[(int)((long int)3*rand()/RAND_MAX)];
+				} else { readsi[k] = *(ref_s+startsi+j); }
+				k++;
+#ifdef DEBUG
+printf("replacing %c with %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),readsi[k-1],i,k,j+1,startsi+j+1);
+#endif
+			} else {
+#ifdef DEBUG
+printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k+1,j+1,startsi+j+1);
+#endif
 			}
 		}
 		readsi[k] = '\0';

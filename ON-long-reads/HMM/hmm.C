@@ -60,7 +60,7 @@ using namespace std;
 
 //===============================================================================
 
-#define DEBUG
+//#define DEBUG
 
 //===============================================================================
 
@@ -224,7 +224,6 @@ double CHMM::Viterbi(CObs **obs, long T, int *q)
 }
 
 //===============================================================================
-
 double CHMM::ViterbiLog(CObs **obs, long T, int *q)
 // returns sequence q of most probable states
 // and probability of seeing that sequence
@@ -243,6 +242,7 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q)
 	double **logBiOt;
 	int zeroProbCount;
 
+/*
 	delta = SetVector(mN);
 	prevDelta = SetVector(mN);
 	psi = SetIntMatrix(T, mN);
@@ -294,8 +294,8 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q)
 				}
 			}
 
-			SNP *reads_snp_list[250];
-			int *index = new int[500];
+		SNP **reads_snp_list = new SNP*[250];
+		int *index = new int[500];
 			common_snp_count = 0;
 			int hap = (logBiOt[j][t-1] > logBiOt[(j%mN)+1][t-1]) ? 1 : 2; // 1 -> H1==H2, 2 -> H1!=H2
 
@@ -314,27 +314,6 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q)
                 		}
                 		logBiOt[j][t] *= logVal;
 			}
-/*
-			logBiOt[j][t] = 0.0;
-			for(int count=0; count<common_snp_count; count++) {
-				double g_h = 0.0, c_g = 0.0, c_h = 0.0;
-				for(int type=0; type<3; type++) {
-					g_h += compute_g_h(reads_snp_list, count, obs, t, index, hap, type+1);
-					c_g += compute_c_g(reads_snp_list, count, obs, t, index, hap, type+1);
-					c_h += g_h * c_g;
-				double emission = compute_emission(reads_snp_list, count, obs, t, index, hap);
-				}
-				if(c_h <= 0.0) {
-					logVal = -1000.0;
-                    			zeroProbCount++;
-                		} else{
-                    			logVal = log(c_h);
-                		}
-                		logBiOt[j][t] += logVal;
-			}
-			 logBiOt[j][t] /= common_snp_count;
-			 logBiOt[j][t] *= compute_r_s(reads_snp_list, common_snp_count, obs, t, index, hap);
-*/
 
 			delta[j] = maxval + logBiOt[j][t]; 
 			psi[t][j] = argmaxval; // What's this for?
@@ -375,9 +354,9 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q)
 	delete [] logA;
 	delete [] logPi;
 #endif	
+*/
 	return logProb;
 }
-
 double CHMM::ViterbiLog(CObs **obs, long T, int *q, double *probarray)
 // returns sequence q of most probable states
 // and probability of seeing that sequence
@@ -423,7 +402,6 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q, double *probarray)
                     logBiOt[i][t] = log(1.0/mN);
                 }
             }
-probarray[t] = -10000;
  	}// for t
 
 // 1. Initialization
@@ -433,17 +411,16 @@ probarray[t] = -10000;
 	for (i = 1; i <= mN; i++){
 		prevDelta[i] = mPi->logAt(i) + logBiOt[i][1];
 		psi[1][i] = 0; // What's this for?
-		if(probarray[1] < logBiOt[i][1]) probarray[1] = logBiOt[i][1];
 		mA->InitViterbiDurations(i); // NO-OP
 	}
  
 // 2. Recursion
 	int nread = 2;
+		SNP **reads_snp_list = new SNP*[1000];
+		int *index = new int[2000];
 	for (t = 2; t <= T; t++) { // successive reads
 		zeroProbCount = 0;
 		int common_snp_count = 0;
-		SNP *reads_snp_list[250];
-		int *index = new int[500];
 
 		GetCommonSnpList(obs, reads_snp_list, &common_snp_count, index, t);
 
@@ -474,25 +451,41 @@ probarray[t] = -10000;
 
 			logBiOt[j][nread] = 0.0;
 			// REVISIT: Change this to find hap based on psi/q arrays?
-			int hap = prevDelta[j]>prevDelta[(j%mN)+1] ? 1 : 2;
-			int abs_hap = prevDelta[j] > prevDelta[(j%mN)+1] ? j : (j%mN)+1;
-if(j==9) cout << "Read " << t << " : " << abs_hap << " : " << -prevDelta[j] << " : " << -logBiOt[j][nread-1] << " : " << -prevDelta[j%mN+1] << " : " << -logBiOt[j%mN+1][nread-1] << " : " << endl;
+			int hap = prevDelta[j] > prevDelta[(j%mN)+1] ? 1 : (prevDelta[j] < prevDelta[(j%mN)+1] ? 2 : j) ;
+			int abs_hap = prevDelta[j] >= prevDelta[(j%mN)+1] ? j : (j%mN)+1;
+#ifdef DEBUG
+			READ pd = ((CFlexibleObs<READ>*)(obs[t-1]))->Get(1);
+			READ nd = ((CFlexibleObs<READ>*)(obs[t]))->Get(1);
+			int rd_start = pd.GetPos() < nd.GetPos() ? nd.GetPos() : pd.GetPos();
+			int rd_end = pd.GetPos()+pd.GetLen() > nd.GetPos()+nd.GetLen() ? nd.GetPos()+nd.GetLen()-1 : pd.GetPos()+pd.GetLen()-1;
+			cout << "Read " << t-1 << " and " << t << ", Hap " << hap << ", Abs Hap = " << abs_hap << ", " << rd_start << ", " << rd_end << endl;
+#endif
 			for(int count=0; count<common_snp_count; count++) {
+#ifdef DEBUG
+				if(reads_snp_list[count]->GetKnown()) {
+					SNP *sp = reads_snp_list[count];
+					cout << sp->GetKnown() << " " << sp->GetPos() << " " << sp->GetRef() << " " << sp->GetAlt() << "\t" << pd.GetAllele(index[2*count]) << " " << nd.GetAllele(index[2*count+1]);
+				}
+#endif
 				double emission = compute_new_emission(reads_snp_list, count, obs, t, index, hap);
-//cout << reads_snp_list[count]->GetKnown() << " : " << reads_snp_list[count]->GetPos() << " : " << emission << endl;
 				if(emission <= 0.0) {
 					logVal = -100.0;
                     			zeroProbCount++;
                 		} else{
                     			logVal = log(emission);
                 		}
+#ifdef DEBUG
+cout << "\t" << emission << "\t" << logVal << endl;
+#endif
                 		logBiOt[j][nread] += logVal;
 			}
 			// logBiOt[j][nread] now contains the mN different emissions to be added to maxval to determine the max state at this stage
+#ifdef DEBUG
+cout << "Total emission = " << logBiOt[j][nread] << endl << endl;
+#endif
 
 			delta[j] = maxval + logBiOt[j][nread]; 
 			psi[nread][j] = argmaxval; // What's this for?
-			if(probarray[nread] < logBiOt[j][nread]) probarray[nread] = logBiOt[j][nread];
 			mA->UpdateViterbiDurations(argmaxval, j);// ***dfd 4-16-99
 		}
 		// By now all v(l)(i+1)s are computed from which the max has to be found
@@ -540,7 +533,7 @@ if(j==9) cout << "Read " << t << " : " << abs_hap << " : " << -prevDelta[j] << "
 	return logProb;
 }
 
-void CHMM::GetCommonSnpList(CObs**obs, SNP** reads_snp_list, int *common_snp_count, int *index, int t)
+void CHMM::GetCommonSnpList(CObs**obs, SNP**reads_snp_list, int *common_snp_count, int *index, int t)
 {
 	READ prev_read = ((CFlexibleObs<READ>*)(obs[t-1]))->Get(1);
 	int prev_read_snp_count = prev_read.GetSnpCount();
@@ -554,7 +547,6 @@ void CHMM::GetCommonSnpList(CObs**obs, SNP** reads_snp_list, int *common_snp_cou
 		SNP* snp1 = prev_snp_list[it1];
 		SNP* snp2 = curr_snp_list[it2];
 
-///*
 		if(snp1->GetPos() == snp2->GetPos()) {
 			reads_snp_list[*common_snp_count] = snp1;
 			index[2*(*common_snp_count)] = it1;
@@ -562,13 +554,9 @@ void CHMM::GetCommonSnpList(CObs**obs, SNP** reads_snp_list, int *common_snp_cou
 			(*common_snp_count)++;it1++;it2++;
 		} else if(snp1->GetPos() < snp2->GetPos()) {
 			it1++;
-//cout << prev_read.GetPos() << ", " << curr_read.GetPos() << endl;
-//cout << "It1++:" << snp1->GetPos() << ", " << snp2->GetPos() << endl;
 		} else if(snp1->GetPos() > snp2->GetPos()) {
 			it2++;
-//cout << "It2++" << endl;
 		}
-//*/
 	}
 
 }
@@ -582,7 +570,6 @@ double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, i
 	double known_snp_rate = 0.1;
 	double novel_snp_rate = 0.001;
 	double gen_prior[3];
-	double gen_priorn[3];
 	double snp_rate = novel_snp_rate;
 	double gen_lik[3] = {0.9, 0.01, 0.09};
 	double obs_lik[3] = {0.0, 0.0, 1.0};
@@ -592,136 +579,97 @@ double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, i
 	char ref = reads_snp_list[count]->GetRef();
 	char all1 = ((CFlexibleObs<READ>*)(obs[t-1]))->Get(1).GetAllele(index[2*count]);
 	char all2 = ((CFlexibleObs<READ>*)(obs[t]))->Get(1).GetAllele(index[(2*count)+1]);
-	int obt = (ref==all1&&ref==all2) ? 1 : (ref!=all1&&ref!=all2) ? 3 : 2; // ref,ref -> 1, ref,nref -> 2, nref,nref -> 3
-
+//BUG: Account for errors here in obs
+	int obt = (ref==all1) ? ((ref==all2) ? 1 : 2) : ((ref==all2) ? 3 : 4);
 	if(reads_snp_list[count]->GetKnown())
 		snp_rate = known_snp_rate;
 	gen_prior[0] = 1 - snp_rate - snp_rate*snp_rate;
 	gen_prior[1] = snp_rate;
 	gen_prior[2] = snp_rate*snp_rate;
-	gen_priorn[0] = 1;
-	gen_priorn[1] = 1;
-	gen_priorn[2] = 1;
+	double good = (1-err_rate)*(1-err_rate);
+	double bad = (1-err_rate)*err_rate;
+	double ugly = err_rate*err_rate;
 
 	for(int j=0; j<3; j++) {
 		lik += (reads_snp_list[count]->GetGenLik())[j] * gen_prior[j];
-//cout << reads_snp_list[count]->GetPos() << " : " << (reads_snp_list[count]->GetGenLik())[j] << endl;
 	}
 
-//cout << reads_snp_list[count]->GetKnown() << " : " << reads_snp_list[count]->GetPos();
 	for(int i=0; i<3; i++) {
 		gen_lik[i] = ((reads_snp_list[count]->GetGenLik())[i] * gen_prior[i])/lik;
-//cout << " :\t" << gen_lik[i];
 
 		switch(i) {
-		case 0:
+		case 0: // genotype = A/A
 			if(obt==1&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = good;
 			else if(obt==1&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = good;
 			else if(obt==2&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = bad;
 			else if(obt==2&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = bad;
 			else if(obt==3&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = bad;
 			else if(obt==3&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = bad;
+			else if(obt==4&&hap==1)
+				obs_lik[i] = ugly;
+			else if(obt==4&&hap==2)
+				obs_lik[i] = ugly;
 			else
 				cout << "Invalid observation and/or haplotype " << obt << ", " << hap << endl;
+//obs_lik[i] = 0;
 		break;
-		case 1:
+		case 1: // genotype = A/B
+// #define DIVIDE
 			if(obt==1&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = good + ugly;
 			else if(obt==1&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = 2*bad;
 			else if(obt==2&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = 2*bad;
 			else if(obt==2&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = ugly + good;
 			else if(obt==3&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = 2*bad;
 			else if(obt==3&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = good + ugly;
+			else if(obt==4&&hap==1)
+				obs_lik[i] = ugly + good;
+			else if(obt==4&&hap==2)
+				obs_lik[i] = 2*bad;
 			else
 				cout << "Invalid observation and/or haplotype " << obt << ", " << hap << endl;
+#ifdef DIVIDE
+			obs_lik[i] /= 2;
+#endif
 		break;
-		case 2:
+		case 2: // genotype = B/B
 			if(obt==1&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = ugly;
 			else if(obt==1&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = ugly;
 			else if(obt==2&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = bad;
 			else if(obt==2&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = bad;
 			else if(obt==3&&hap==1)
-				obs_lik[i]=
+				obs_lik[i] = bad;
 			else if(obt==3&&hap==2)
-				obs_lik[i]=
+				obs_lik[i] = bad;
+			else if(obt==4&&hap==1)
+				obs_lik[i] = good;
+			else if(obt==4&&hap==2)
+				obs_lik[i] = good;
 			else
 				cout << "Invalid observation and/or haplotype " << obt << ", " << hap << endl;
 		break;
 		}
-
-		//prob += gen_lik[i] * obs_lik[i];
-		prob += gen_lik[i] * obs_lik[i] * gen_priorn[i];
+#ifdef DEBUG
+cout << "\t" << gen_lik[i] << " " << obs_lik[i] << " " << gen_lik[i] * obs_lik[i];
+#endif
+		prob += gen_lik[i] * obs_lik[i];
 	}
-//cout << endl;
-//cout << reads_snp_list[count]->GetKnown() << " : " << reads_snp_list[count]->GetPos() << " : " << all1 << " : " << all2 << " : " << prob << endl;
 	return prob;
-/*
-		switch(i) {
-			case 0:
-		if(obt==1&&hap==1)
-			obs_lik[i]=(1-err_rate)*(1-err_rate);
-		else if(obt==1&&hap==2)
-			obs_lik[i]=0;
-		else if(obt==2&&hap==1)
-			obs_lik[i]=err_rate*(1-err_rate);
-		else if(obt==2&&hap==2)
-			obs_lik[i]=0;
-		else if(obt==3&&hap==1)
-			obs_lik[i]=err_rate*err_rate;
-		else if(obt==3&&hap==2)
-			obs_lik[i]=0;
-		else
-			cout << "Invalid observation and/or haplotype " << obt << ", " << hap << endl;
-		break;
-			case 1:
-		if(obt==1&&hap==1)
-			obs_lik[i]=(1-err_rate)*(1-err_rate); //CONFIRM!!
-		else if(obt==1&&hap==2)
-			obs_lik[i]=err_rate*(1-err_rate);
-		else if(obt==2&&hap==1)
-			obs_lik[i]=(1-err_rate)*(1-err_rate); // CONFIRM!! 0/e*e ?
-		else if(obt==2&&hap==2)
-			obs_lik[i]=(1-err_rate)*(1-err_rate);
-		else if(obt==3&&hap==1)
-			obs_lik[i]=err_rate*err_rate; //CONFIRM!!
-		else if(obt==3&&hap==2)
-			obs_lik[i]=err_rate*(1-err_rate);
-		else
-			cout << "Invalid observation and/or haplotype " << obt << ", " << hap << endl;
-		break;
-			case 2:
-		if(obt==1&&hap==1)
-			obs_lik[i]=(1-err_rate)*(1-err_rate); //CONFIRM!!
-		else if(obt==1&&hap==2)
-			obs_lik[i]=err_rate*(1-err_rate);
-		else if(obt==2&&hap==1)
-			obs_lik[i]=err_rate*(1-err_rate);
-		else if(obt==2&&hap==2)
-			obs_lik[i]=0;
-		else if(obt==3&&hap==1)
-			obs_lik[i]=(1-err_rate)*(1-err_rate);
-		else if(obt==3&&hap==2)
-			obs_lik[i]=err_rate*(1-err_rate);
-		else
-			cout << "Invalid observation and/or haplotype " << obt << ", " << hap << endl;
-		break;
-		}
-*/
 }
 
 double CHMM::BaumWelchCore(CObs **obs, long T, double *gamma, double **xi,
@@ -1202,7 +1150,6 @@ double CHMM::FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile, vector<READ*
 
 
   nbSequences = obsSeq->mNbSequences;
- // outFile << "nbSequences= " << nbSequences << endl;
 
   for(i=1;i<=nbSequences;i++){ // Loop over observation files:
     T = obsSeq->mNbObs[i];
@@ -1213,29 +1160,20 @@ double CHMM::FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile, vector<READ*
     logProb = ViterbiLog(obsSeq->mObs[i], T, q, prob);
     sumProb += logProb;
 
-    //outFile << -logProb/T << endl;
     cout << -logProb/T << endl;
     int j;
     for(j=1;j<=T;j++) {
-	//cout << q[j] << endl;
-	outFile << q[j] << ":" << prob[j] << ": ";
+	//outFile << q[j] << ":" << prob[j] << ": ";
+	outFile << q[j] << endl;
 	int k_max = ((*reads_list)[j-1])->GetSnpCount();
-	for(int k=1;k<=k_max;k++)
-		 outFile << " (" << (*reads_list)[j-1]->GetSnp(k-1)->GetPos() << ", " << (*reads_list)[j-1]->GetAllele(k-1) << ")";
-		 //outFile << "(" << (*reads_list)[j-1]->GetSnp(k-1)->GetRef() << "," << (*reads_list)[j-1]->GetSnp(k-1)->GetAlt() << ")" << (*reads_list)[j-1]->GetAllele(k-1) << " ";
-	outFile << endl;
     }
     delete [] q;
   }
 
- // outFile << endl << "-Log Prob of all " << nbSequences << " sequences: "<< -sumProb << endl;
- // outFile << "Nb of steps: " << stepCount << endl;
   cout << "-Log Prob of all " << nbSequences << " sequences: "<< -sumProb << endl;
   cout << "Nb of steps: " << stepCount << endl;
 
   distance = - sumProb/ stepCount; // average distance per step
-//  outFile << "Average Viterbi distance: " << distance << endl;
-//  cout << "Average Viterbi distance: " << distance << endl;
   
 #if 0
   double averageProb = exp(-distance);

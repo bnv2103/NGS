@@ -14,6 +14,7 @@ public:
 
   void addsnp(SNP *snp, char allele);
   long GetPos(void);
+  int GetLen(void);
   SNP *GetSnp(int pos);
   char GetAllele(int pos);
   int GetSnpCount(void);

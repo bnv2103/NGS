@@ -74,7 +74,8 @@ public:
 	double binomial(int r, int n, double p);
 	unsigned long long com (int n, int m);
 	double compute_new_emission(int obs, int type, int hap);
-	double compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, int t, int *index, int hap);
+//	double compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, int t, int *index, int hap);
+	double compute_new_emission(SNP**reads_snp_list, int count, CObs **obs, int t, int *index, int hap);
 
 protected:
         int mN;// nb of states

@@ -51,7 +51,30 @@ vector<string> split(const string &s, char delim) {
 	return split(s, delim, elems);
 }
 
-char seq_type(const char* seq, int *slen)
+int rev_s_len(const char *seq)
+{
+	int i = strlen(seq)-1;
+	int len = 0;
+	int j = 1;
+
+	if(seq[i] != 'S')
+		return 0;
+	else {
+		i--;
+		while(seq[i]>='0'&&seq[i]<='9') {
+			len = 10*j*(seq[i]-'0') + len;
+			i--;
+			j *= 10;
+		}
+		if(len==0) {
+			cout << "Invalid CIGAR. Ends with " << seq[strlen(seq)-1] << endl;
+			exit(1);
+		}
+		return len/10;
+	}
+}
+
+int s_len(const char* seq)
 {
 	int i = 0;
 	int len = 0;
@@ -61,11 +84,58 @@ char seq_type(const char* seq, int *slen)
 		i++;
 	}
 	if(len==0) {
-		cout << "Invalid cigar. Beginning with " << seq[0];
+		cout << "Invalid cigar. Beginning with " << seq[0] << endl;
 		exit(1);
 	}
-	*slen = len;
-	return seq[i];
+	if(seq[i]=='S')
+		return len;
+	else
+		return 0;
+}
+
+int get_deletion_count(string cigar, int limit)
+{
+	char *c_cigar = new char[cigar.length()+1];
+	c_cigar = (char*)cigar.c_str();
+	c_cigar[cigar.length()] = '\0';
+	int it = 0;
+	int len = 0;
+	int dlen = 0;
+	int mlen = 0;
+	int ilen = 0;
+	int slen;
+
+	if(limit==-1) limit = 10000;
+	while(it<strlen(c_cigar)) {
+		if(c_cigar[it]>='0'&&c_cigar[it]<='9') {
+			len = len*10 + c_cigar[it] - '0';
+		} else if(c_cigar[it]=='S') {
+			slen += len;
+			len = 0;
+		} else if (c_cigar[it]=='M') {
+			mlen += len;
+			len = 0;
+			if(mlen+dlen>=limit) {
+/*
+ * REVISIT: For future implementation, we need to account for deleted snps themselves
+	if(mlen+dlen==limit) {
+		cout << "Mlen = limit" << endl;
+	}
+*/
+				break;
+			}
+		} else if(c_cigar[it]=='D') {
+			dlen += len;
+			len = 0;
+		} else if(c_cigar[it]=='I') {
+			ilen += len;
+			len = 0;
+		} else {
+			cout << "Invalid character in cigar string " << c_cigar[it] << endl;
+		}
+		it++;
+	}
+	return dlen - ilen;
 }
 
 void read_known_snp_file(const char *file)
@@ -113,7 +183,7 @@ void read_snp_file(const char *snpfile)
 		}
 	}
 	fclose(snp_file);
-cout << "SNP MAP size = " << snp_map.size() << endl;
+	cout << "SNP MAP size = " << snp_map.size() << endl;
 }
 
 void read_sam_files(char *fq_files)
@@ -134,15 +204,20 @@ void read_sam_files(char *fq_files)
 		char start = str[0];
 
 		if(start != '@') { // for each new read in the file
-			int slen;
 			line = str;
 			vector<string> read_line = split(line, '\t');
 			long start = atol(read_line[3].c_str());
-			if(seq_type(read_line[5].c_str(),&slen)=='S') {
-				start -= slen;
-			}
-			int length = (int)(read_line[9].length());
-			int nsnps = 0;
+#ifdef DEBUG
+cout << start << endl;
+#endif
+			int slen = s_len(read_line[5].c_str());
+			int rev_slen = rev_s_len(read_line[5].c_str());
+			string cigar = read_line[5];
+			int Ndels = get_deletion_count(cigar,-1);
+			int length = (int)(read_line[9].length()) - slen - rev_slen + Ndels;
+#ifdef DEBUG
+cout << slen << "\t" << rev_slen << "\t" << Ndels << "\t" << length << endl;
+#endif
 			READ *read = new READ(start,length); // create new read object
 
 			map<long,string>::iterator low = snp_map.lower_bound(start);
@@ -154,13 +229,17 @@ void read_sam_files(char *fq_files)
 					bool known = false;
 					char snp_ref = snp_it1->second.c_str()[0];
 					char alt_ref = snp_it1->second.c_str()[1];
-					char allele = read_line[9][snp_it1->first-start];
+					int ndels = get_deletion_count(cigar,snp_it1->first-start);
+					char allele = read_line[9][snp_it1->first-start + slen - ndels];
 					for(vector<string>::iterator known_snpit = known_snps.begin(); known_snpit != known_snps.end(); known_snpit++) {
 						if(atol((*known_snpit).c_str())>snp_it1->first) {
 							break;
 						}
 						if(atol((*known_snpit).c_str())==snp_it1->first) {
 							known = true;
+#ifdef DEBUG
+cout << ndels << "\t" << snp_it1->first << "\t" << allele << endl;
+#endif
 							break;
 						}
 					}
@@ -264,8 +343,9 @@ int main(int argc, char **argv)
 {
 	int i;
 	const char *ext = ".sam";
-	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/simulated_reads_4.vcf";
-	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/test_4";
+	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/test_6.vcf";
+	//const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/simulated_reads_6.sorted";
+	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/test_6";
 	const char *knownsnpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21_short.txt";
 
 	char file_name[100];
