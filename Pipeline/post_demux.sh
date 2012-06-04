@@ -120,7 +120,7 @@ echo "$lane $sampleid $barcode $projectid"
 		        elif [[ $capture =~ "44mb" ]]; then
 		                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V2_with_annotation.hg19.bed.mod"" >> $DIR/$APP/$projectid/$runid/global_setting.sh
                         elif [[ $capture =~ "51mb" ]]; then
-                                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V4_hg19.bed"" >> $DIR/$APP/$projectid/$runid/global_setting.sh
+                                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V4_hg19.bed.sorted.bed"" >> $DIR/$APP/$projectid/$runid/global_setting.sh
 		        fi
 		fi
 		#Call Mapping
