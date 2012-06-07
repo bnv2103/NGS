@@ -49,8 +49,8 @@ echo -e "do tophat: \n $cmd"
 $cmd
 
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSpikeInInfo.rb $outdir "spikeInfo.csv"
-# for f in *cufflinks; do ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $f "summary.csv"; done
-# ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $outdir "summary.csv"
+
+
 
 
 

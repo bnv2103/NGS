@@ -28,10 +28,10 @@ def main
     isoforms = "#{dir}/accepted_hits.bam_cufflinks_ref/genes.fpkm_tracking"
   end
 
-  # mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
-  # if mappedline =~ /^(\d+)\s+/
-  #   mapped = $1
-  # end
+   mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
+   if mappedline =~ /^(\d+)\s+/
+     mapped = $1
+   end
 
   # get number of unique reads
   uqMapped = 0

@@ -20,7 +20,24 @@ Three types of files are included for each group of data:
 3. sampleName_isoforms.csv and sampleName_genes.csv 
    - General abundance information of isoforms and genes: gene name, gene id, gene length, FPKM.
  	
-4. sampleName_var 
+4. Differentially expressed gene analysis (optional)
+   The following columns are included:
+      test_id
+      gene_id
+      locus
+      sample1
+      sample2
+      status
+      value_1: FPKM for sample1
+      value_2: FPKM for sample2
+      log2.fold: log ratio of fold changes
+      test_stat: statistical test score
+      p-value
+      q_value: adjusted p-value
+      significant: identified significant genes
+      Notes: genes have low expressed value (FPKM < 1)
+
+5. sampleName_var (optional) 
    variant calling analysis result
    QUAL: Quality score
    DP: Raw Read Depth

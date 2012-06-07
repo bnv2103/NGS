@@ -12,10 +12,20 @@ fi
 
 if [[ $1 == "human" ]];
     then
-    genome="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/NCBI/build37.2/Sequence/BowtieIndex/genome.fa"
-    gft="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/NCBI/build37.2/Annotation/Genes/genes.gtf"
+    # genome="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/NCBI/build37.2/Sequence/BowtieIndex/genome.fa"
+    
+    genome="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/UCSC/hg19/Sequence/BowtieIndex/genome.fa"
+     # gft="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/NCBI/build37.2/Annotation/Genes/genes.gtf"
+    gtf="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
 fi
 
+if [[ $1 == "yeast" ]];
+    then
+    genome="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Saccharomyces_cerevisiae/Ensembl/EF3/Sequence/BowtieIndex/genome.fa"
+    gft="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Saccharomyces_cerevisiae/Ensembl/EF3/Annotation/Genes/genes.gtf"
 
+fi
 
+ 
 cuffmerge -g $gtf -s $genome -p 1 transcripts.txt
+# cuffmerge -p 1 transcripts.txt

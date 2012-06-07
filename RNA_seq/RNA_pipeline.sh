@@ -55,7 +55,7 @@ if [[ $f2 == "" ]]; then
     qsub -o logs/pipe.$f1_base.o -e logs/pipe.$f1_base.e -pe smp 4 -R y -l mem=2G,time=100:: -N do.$f1_base $script_SE  -i $f1 -s $setting_genome -n 4 -o "cufflinks/"$f1_base"_"$genome"_se_cufflinks"
 else
     ruby $RNABASE/printTitle_PE.rb "summary.csv"
-    qsub -o logs/pipe.$f1_base.o -e logs/pipe.$f1_base.e -pe smp 4 -R y -l mem=2G,time=100:: -N do.$f1_base $script_PE  -f $f1 -r $f2 -s $setting_genome -n 4 -o "cufflinks/"$f1_base"_"$genome"_pe_cufflinks"
+    qsub -o logs/pipe.$f1_base.o -e logs/pipe.$f1_base.e -pe smp 4 -R y -l mem=4G,time=100:: -N do.$f1_base $script_PE  -f $f1 -r $f2 -s $setting_genome -n 4 -o "cufflinks/"$f1_base"_"$genome"_pe_cufflinks"
 fi
 
 

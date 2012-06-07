@@ -56,6 +56,14 @@ fi
 
 
 ## do cufflinks
+cuffout=$bam"_cufflinks_ref"
+
+# cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF  $GENES $bam"
+cmd="cufflinks -o $cuffout --GTF $GENES $bam"
+echo -e "do cufflinks with ref genes: \n $cmd"
+$cmd
+
+## do cufflinks with guide
 cuffout=$bam"_cufflinks_ref-guide"
 
 cmd1="cufflinks -o $cuffout --GTF-guide  $GENES $bam"
@@ -63,13 +71,6 @@ cmd1="cufflinks -o $cuffout --GTF-guide  $GENES $bam"
 echo -e "do cufflinks without ref genes: \n $cmd1"
 $cmd1
 
-## do cufflinks with guide
-cuffout=$bam"_cufflinks_ref"
-
-cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF  $GENES $bam"
-
-echo -e "do cufflinks with ref genes: \n $cmd"
-$cmd
 
 # after run cufflink, statistics of number of reads and FPKM
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats_PE.rb $outdir "summary.csv"

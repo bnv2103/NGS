@@ -9,15 +9,17 @@ outdir=$2
 isoforms=$infile"/accepted_hits.bam_cufflinks_ref/isoforms.fpkm_tracking"
 genes=$infile"/accepted_hits.bam_cufflinks_ref/genes.fpkm_tracking"
 SNPs=$infile"/SNPs/var_summary.txt"
+VCFs=$infile"/SNPs/var_flt.vcf"
 
 infileB=` echo $infile | cut -f1 -d '.'`
 cp $isoforms $outdir"/"$infileB"_isoforms"
 cp $genes $outdir"/"$infileB"_genes"
 
-infileC=` echo $infile | cut -f6 -d '_'`
-cp $SNPs $outdir"/"$infileC"_var"
+# infileC=` echo $infile | cut -f6 -d '_'`
+# cp $SNPs $outdir"/"$infileC"_var"
+# cp $VCFs $outdir"/"$infileC".vcf"
 
-# echo $infileB
+
  
 
 

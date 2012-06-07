@@ -54,20 +54,22 @@ if [[ ! -s $bam ]]; then
     echo "tophat failed"
     exit 1
 fi
+samtools sort $bam $outdir"/accepted_hits.sorted"
+java -Xmx4g -jar /ifs/home/c2b2/ngs_lab/xs2182/picard-tools-1.60/MarkDuplicates.jar INPUT=$outdir"/accepted_hits.sorted.bam" OUTPUT=$outdir"/accepted_hits_DPfiltered.bam" REMOVE_DUPLICATES="true"
 
-
+bam1=$outdir"/accepted_hits_DPfiltered.bam"
 ## do cufflinks
 cuffout=$bam"_cufflinks_ref"
 cuffout2=$bam"_cufflinks_ref-guide"
 
-cmd="cufflinks -o $cuffout --GTF  $GENES $bam"
+cmd="cufflinks -o $cuffout --GTF  $GENES $bam1"
 # cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF  $GENES $bam"
 echo -e "do cufflinks with ref genes: \n $cmd"
 $cmd
 
 ## reference-guided assembly
 # cmd2="cufflinks -o $cuffout2 --compatible-hits-norm --GTF-guide  $GENES $bam"
-cmd2="cufflinks -o $cuffout2 --GTF-guide  $GENES $bam"
+cmd2="cufflinks -o $cuffout2 --GTF-guide  $GENES $bam1"
 echo -e "do cufflinks with ref genes -guide: \n $cmd2"
 $cmd2
 

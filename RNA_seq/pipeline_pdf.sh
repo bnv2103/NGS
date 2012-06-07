@@ -26,5 +26,5 @@ echo "printing pdf"
  rm *isoforms
 # rm *nonRef
 cp ../../summary.csv ./
-# cp ../summary.csv ./
+cp ../summary.csv ./
 cp $RNABASE/README* ./
