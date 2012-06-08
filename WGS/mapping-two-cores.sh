@@ -21,13 +21,13 @@ setting=""
 
 ### Note: bwa sample uses about 3.5G RAM
 
-USAGE="Usage: $0 -b old.bam  -s global_setting  [ -g maxgaps] [ -q qualtrim ] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
+USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
 
-
-while getopts b:g:q:d:n:t:s:z:f:m:o:c:h opt
+while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A:y: opt
   do      
   case "$opt" in
-      b) oldbam="$OPTARG";;
+      i) fastq1="$OPTARG";;
+      p) fastq2="$OPTARG";;
       m) sortmem="$OPTARG";;
       g) maxgaps="$OPTARG";;
       d) maxeditdist="$OPTARG";;
@@ -35,16 +35,18 @@ while getopts b:g:q:d:n:t:s:z:f:m:o:c:h opt
       n) sampleName="$OPTARG";;
       t) threads="$OPTARG";;
       z) readgroup="$OPTARG";;
+      y) ID="$OPTARG";;
       f) platform="$OPTARG";;
       o) output="$OPTARG";;
       c) chain="$OPTARG";;
       s) setting="$OPTARG";;
+      A) AUTO="$OPTARG";;
       h)    echo $USAGE
           exit 1;;
   esac
 done
 
-if [[ $oldbam == "" || $setting == "" ]]; then
+if [[ $fastq1 == "" || $setting == "" ]]; then
     echo $USAGE
     exit 1
 fi
@@ -54,32 +56,36 @@ date
 . $setting
 
 if [[ $readgroup == "" ]]; then
-    readgroup=`basename $oldbam | sed 's/.bam$//'  | sed s'/.txt$//'`
+    readgroup=`basename $fastq1 | sed 's/.fastq$//'  | sed 's/.txt$//'`
 fi
 
 if [[ $sampleName == "" ]]; then
     sampleName=$readgroup
 fi
 
+if [[ $ID == "" ]]; then
+    ID=$readgroup
+fi
+
 if [[ $output == "" ]]; then
-    output=$oldbam.sorted
+    output=$fastq1.sorted
 fi
 
 
 ## read group specification:
 ##          -r STR   read group header line such as `@RG\tID:foo\tSM:bar' [null]
-rgheader="@RG\tID:$readgroup\tSM:$sampleName\tLB:$readgroup\tPL:$platform"
+rgheader="@RG\tID:$ID\tSM:$sampleName\tLB:$readgroup\tPL:$platform"
 
 ######### align step
-cmd="$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  -b1 $oldbam > $fastq1.sai"
+cmd="$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
 echo $cmd
-$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  -b1 $oldbam > $oldbam.1.sai  &  ### run in background
+$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai  &  ### run in background
 
 
-
-cmd="$bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist -t  $threads  $REF  -b2 $oldbam > $fastq2.sai"
-echo $cmd
-$bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  -b2 $oldbam  > $oldbam.2.sai 
+if [[ ! $fastq2 == "" ]]; then  # paired-ends
+    cmd="$bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist -t  $threads  $REF  $fastq2 > $fastq2.sai"
+    echo $cmd
+    $bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  $fastq2 > $fastq2.sai 
 
 # view -bS -o #{output} -
 
@@ -91,13 +97,29 @@ $bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  -b2 $old
     date
     cmd="$bwa sampe -P -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp"
     echo $cmd
-    $bwa sampe -P -r $rgheader  $REF $oldbam.1.sai  $oldbam.2.sai $oldbam  $oldbam | $samtools view -bS -  > $output.bam.temp
+    $bwa sampe -P -r $rgheader  $REF $fastq1.sai $fastq2.sai $fastq1 $fastq2 | $samtools view -bS -  > $output.bam.temp
 
     date
     echo "bwa alignment complete. Sorting the bam file ..."
     $samtools sort $output.bam.temp  $output
-    rm -f $oldbam.*.sai $output.bam.temp
+    rm -f $fastq1.sai $fastq2.sai $output.bam.temp
    
+else  # single-end
+    
+    wait
+    
+    date
+    cmd="$bwa samse  -r $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp"
+    echo $cmd
+    $bwa samse  -r $rgheader $REF $fastq1.sai $fastq1 | $samtools view -bS - >  $output.bam.temp
+#    $samtools sort -m $sortmem  $output.bam.temp  $output
+    date
+    echo "bwa alignment complete. Sorting the bam file ..."
+    $samtools sort $output.bam.temp  $output
+   
+    rm -f $fastq1.sai $output.bam.temp
+fi
+
 # fix a bug in samtools sort / bwa
 ## $samtools view -H $output.bam | sed 's/SO\:unsorted/SO:coordinate/' > $output.bam.header
 
@@ -116,4 +138,17 @@ rm -f $output.bam.temp*
 $samtools index $output.bam
 
 date
+if [ -e $output.bam ] 
+then
+fqbase=`dirname $fastq1`
+fqbase1=`dirname $fqbase`
+
+zipcmd="qsub -o $fqbase1/zip.fq.o -e $fqbase1/zip.fq.e -l mem=1G,time=6:: $NGSSHELL/do_bzip2.sh  $fastq1  $fastq2 "
+$zipcmd
+echo $zipcmd
+echo "splitting bam by chr"
+sh /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/WGS/splitChr_bam.sh  $output.bam &> $output.splitChr.log
+fi
+exit 
+
 
