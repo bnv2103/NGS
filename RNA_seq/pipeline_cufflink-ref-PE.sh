@@ -42,7 +42,7 @@ rg=$g
 sampleName=$rg
 library=$rg
 
-cmd="tophat --phred64-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library --mate-inner-dist 200 $BOWTIEDB $fq1 $fq2"
+cmd="tophat --phred64-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library --mate-inner-dist 50 $BOWTIEDB $fq1 $fq2"
 
 echo -e "do tophat: \n $cmd"
 $cmd
