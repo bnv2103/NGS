@@ -388,7 +388,7 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q, double *probarray)
             for (i = 1; i <= mN; i++){ 
               bVal = mB->at(i, t); // obs[t] is an entire seq of snps in a read
                 if(bVal<=0.0){
-                    logVal = -100.0;
+                    logVal = -10.0;
                     zeroProbCount++;
                 }
                 else{
@@ -416,11 +416,12 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q, double *probarray)
  
 // 2. Recursion
 	int nread = 2;
-		SNP **reads_snp_list = new SNP*[1000];
-		int *index = new int[2000];
+	SNP **reads_snp_list = new SNP*[1000];
+	int *index = new int[2000];
 	for (t = 2; t <= T; t++) { // successive reads
 		zeroProbCount = 0;
 		int common_snp_count = 0;
+		double obslik[1000][2][3], genlik[1000][2][3];
 
 		GetCommonSnpList(obs, reads_snp_list, &common_snp_count, index, t);
 
@@ -453,21 +454,20 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q, double *probarray)
 			// REVISIT: Change this to find hap based on psi/q arrays?
 			int hap = prevDelta[j] > prevDelta[(j%mN)+1] ? 1 : (prevDelta[j] < prevDelta[(j%mN)+1] ? 2 : j) ;
 			int abs_hap = prevDelta[j] >= prevDelta[(j%mN)+1] ? j : (j%mN)+1;
-#ifdef DEBUG
+
 			READ pd = ((CFlexibleObs<READ>*)(obs[t-1]))->Get(1);
 			READ nd = ((CFlexibleObs<READ>*)(obs[t]))->Get(1);
 			int rd_start = pd.GetPos() < nd.GetPos() ? nd.GetPos() : pd.GetPos();
 			int rd_end = pd.GetPos()+pd.GetLen() > nd.GetPos()+nd.GetLen() ? nd.GetPos()+nd.GetLen()-1 : pd.GetPos()+pd.GetLen()-1;
+#ifdef DEBUG
 			cout << "Read " << t-1 << " and " << t << ", Hap " << hap << ", Abs Hap = " << abs_hap << ", " << rd_start << ", " << rd_end << endl;
 #endif
 			for(int count=0; count<common_snp_count; count++) {
+				SNP *sp = reads_snp_list[count];
 #ifdef DEBUG
-				if(reads_snp_list[count]->GetKnown()) {
-					SNP *sp = reads_snp_list[count];
-					cout << sp->GetKnown() << " " << sp->GetPos() << " " << sp->GetRef() << " " << sp->GetAlt() << "\t" << pd.GetAllele(index[2*count]) << " " << nd.GetAllele(index[2*count+1]);
-				}
+cout << sp->GetKnown() << " " << sp->GetPos() << " " << sp->GetRef() << " " << sp->GetAlt() << "\t" << pd.GetAllele(index[2*count]) << " " << nd.GetAllele(index[2*count+1]);
 #endif
-				double emission = compute_new_emission(reads_snp_list, count, obs, t, index, hap);
+				double emission = compute_new_emission(reads_snp_list, count, obs, t, index, hap, obslik[count][j-1], genlik[count][j-1]);
 				if(emission <= 0.0) {
 					logVal = -100.0;
                     			zeroProbCount++;
@@ -475,7 +475,7 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q, double *probarray)
                     			logVal = log(emission);
                 		}
 #ifdef DEBUG
-cout << "\t" << emission << "\t" << logVal << endl;
+//cout << "\t" << emission << "\t" << logVal << endl;
 #endif
                 		logBiOt[j][nread] += logVal;
 			}
@@ -494,6 +494,21 @@ cout << "Total emission = " << logBiOt[j][nread] << endl << endl;
                 	for (i = 1; i <= mN; i++){		  
                     		logBiOt[i][nread] = log(1.0/mN);
                 	}
+		}
+
+		// Updating posteriors here
+		int ind_snp = 0;
+		ind_snp = delta[1] > delta[2] ? 0 : 1;
+		for(int cot = 0; cot < common_snp_count; cot++) {
+			double norm = 0.0;
+			double posteriors[3];
+			for(int post=0; post<3; post++) {
+				norm += genlik[cot][ind_snp][post]*obslik[cot][ind_snp][post];
+			}
+			posteriors[0] = genlik[cot][ind_snp][0]*obslik[cot][ind_snp][0]/norm;
+			posteriors[1] = genlik[cot][ind_snp][1]*obslik[cot][ind_snp][1]/norm;
+			posteriors[2] = genlik[cot][ind_snp][2]*obslik[cot][ind_snp][2]/norm;
+			reads_snp_list[cot]->add_posteriors(posteriors);
 		}
 		nread++;
 		// prevDelta updated to find the max from in the next read
@@ -564,7 +579,7 @@ void CHMM::GetCommonSnpList(CObs**obs, SNP**reads_snp_list, int *common_snp_coun
 //===============================================================================
 
 
-double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, int t, int *index, int hap)
+double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, int t, int *index, int hap, double obslik[3], double genlik[3])
 {
 	double err_rate = 0.01;
 	double known_snp_rate = 0.1;
@@ -577,6 +592,7 @@ double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, i
 	double lik = 0.0;
 
 	char ref = reads_snp_list[count]->GetRef();
+	char alt = reads_snp_list[count]->GetAlt();
 	char all1 = ((CFlexibleObs<READ>*)(obs[t-1]))->Get(1).GetAllele(index[2*count]);
 	char all2 = ((CFlexibleObs<READ>*)(obs[t]))->Get(1).GetAllele(index[(2*count)+1]);
 //BUG: Account for errors here in obs
@@ -668,7 +684,17 @@ double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, i
 cout << "\t" << gen_lik[i] << " " << obs_lik[i] << " " << gen_lik[i] * obs_lik[i];
 #endif
 		prob += gen_lik[i] * obs_lik[i];
+		obslik[i] = obs_lik[i];
+		genlik[i] = gen_lik[i];
 	}
+#ifdef DEBUG
+cout << "\t" << prob << "\t" << log(prob);// << endl;
+cout << "Posterior:";
+	for(int p=0;p<3;p++) {
+		cout << "\t" << (gen_lik[p]*obs_lik[p])/prob;
+	}
+cout << endl;
+#endif
 	return prob;
 }
 
@@ -1164,7 +1190,7 @@ double CHMM::FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile, vector<READ*
     int j;
     for(j=1;j<=T;j++) {
 	//outFile << q[j] << ":" << prob[j] << ": ";
-	outFile << q[j] << endl;
+	outFile << q[j] << "\t" << ((*reads_list)[j-1])->GetPos() << endl;
 	int k_max = ((*reads_list)[j-1])->GetSnpCount();
     }
     delete [] q;

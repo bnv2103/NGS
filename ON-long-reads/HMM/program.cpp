@@ -31,8 +31,8 @@ using namespace std;
 #include "hmm.h"
 
 #define ncells 1
-
-map<long,string> snp_map;
+//#define FULL
+//#define DEBUG
 
 vector<SNP*> snp_list;
 vector<READ*> reads_list;
@@ -169,6 +169,7 @@ void read_snp_file(const char *snpfile)
 		exit(1);
 	}
 
+	vector<string>::iterator vec_start = known_snps.begin();
 	while(true) {
 		char str[1000];
 		fgets(str,sizeof(str),snp_file);
@@ -179,11 +180,28 @@ void read_snp_file(const char *snpfile)
 		line = str;
 		vector<string> vcf_line = split(line, '\t');
 		if(vcf_line[4].find(',')==string::npos) {
-			snp_map.insert(pair<long,string>(atol(vcf_line[1].c_str()),vcf_line[3]+vcf_line[4]+vcf_line[9]));
+			long pos = atol(vcf_line[1].c_str());
+			string info = vcf_line[9];
+			vector<string> format = split(info, ':');
+			vector<string> gl3 = split(format[1], ',');
+			bool known = false;
+			for(vector<string>::iterator known_snpit = vec_start; known_snpit != known_snps.end(); known_snpit++) {
+				if(atol((*known_snpit).c_str()) > pos) {
+					break;
+				}
+				if(atol((*known_snpit).c_str()) == pos) {
+					known = true;
+					vec_start = known_snpit;
+					break;
+				}
+			}
+			SNP *snp = new SNP(pos, vcf_line[3].c_str()[0], vcf_line[4].c_str()[0], gl3, known);
+			snp_list.insert(snp_list.end(), snp);
+cout << "Insert.." << endl;
 		}
 	}
 	fclose(snp_file);
-	cout << "SNP MAP size = " << snp_map.size() << endl;
+	cout << "SNP MAP size = " << snp_list.size() << endl;
 }
 
 void read_sam_files(char *fq_files)
@@ -196,6 +214,7 @@ void read_sam_files(char *fq_files)
 		exit(1);
 	}
 
+	vector<SNP*>::iterator snp_begin = snp_list.begin();
 	while(true) {
 		char str[20000];
 		fgets(str,sizeof(str),fq_file);
@@ -220,52 +239,34 @@ cout << slen << "\t" << rev_slen << "\t" << Ndels << "\t" << length << endl;
 #endif
 			READ *read = new READ(start,length); // create new read object
 
-			map<long,string>::iterator low = snp_map.lower_bound(start);
-			map<long,string>::iterator high = snp_map.upper_bound(start+length-1);
-	   			if( (low == snp_map.begin() || low->first <= start+length-1) && (high == snp_map.end() || high->first >= start) ) {
-				for(map<long,string>::iterator snp_it1=low; snp_it1!=high; snp_it1++) {
-					int snp_exists = 0;
-					int type = 2;
-					bool known = false;
-					char snp_ref = snp_it1->second.c_str()[0];
-					char alt_ref = snp_it1->second.c_str()[1];
-					int ndels = get_deletion_count(cigar,snp_it1->first-start);
-					char allele = read_line[9][snp_it1->first-start + slen - ndels];
-					for(vector<string>::iterator known_snpit = known_snps.begin(); known_snpit != known_snps.end(); known_snpit++) {
-						if(atol((*known_snpit).c_str())>snp_it1->first) {
-							break;
-						}
-						if(atol((*known_snpit).c_str())==snp_it1->first) {
-							known = true;
-#ifdef DEBUG
-cout << ndels << "\t" << snp_it1->first << "\t" << allele << endl;
-#endif
-							break;
-						}
-					}
-					string info = snp_it1->second;
-					vector<string> format = split(info, ':');
-					vector<string> gl3 = split(format[1], ',');
+cout << start << "\t" << (*snp_begin)->GetPos() << endl;
+			for(vector<SNP*>::iterator snp_it = snp_begin; snp_it != snp_list.end(); snp_it++) {
+				if((*snp_it)->GetPos() >= start) {
+					if((*snp_it)->GetPos() <= start+length-1) {
+						int snp_exists = 0;
+						int type = 2;
+						char snp_ref = (*snp_it)->GetRef();
+						char alt_ref = (*snp_it)->GetAlt();
+						int ndels = get_deletion_count(cigar,(*snp_it)->GetPos()-start);
+						char allele = read_line[9][(*snp_it)->GetPos() - start + slen - ndels];
 
-					if(allele==snp_ref)
-						type = 0;
-					else if(allele==alt_ref)
-						type = 1;
-					for(vector<SNP*>::iterator snp_it2 = snp_list.begin(); snp_it2 != snp_list.end(); snp_it2++) { // check for snps in vector
-						if((*snp_it2)->GetPos() == snp_it1->first) {
-							(*snp_it2)->append(type,read);
-							snp_exists = 1;
-							read->addsnp(*snp_it2, allele);
-							break;
-						}
+						if(allele==snp_ref)
+							type = 0;
+						else if(allele==alt_ref)
+							type = 1;
+
+						read->addsnp(*snp_it, allele);
+						(*snp_it)->append(type,read);
+					} else {
+cout << start+length-1 << "\t" << (*snp_begin)->GetPos() << "\t" << "missing/breaking.." << endl;
+						break;
 					}
-					if(!snp_exists) {
-						SNP *snp = new SNP(snp_it1->first,snp_it1->second.c_str()[0],snp_it1->second.c_str()[1],type,read,gl3,known);
-						snp_list.insert(snp_list.end(), snp);
-						read->addsnp(snp, allele);
-					}
+				} else {
+					snp_begin = snp_it;
+cout << "catch up" << "\t" << (*snp_begin)->GetPos() << endl;
 				}
 			}
+cout << "READ.." << endl;
 			vector<READ*>::iterator rend = reads_list.end();
 			reads_list.insert(rend, read); // add it to the vector
 		}
@@ -279,7 +280,11 @@ cout << ndels << "\t" << snp_it1->first << "\t" << allele << endl;
 void runHMM()
 {
 	int i;
-	int nbDimensions = 1, nbSymbols = 250, nbStates = 2, T = 200;
+#ifdef FULL
+	int nbDimensions = 1, nbSymbols = 135000, nbStates = 2;
+#else
+	int nbDimensions = 1, nbSymbols = 250, nbStates = 2;
+#endif
 	int isGaussian = 0;
 	int *listNbSymbols = new int[(nbDimensions)+1];;
 	double **transitionMatrix, **emissionMatrix;
@@ -332,6 +337,11 @@ void runHMM()
 	double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput, &reads_list);
 	distanceOutput.close();
 
+	cout << endl << endl;
+	for(vector<SNP*>::iterator snp_it = snp_list.begin(); snp_it != snp_list.end(); snp_it++) { // check for snps in vector
+		//(*snp_it)->PrintPosterior();
+		(*snp_it)->PrintLR();
+	}
 	delete learnedHMM;
 	delete pi;
 	delete b;
@@ -343,16 +353,23 @@ int main(int argc, char **argv)
 {
 	int i;
 	const char *ext = ".sam";
+#ifdef FULL
+	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim4.vcf";
+	//const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/temp.vcf";
+	const char *knownsnpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21.txt";
+	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim4.sorted";
+	//const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/temp";
+#else
 	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/test_6.vcf";
-	//const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/simulated_reads_6.sorted";
 	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/test_6";
 	const char *knownsnpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21_short.txt";
+#endif
 
 	char file_name[100];
 	sprintf(file_name, "%s%s", file_base, ext);
 
-	read_snp_file(snpfile);
 	read_known_snp_file(knownsnpfile);
+	read_snp_file(snpfile);
 	read_sam_files(file_name);
 
 	runHMM();

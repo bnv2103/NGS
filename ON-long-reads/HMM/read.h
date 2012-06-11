@@ -37,9 +37,9 @@ public:
   double operator+(double i);
 
 private:
-  long start;
   int length;
   int snp_count;
+  long start;
   SNP **snps;
   char *alleles;
 };
