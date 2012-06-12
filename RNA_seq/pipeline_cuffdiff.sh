@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -cwd
 
-genome=$1 #moues or human ...
+geno=$1 #moues or human ...
 group1=$2 #sample1,sample2,sample3
 group2=$3 #sample4,sample5,sample6
 dir=$4 # working directory
@@ -11,17 +11,17 @@ lab2=$6 # label 2 sample4_samle5_sample6
 cd $dir
 output=$group1"_"$group2
 mkdir $output
-ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/pipeline_cuffdiff.rb $genome $group1 $group2 $dir $output
+ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/pipeline_cuffdiff.rb $geno $group1 $group2 $dir $output
 
 mv $output*.txt $output
 
-if [[ $genome == "mouse" ]];
+if [[ $geno == "mouse" ]];
     then
     genome="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Mus_musculus/UCSC/mm9/Sequence/BowtieIndex/genome.fa"
     gtf="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Mus_musculus/UCSC/mm9/Annotation/Genes/genes.gtf"
 fi
 
-if [[ $genome == "human" ]];
+if [[ $geno == "human" ]];
     then
     genome="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/UCSC/hg19/Sequence/BowtieIndex/genome.fa"     
     gtf="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"

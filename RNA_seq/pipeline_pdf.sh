@@ -28,3 +28,7 @@ echo "printing pdf"
 cp ../../summary.csv ./
 cp ../summary.csv ./
 cp $RNABASE/README* ./
+
+for f in *cufflinks; do
+qsub -l mem=1G,time=6:: /ifs/scratch/c2b2/ngs_lab/xs2182/code/cpBams.sh $f $dirName
+done
