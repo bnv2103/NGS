@@ -1,0 +1,18 @@
+###set global config for MOuse
+export SAMTOOLS="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/samtools"
+export GATKJAR15="/ifs/scratch/c2b2/ngs_lab/sz2317/softwares/GenomeAnalysisTK-1.5-21-g979a84a/GenomeAnalysisTK.jar"
+export GATKJAR="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK/Sting/dist/GenomeAnalysisTK.jar"
+export GATKJAR12="/ifs/scratch/c2b2/ngs_lab/sz2317/softwares/GenomeAnalysisTK-1.5-21-g979a84a/GenomeAnalysisTK.jar"
+export PICARD="/ifs/data/c2b2/ngs_lab/ngs/usr/picard-tools"
+export BWA="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/bwa"  
+export BPATH="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/"
+export STING="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK"
+export RUBY18="/ifs/data/c2b2/ngs_lab/ngs/usr/local/bin/ruby"
+export UTILS="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/utils/"
+export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V1_with_annotation.Mouse.bed.mod.chr_.mod"
+export REFTYPE="hg"
+export REF="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Mus_musculus/UCSC/mm9/Sequence/WholeGenomeFasta/genome.fa"
+export DBSNP="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/mouse/resources/snp128.mod.rod"
+export DBSNPVCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/mouse/resources/snp128.mod.vcf"
+export ANNOVAR="/ifs/scratch/c2b2/ngs_lab/sz2317/softwares/annovar/"
+
