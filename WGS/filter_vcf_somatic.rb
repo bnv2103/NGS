@@ -55,16 +55,12 @@ def filterVCF(vcf, settings, nsample)
 		end
 		i+=1
 	end
-puts i
 	if settings["--normal"] == 1
 		gt_norm,gt_tumor =  cols[9].split(':')[i] ,cols[10].split(':')[i]
 	else
                 gt_tumor,gt_norm =  cols[9].split(':')[i] ,cols[10].split(':')[i]
 	end
-puts gt_norm
-puts gt_tumor
-exit
-
+	
 	clrflag = 0     
       	flag = 0 
 	if gt_norm == "0/0" and  gt_tumor == "0/1"

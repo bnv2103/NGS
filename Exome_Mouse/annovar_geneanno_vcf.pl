@@ -56,7 +56,7 @@ close fin2;
 
 open(fin3, "<" . $fin3) || die("Could not open $fin3 file!");
 while(<fin3>) {
-	if ( $_ =~ m/#// ) { print $_; }
+	if ($_ =~ m/^#/) {  print $_; }
 	else { last; }
 }
 close fin3;

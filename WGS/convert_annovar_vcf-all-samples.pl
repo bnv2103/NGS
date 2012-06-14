@@ -152,7 +152,7 @@ while(<vcf>) {
 		if ($item[20]) { $info.=";gerp++.score=$item[20]";}		
 		$buffer.="$info\t";
 		## Format & Data
-		$buffer.="$item[35]\t$item[36]\n";
+		$buffer.="$item[34]\t$item[35]\t$item[36]\n";
 		$lineCount=$lineCount+1;
 		print out $buffer;
 	}

@@ -24,3 +24,4 @@ do
  fi
 done <  $inp"_split/"head.sam
 
+

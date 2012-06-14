@@ -4,33 +4,16 @@
 
 def main
  infile = ARGV[0]
-#Class 
-#"downstream"
-#"exonic"
-#"exonic;splicing"
-#"intergenic"
-#"intronic"
-#"ncRNA_exonic"
-#"ncRNA_intronic"
-#"ncRNA_UTR3"
-#"ncRNA_UTR5"
-#"splicing"
-#"upstream"
-#"upstream;downstream"
-#"UTR3"
-#"UTR5"
-#
-#
-##CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  AC2
-#21      9411193 .       N       G       90      .       AC1=2;AF1=1;DP=17;DP4=0,0,16,0;FQ=-75;MQ=26     GT:PL:GQ        1/1:123,48,0:93
-#21      9411327 .       C       G       225     .       AB=0.663;AC1=1;AF1=0.5;BaseQRankSum=-0.159;DP=89;DP4=29,23,14,11;Dels=0.00;FQ=225;FS=0.000;GC=44.55;HRun=1;HaplotypeScore=13.8593;LowMQ=0.0000,0.0112,89;MQ=46.10;MQ0=0;MQ0Fraction=0.0000;MQRankSum=-0.395;PV4=1,0.34,0.31,1;QD=2.53;ReadPosRankSum=0.023   GT:AB:AD:DP:FA:GQ:MQ0:PL        0/1:0.66:59,30:89:0.337:99:0:255,0,255
 
 lastpos = -1 
 
 bname= File.basename(infile)
-homo, het, coding, intergenic, intronic, downstream,upstream,splicing, exonic, utr3, utr5,ncrna = 0,0,0,0,0,0,0,0,0,0,0,0
+homo, het,  intergenic, intronic, downstream,upstream,splicing, exonic, utr3, utr5 = 0,0,0,0,0,0,0,0,0,0,0
+ncrna_exonic, ncrna_intronic, ncrna_splicing, ncrna_utr3,ncrna_utr5 = 0,0,0,0,0
 indelKnown, indelNovel, indel1KG, indelDBSNP, indelNOTDBSNP ,indelESP =0,0,0,0,0,0
-snvKnown,snvNovel, knownti, knowntv ,novelti, noveltv, snvDBSNP,snvNOTDBSNP,snv1KG,snvESP  = 0,0,0,0,0,0,0,0,0,0
+anyti,anytv,nonetv,noneti,snvKnown,snvNovel, knownti, knowntv ,novelti, noveltv, snvDBSNP,snvNOTDBSNP,snv1KG,snvESP  = 0,0,0,0,0,0,0,0,0,0,0,0,0,0
+codingUnknown, codingFrameDel,   codingFrameIns ,codingNonFrameDel, codingNonFrameIns,  codingNonFrameSub, codingMissense, codingNonsense, codingReadthrough, codingSynonymous = 0,0,0,0,0,0,0,0,0,0
+
 sid=""
 
 File.new(infile, 'r').each do |line|
@@ -40,71 +23,76 @@ File.new(infile, 'r').each do |line|
 	sid = cols[9]
 	next
     end
-
-#	bclass, fclass,pos,name,ref,alt,onekname =  cols[0].gsub(/"/,''),cols[2].gsub(/"/,''),cols[22].to_i,cols[8],cols[24].gsub(/"/,''),cols[25].gsub(/"/,''), cols[7]
 		
 	pos,name,ref,alt,infoall,genotype = cols[1],cols[2],cols[3],cols[4],cols[7],cols[9].split(":")[0]
 	info = infoall.split(/;/)
 	
 	next if pos == lastpos       #ignore same variant i.e. same position in tht chromose
 
-   if ref.size == alt.size and (not ref.include? "-")  and (not alt.include? "-")   # it is SNV
+   if ref.size == alt.size and (not ref.include? "-")  and (not alt.include? "-")  and  ref.size == 1 and alt.size == 1  # it is SNV
       	ti = judge(ref,alt)
 	if not  infoall.include? "dbSNP" and not  infoall.include? "1KG" and not infoall.include? "ESP"
 		snvNovel += 1
+                if ti == 1
+                  noneti += 1
+                else
+                  nonetv += 1
+                end
 	else
 		snvKnown += 1
+                if ti == 1
+                  anyti += 1
+                else
+                  anytv += 1
+                end
 	end
       	if infoall.include? "dbSNP"  # knownDBSNP ti/tv
         	if ti == 1
-	          knownti +=1
+	          knownti += 1
         	else
-	          knowntv +=1
+	          knowntv += 1
         	end
-		snvDBSNP +=1
+		snvDBSNP += 1
 	else  # novel ti/tv
         	if ti == 1
-	          novelti +=1
+	          novelti += 1
         	else
-	          noveltv +=1
+	          noveltv += 1
         	end
-		snvNOTDBSNP +=1
+		snvNOTDBSNP += 1
 	end
-	if infoall.include? "1KG"
-		snv1KG +=1 
-	end
-	if infoall.include? "ESP"
-		snvESP +=1 
-	end
+	snv1KG += 1 if infoall.include? "1KG"
       ## SYN AND NONSYN
-	if infoall.include? "intergenic"
-		intergenic+=1	
+	intergenic += 1 if infoall.include? "function=intergenic"
+	intronic += 1 if infoall.include? "function=intronic"
+	downstream += 1 if infoall.include? "function=downstream"
+	upstream += 1 if infoall.include? "function=upstream"
+	if infoall.include? "function=exonic"
+		exonic += 1
+		snvESP += 1 if infoall.include? "ESP"
+		codingUnknown += 1 if infoall.include? "functionalClass=unknown"
+		codingFrameDel += 1 if infoall.include? "functionalClass=frameshift deletion"
+		codingFrameIns += 1 if infoall.include? "functionalClass=frameshift insertion"
+		codingNonFrameDel += 1 if infoall.include? "functionalClass=nonframeshift deletion"
+		codingNonFrameIns += 1 if infoall.include? "functionalClass=nonframeshift insertion"
+		codingNonFrameSub += 1 if infoall.include? "functionalClass=nonframeshift substitution"
+		codingMissense += 1 if infoall.include? "functionalClass=nonsynonymous SNV"
+		codingNonsense += 1 if infoall.include? "functionalClass=stopgain SNV"
+		codingReadthrough += 1 if infoall.include? "functionalClass=stoploss SNV"
+		codingSynonymous += 1 if infoall.include? "functionalClass=synonymous SNV"
 	end
-	if infoall.include? "intronic"
-		intronic+=1
+	
+	utr3 += 1 if infoall.include? "function=UTR3"
+	utr5 += 1 if infoall.include? "function=UTR5"
+	if infoall.include? "=splicing" and (not infoall.include? "=ncRNA_splicing")
+		        splicing += 1
 	end
-	if infoall.include? "downstream"
-		downstream+=1
-	end
-	if infoall.include? "upstream"
-		upstream+=1
-	end
-	if infoall.include? "exonic"
-		exonic+=1
- 		coding += 1
-	end
-	if infoall.include? "UTR3"
-		utr3+=1
-        end
-	if infoall.include? "UTR5"
-                utr5+=1
-	end
-	if infoall.include? "splicing"
-		splicing +=1
-	end
-	if infoall.include? "ncRNA"
-		ncrna+=1
-	end 
+	ncrna_exonic += 1 if infoall.include? "function=ncRNA_exonic"
+        ncrna_intronic += 1 if infoall.include? "function=ncRNA_intronic"
+        ncrna_splicing += 1 if infoall.include? "function=ncRNA_splicing"
+        ncrna_utr3 += 1 if infoall.include? "function=ncRNA_UTR3"
+        ncrna_utr5 += 1 if infoall.include? "function=ncRNA_UTR5"
+
         if genotype == '0/1'  ## het
           	het += 1
         elsif genotype == '1/1' ## homo
@@ -117,17 +105,13 @@ File.new(infile, 'r').each do |line|
 	else
 		indelKnown += 1
         end
-	if infoall.include? "1KG"
-		indel1KG += 1 
-	end	
+	indel1KG += 1 if infoall.include? "1KG"
         if infoall.include? "dbSNP"  
 		indelDBSNP += 1 
 	else
 		indelNOTDBSNP += 1
 	end
-        if infoall.include? "ESP"
-                indelESP +=1 
-	end
+	indelESP +=1 if infoall.include? "ESP"
 	##Indel end
    end
    lastpos = pos
@@ -148,7 +132,7 @@ end
   print "SNV_known_ESP\t#{snvESP}\n"
   print "SNV_known%_dbSNP\t#{(snvDBSNP/(snvNovel+snvKnown).to_f).round(2)}\n"
   print "SNV_known%_1KG\t#{(snv1KG/(snvNovel+snvKnown).to_f).round(2)}\n"
-  print "SNV_known%_ESP\t#{(snvESP/(snvNovel+snvKnown).to_f).round(2)}\n"
+  print "SNV_known%_ESP\t#{(snvESP/(exonic).to_f).round(2)}\n"
 
   print "INDEL_all\t#{indelNovel+indelKnown}\n"
   print "INDEL_known_any\t#{indelKnown}\n"
@@ -162,31 +146,42 @@ end
   print "INDEL_known%_ESP\t#{(indelESP/(indelNovel+indelKnown).to_f).round(2)}\n"
   
   print "SNV Stats\n"
-  print "known_DBSNP:ti/tv"
-  print "\t#{knownti}/#{knowntv}"
-  print "\n"
-  print "known_DBSNP:ti/tv-ratio"
-  print "\t#{(knownti/knowntv.to_f).round(3)}"
-  print "\n"
-  print "unknown_DBSNP:ti/tv"
-  print "\t#{novelti}/#{noveltv}"
-  print "\n"
-  print "unknown_DBSNP:ti/tv-ratio"
-  print "\t#{(novelti/noveltv.to_f).round(3)}"
-  print "\n"
-  print "Coding\t#{coding}\n"
-  print "NonCoding\t#{snvNovel+snvKnown-coding}\n"
+  print "known_DBSNP:ti/tv\t#{knownti}/#{knowntv}\n"
+  print "known_DBSNP:ti/tv-ratio\t#{(knownti/knowntv.to_f).round(3)}\n"
+  print "unknown_DBSNP:ti/tv\t#{novelti}/#{noveltv}\n"
+  print "unknown_DBSNP:ti/tv-ratio\t#{(novelti/noveltv.to_f).round(3)}\n"
+  print "known_ANY:ti/tv\t#{anyti}/#{anytv}\n"
+  print "known_ANY:ti/tv-ratio\t#{(anyti/anytv.to_f).round(3)}\n"
+  print "NOVEL:ti/tv\t#{noneti}/#{nonetv}\n"
+  print "NOVEL:ti/tv-ratio\t#{(noneti/nonetv.to_f).round(3)}\n"
+  print "\n#AnnotatedCodingSNV\t#{exonic}\n"
+  print "Missense\t#{codingMissense}\n"
+  print "Nonsense\t#{codingNonsense}\n"  
+  print "ReadThrough\t#{codingReadthrough}\n"    
+  print "Synonymous\t#{codingSynonymous}\n"      
+  print "Frameshift_Deletion\t#{codingFrameDel}\n"       
+  print "Frameshift_Insertion\t#{codingFrameIns}\n"       
+  print "NonFrameshift_Deletion\t#{codingNonFrameDel}\n"   
+  print "NonFrameshift_Insertion\t#{codingNonFrameIns}\n"   
+  print "NonFrameshift_Substitution\t#{codingNonFrameSub}\n" 
+  print "Function_Unknown\t#{codingUnknown}\n"
+  print "\n#UnannotatedSNV\t#{ncrna_exonic + ncrna_intronic + ncrna_splicing+ ncrna_utr3+ncrna_utr5}\n"
+  print "Unannotated_Coding\t#{ncrna_exonic}\n"
+  print "Unannotated_Splicing\t#{ncrna_splicing}\n"
+  print "Unannotated_Intronic\t#{ncrna_intronic}\n"
+  print "Unannotated_5UTR\t#{ncrna_utr5}\n"
+  print "Unannotated_3UTR\t#{ncrna_utr3}\n"
+
+  print "\n#NonCodingSNV\t#{snvNovel+snvKnown-exonic}\n"
   print "Intronic\t#{intronic}\n"
   print "Intergenic\t#{intergenic}\n"
-  print "Exonic\t#{exonic}\n"
   print "Splicing\t#{splicing}\n"
   print "Downstream\t#{downstream}\n"
   print "Upstream\t#{upstream}\n"
   print "5UTR\t#{utr5}\n"
   print "3UTR\t#{utr3}\n"
-  print "ncRNA\t#{ncrna}\n"
-  print "Homozygous\t#{homo}\n"
-  print "Heterozygous\t#{het}\n"
+  print "HomozygousSNV\t#{homo}\n"
+  print "HeterozygousSNV\t#{het}\n"
 
 end
 

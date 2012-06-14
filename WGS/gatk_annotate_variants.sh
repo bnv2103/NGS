@@ -36,12 +36,12 @@ java -Xmx3g -Djava.io.tmpdir=$TEMP -jar $GATK \
 	-XA "NBaseCount" \
 	-XA "BaseCounts" \
 	-XA "MVLikelihoodRatio" \
+	-XA "RodRequiringAnnotation" \
 	-XA "TechnologyComposition" \
 	-XA "SampleList" \
 	-all \
         -A AlleleBalance  -A DepthOfCoverage  -A BaseQualityRankSumTest  -A HomopolymerRun -A MappingQualityRankSumTest -A MappingQualityZero -A QualByDepth  -A RMSMappingQuality  -A SpanningDeletions  -A HaplotypeScore
 
-#	-XA "RodRequiringAnnotation" \
 
 #Do ANNOVAR genomic annotation
 echo " qsub -o $1.log.annovar.o -e $1.log.annovar.e /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/WGS/do_annovar_all.sh $VCF.annotate_varnt_all.vcf "

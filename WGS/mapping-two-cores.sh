@@ -74,18 +74,18 @@ fi
 
 ## read group specification:
 ##          -r STR   read group header line such as `@RG\tID:foo\tSM:bar' [null]
-rgheader="@RG\tID:$ID\tSM:$sampleName\tLB:$readgroup\tPL:$platform"
+rgheader="@RG\tID:$ID\tSM:$sampleName\tLB:$readgroup\tPL:$platform\tCN:NGSColumbia"
 
 ######### align step
-cmd="$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
+cmd="$bwa aln -I -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
 echo $cmd
-$bwa aln -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai  &  ### run in background
+$bwa aln -I -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai  &  ### run in background
 
 
 if [[ ! $fastq2 == "" ]]; then  # paired-ends
-    cmd="$bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist -t  $threads  $REF  $fastq2 > $fastq2.sai"
+    cmd="$bwa aln -I -q $qualtrim -o $maxgaps  -n $maxeditdist -t  $threads  $REF  $fastq2 > $fastq2.sai"
     echo $cmd
-    $bwa aln -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  $fastq2 > $fastq2.sai 
+    $bwa aln -I -q $qualtrim -o $maxgaps  -n $maxeditdist  -t  $threads  $REF  $fastq2 > $fastq2.sai 
 
 # view -bS -o #{output} -
 
@@ -136,6 +136,8 @@ rm -f $output.bam.temp*
 
 # index
 $samtools index $output.bam
+$samtools flagstat $output.bam > $output.flagstat
+$samtools idxstats  $output.bam >  $output.idxstats
 
 date
 if [ -e $output.bam ] 
@@ -147,7 +149,7 @@ zipcmd="qsub -o $fqbase1/zip.fq.o -e $fqbase1/zip.fq.e -l mem=1G,time=6:: $NGSSH
 $zipcmd
 echo $zipcmd
 echo "splitting bam by chr"
-sh /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/WGS/splitChr_bam.sh  $output.bam &> $output.splitChr.log
+sh $BPATH/splitChr_bam.sh  $output.bam &> $output.splitChr.log
 fi
 exit 
 
