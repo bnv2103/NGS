@@ -85,8 +85,4 @@ if [[ $GENO == "human" ]];
     qsub -l mem=2G,time=10:: -o logs/getBed.o -e logs/getBed.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getBed_human.sh $bam $outdir
     qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "human"
 fi
-if [[ $GENO == "rat" ]];
-    then
-    qsub -l mem=2G,time=10:: -o logs/getBed.o -e logs/getBed.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getBed_mouse.sh $bam $outdir
-    qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "rat"
-fi
+

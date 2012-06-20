@@ -26,12 +26,12 @@ def main
   end
   
   uqMapped = 0;
-  # uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 29G | wc -l`.to_i
-  
-  # mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
-  # if mappedline =~ /^(\d+)\s+/
-  #  mapped = $1
-  # end
+  #uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 29G | wc -l`.to_i
+  uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1| wc -l`.to_i
+   # mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
+   # if mappedline =~ /^(\d+)\s+/
+   #  mapped = $1
+   # end
 
 
   if File.exist?(isoforms)
