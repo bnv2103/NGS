@@ -1,0 +1,140 @@
+% get MLE for Dirichlet prior, null model
+
+addpath(genpath('lightspeed'));
+addpath(genpath('fastfit'));
+
+disp('genome wide allele fractions:')
+c = [.9
+     .05
+     .03
+     .02]
+
+disp('depth:')
+d = 1000
+
+disp('pileup counts:')
+n = [850
+      80
+      40
+      30]
+
+% specify true dirichlet parameters, and draw quality scores from that
+
+disp('drawing quality scores from Dirichlet distribution...')
+% concentration parameter
+s_true = 10;
+
+% mean, random about genome-wide fractions
+m_true = c + .1*randn(4, 1).*c;
+m_true = m_true./sum(m_true);
+assert(min(m_true) >= 0);
+
+% sample from the distribution to generate q data
+D_true = dirichlet_sample(s_true*m_true, d);
+
+% functions for phred scaling probability
+phred = @ (p) -10*log10(p) + 33;
+unphred = @ (q) 10.^(-(q-33)./10);
+
+% quality score
+q{1} = phred(1 - D_true(1, 1:n(1)));
+q{2} = phred(D_true(2, n(1) + 1:n(1) + n(2)));
+q{3} = phred(D_true(3, n(1) + n(2) + 1:n(1) + n(2) + n(3)));
+q{4} = phred(D_true(4, n(1) + n(2) + n(3) + 1:n(1) + n(2) + n(3) + n(4)));
+
+disp('generating data D using drawn quality scores and genome-wide fractions to fill in unknowns...')
+      
+% null model m1
+% reads called as a1
+D(:, 1:numel(q{1})) = [1 - unphred(q{1})
+                          unphred(q{1})*c(2)/(1 - c(1))
+                          unphred(q{1})*c(3)/(1 - c(1))
+                          unphred(q{1})*c(4)/(1 - c(1))];
+
+% reads called as a2
+D(:, end + 1:end + numel(q{2})) = [(1 - unphred(q{2}))*c(1)/(1 - c(2))
+                                      unphred(q{2})
+                                      (1 - unphred(q{2}))*c(3)/(1 - c(2))
+                                      (1 - unphred(q{2}))*c(4)/(1 - c(2))]; 
+
+% reads called as a3
+D(:, end + 1:end + numel(q{3})) = [(1 - unphred(q{3}))*c(1)/(1 - c(3))
+                                      (1 - unphred(q{3}))*c(2)/(1 - c(3))
+                                      unphred(q{3})
+                                      (1 - unphred(q{3}))*c(4)/(1 - c(3))]; 
+
+% reads called as a4
+D(:, end + 1:end + numel(q{4})) = [(1 - unphred(q{4}))*c(1)/(1 - c(4))
+                                      (1 - unphred(q{4}))*c(2)/(1 - c(4))
+                                      (1 - unphred(q{4}))*c(3)/(1 - c(4))
+                                      unphred(q{4})];
+
+% MLE
+
+disp('recovering Dirichlet parameters from D by Maximum likelihood...')
+
+% set this to 'true' to test with D_true instead of D, which is made with genome-wide ratios
+SANITY_CHECK = false;
+
+
+alpha_guess = 0.5*c';
+if SANITY_CHECK
+    alpha = dirichlet_fit(D_true', alpha_guess);
+else
+    alpha = dirichlet_fit(D', alpha_guess);
+end
+s = sum(alpha);
+m = alpha'/s;
+
+disp(' ')
+disp('results:')
+disp(' ')
+disp('true Dirichlet parameters:')
+disp('s = ')
+disp(s_true)
+disp('m = ')
+disp(m_true)
+if SANITY_CHECK
+    disp('computed Dirichlet parameters from synthetic D, NOT using genome-wide ratios:')
+else
+    disp('MLE computed Dirichlet parameters:')
+end
+disp('s = ')
+disp(s)
+disp('m = ')
+disp(m)
+
+
+shape{1} = betafit(1-unphred(q{1}));
+shape{2} = betafit(unphred(q{2}));
+shape{3} = betafit(unphred(q{3}));
+shape{4} = betafit(unphred(q{4}));
+
+b = [shape{1}(1)
+     shape{2}(1)
+     shape{3}(1)
+     shape{4}(1)
+     shape{1}(2)
+     shape{2}(2)
+     shape{3}(2)
+     shape{4}(2)];
+
+A = [eye(4); ~eye(4)];
+ 
+% alpha = lsqlin(A, b, [], [], [], [], zeros(4, 1), [], s*m, optimset('MaxIter', Inf, 'TolFun', 1.0e-12, 'Display', 'on'));
+problem.C = A;
+problem.d = b;
+problem.x0 = s*m;
+problem.solver = 'lsqnonneg';
+problem.options = optimset('Display', 'final', 'TolX', 1.0e-9);
+
+alpha = lsqnonneg(problem);
+
+disp('Dirichlet parameters computed from marginal beta MLEs:')
+s_dumb = sum(alpha);
+m_dumb = alpha/s_dumb;
+
+disp('s = ')
+disp(s_dumb)
+disp('m = ')
+disp(m_dumb)
