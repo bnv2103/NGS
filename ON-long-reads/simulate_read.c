@@ -7,8 +7,10 @@
 #include<stdlib.h>
 #include<string.h>
 
-
-int reads_hap[250] = {1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1};
+#define FULL
+//#define SIMULATION
+#define DEBUG
+int reads_hap[250] = {1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1};
 
 struct snp_struct {
 	int position;
@@ -17,7 +19,25 @@ struct snp_struct {
 	char alt;
 };
 
+struct read_struct {
+	char *str;
+	long start;
+	int len;
+	double del_errors;
+	double snp_errors;
+};
+
+#ifdef FULL
+struct snp_struct snps[81000];
+#else
 struct snp_struct snps[100];
+#endif
+
+//int read_cmp(const struct read_struct *r1, const struct read_struct *r2)
+int read_cmp(const void *r1, const void *r2)
+{
+	return (((struct read_struct*)r1)->start < ((struct read_struct*)r2)->start ? -1 : (((struct read_struct*)r1)->start == ((struct read_struct*)r2)->start ? 0 : 1) );
+}
 
 int main(int argc, char **argv)
 {
@@ -34,7 +54,7 @@ int main(int argc, char **argv)
 
 #ifdef FULL
 	long int N_BP = 46944323;
-	int reads_max = 1000000;
+	int reads_max = 140000;
 	const char *snp_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21.txt";
 #else
 	long int N_BP = 20000;
@@ -47,15 +67,13 @@ int main(int argc, char **argv)
 	int min_read_len = 2000;
 	int max_ref_len = 50000000;
 	int ncells = 0;
-#ifdef OLD
-	int starts[reads_max];
-	int lens[reads_max];
-	char **reads = (char **)malloc(sizeof(char*)*reads_max);
+	struct read_struct reads[reads_max];
+
 	int c=0;
 	for(c=0;c<reads_max;c++) {
-		reads[c] = NULL;
+		reads[c].str = NULL;
 	}
-#endif
+
 	//REVISIT: Phased snps needed here
 	//const char *snp_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/phased_indi_snps.txt";
 	const char *ref_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/bcm_hg18_chr21.fasta";
@@ -212,67 +230,73 @@ int main(int argc, char **argv)
 		ctr++;
 	}
 
-#ifdef OLD
 	srand ( (unsigned)time ( NULL ) );
 	for(i=0;i<n_reads;i++) {
-		starts[i] = ((rand()*(N_BP-max_read_len))/RAND_MAX) + 1;
-	}
-	srand ( (unsigned)time ( NULL ) );
-	for(i=0;i<n_reads;i++) {
-		lens[i] = ((rand()*(long int)(max_read_len-min_read_len))/RAND_MAX) + min_read_len;
-	}
-	int del_errors[n_reads], snp_errors[n_reads];
-	srand ( (unsigned)time ( NULL ) );
-	for(i=0;i<n_reads;i++) {
-		int clt;
-		int sum=0, ssum=0;
-		for(clt=0;clt<CLT;clt++) {
-			sum += (((rand()*(int)(err_rate*1000))/RAND_MAX) + (err_rate*1000/2));
-			ssum += (((rand()*(int)(snp_rate*1000))/RAND_MAX) + (snp_rate*1000/2));
-		}
-		//sum += 15;
-		del_errors[i] = (int)sum/(CLT*10);
-		snp_errors[i] = (int)ssum/(CLT*10);
-		sum = 0; ssum = 0;
-	}
-#endif
-
-	// RAND_MAX = 2147483647
-	char file_name[30];
-	char *ext = ".fq";
-	sprintf(file_name, "%s_%d%s", file_base, ncells, ext);
-	FILE *fq_file = fopen(file_name, "w");
-	if (fq_file == NULL)
-		printf("Error opening output file [%s]\n", (const char *) file_name);
-
-	char * qualstr = (char *)malloc(sizeof(char) * max_read_len);
-	char *readsi = (char *) malloc(sizeof(char)*(5200));
-	double del_errorsi, snp_errorsi;
-	int startsi, lensi;
-
-	srand ((unsigned)time(NULL));
-	for(i=0;i<n_reads;i++) {
-		int read_position_start = 9880000;
 #ifdef FULL
-		startsi = ((rand()*(N_BP-max_read_len))/RAND_MAX) + 1;
+		int rnd = rand();
+		reads[i].start = (int)((rnd*(N_BP-max_read_len))/RAND_MAX) + 1;
 #else
-		startsi = ((rand()*N_BP)/RAND_MAX) + read_position_start;
+		int read_position_start = 9880000;
+		int rnd = rand();
+		reads[i].start = (int)((rnd*N_BP)/RAND_MAX) + read_position_start;
 #endif
-		lensi = ((rand()*(long int)(max_read_len-min_read_len))/RAND_MAX) + min_read_len;
-
+#ifdef SIMULATION
+		reads[i].start = i*((N_BP-max_read_len)/n_reads) + 1;
+#endif
+	}
+	for(i=0;i<n_reads;i++) {
+		int rnd = rand();
+		reads[i].len = (int)((rnd*(long int)(max_read_len-min_read_len))/RAND_MAX) + min_read_len;
+		reads[i].str = (char*)malloc(sizeof(char)*(reads[i].len+1));
+	}
+	for(i=0;i<n_reads;i++) {
 		int clt;
-		double sum = 0, ssum = 0;
+		double sum=0, ssum=0;
 		for(clt=0;clt<CLT;clt++) {
 			sum += (((rand()*(err_rate*1000))/RAND_MAX) + (err_rate*1000/2));
 			ssum += (((rand()*(snp_rate*1000))/RAND_MAX) + (snp_rate*1000/2));
 		}
-		del_errorsi = sum/(CLT*10);
-		snp_errorsi = ssum/(CLT*10);
-		int j, k = 0;
+		//sum += 15;
+		reads[i].del_errors = sum/(CLT*10);
+		reads[i].snp_errors = ssum/(CLT*10);
+//printf("%f\t%f\n",ssum,reads[i].snp_errors);
+		sum = 0; ssum = 0;
+	}
+#ifdef DEBUG
+printf("Before sorting\n");
+for(i=0; i<n_reads; i++) {
+	printf("Read %d starts at %d,%d,%f,%f\n", i, reads[i].start,reads[i].len,reads[i].del_errors,reads[i].snp_errors);
+}
+#endif
+	qsort(&reads, n_reads, sizeof(struct read_struct), read_cmp);
 
 #ifdef DEBUG
-printf("%d\t%d\n",startsi,lensi);
+printf("After sorting\n");
+for(i=0; i<n_reads; i++) {
+	printf("Read %d starts at %d,%d,%d,%f,%f\n", i, reads[i].start,reads[i].len,reads[i].start+reads[i].len,reads[i].del_errors,reads[i].snp_errors);
+}
 #endif
+	// RAND_MAX = 2147483647
+	char file_name[30];
+	char log_file_name[30];
+	char *ext = ".fq";
+	char *log = ".log";
+	sprintf(file_name, "%s_%d%s", file_base, ncells, ext);
+	sprintf(log_file_name, "%s_%d%s", file_base, ncells, log);
+	FILE *fq_file = fopen(file_name, "w");
+	FILE *log_file = fopen(log_file_name, "w");
+
+	if (fq_file == NULL)
+		printf("Error opening output file [%s]\n", (const char *) file_name);
+	if (log_file == NULL)
+		printf("Error opening output file [%s]\n", (const char *) log_file_name);
+
+	char *qualstr = (char *)malloc(sizeof(char) * max_read_len);
+
+	int ct_start = 0;
+//	srand ((unsigned)time(NULL));
+	for(i=0;i<n_reads;i++) {
+		int j, k = 0;
 
 /* REVISIT: This piece deletes any common snps as well. Skipping for prototype.
 		for(j=0;j<lensi;j++) {
@@ -317,78 +341,83 @@ printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k+1,
 
 
 // REVISIT: This piece does not delete common snps. Using for prototype only
-		for(j=0;j<lensi;j++) {
+		int j_st = 0;
+		int flag = 0;
+		for(j=0;j<reads[i].len;j++) {
 			int ct = 0, common_snp = 0;
-			for(ct=0;ct<=ctr;ct++) {
+			int ctj_start = ct_start > j_st ? ct_start : j_st;
+			for(ct = ctj_start; ct <= ctr; ct++) {
 				common_snp = 0;
-				if(snps[ct].position==startsi+j+1) {
-					if(reads_hap[i]==snps[ct].hap) {
-						readsi[k] = snps[ct].alt;
+				if(snps[ct].position < reads[i].start) {
+					if(flag==0) {
+						ct_start = ct+1;
+						flag = 1;
+					}
+				} else if(snps[ct].position == reads[i].start+j+1) {
+					j_st = ct+1;
+					if(reads_hap[i%100] == snps[ct].hap) {
+						reads[i].str[k] = snps[ct].alt;
 						common_snp = 1;
 						k++;
 #ifdef DEBUG
-printf("Replacing common snp %c/%c with %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),snps[ct].ref,snps[ct].alt,i,k+1,j+1,startsi+j+1);
+printf("Replacing common snp %c/%c with %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),snps[ct].ref,snps[ct].alt,i,k+1,j+1,reads[i].start+j+1);
 #endif
-						break;
 					}
+					break;
+				// Experimental: Looks good
+				//} else if(snps[ct].position > reads[i].start + reads[i].len) {
+				} else {
+					break;
 				}
 			}
 			if(common_snp==1) continue;
 
 			double check = (100*(double)rand())/RAND_MAX;
-			if(check > del_errorsi) {
-				readsi[k] = *(ref_s+startsi+j);
+			if(check > reads[i].del_errors) {
+				reads[i].str[k] = *(ref_s+reads[i].start+j);
 #ifdef DEBUG
-printf("inserting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k,j+1,startsi+j+1);
+printf("inserting %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),i,k,j+1,reads[i].start+j+1);
 #endif
 				k++;
-			} else if(check <= snp_errorsi) {
-				if(*(ref_s+startsi+j) == 'A'||*(ref_s+startsi+j) == 'a') {
-					readsi[k] = A[(int)((long int)3*rand()/RAND_MAX)];
-				} else if(*(ref_s+startsi+j) == 'T'||*(ref_s+startsi+j) == 't') {
-					readsi[k] = T[(int)((long int)3*rand()/RAND_MAX)];
-				} else if(*(ref_s+startsi+j) == 'C'||*(ref_s+startsi+j) == 'c') {
-					readsi[k] = C[(int)((long int)3*rand()/RAND_MAX)];
-				} else if(*(ref_s+startsi+j) == 'G'||*(ref_s+startsi+j) == 'g') {
-					readsi[k] = G[(int)((long int)3*rand()/RAND_MAX)];
-				} else { readsi[k] = *(ref_s+startsi+j); }
+			} else if(check <= reads[i].snp_errors) {
+				if(*(ref_s+reads[i].start+j) == 'A'||*(ref_s+reads[i].start+j) == 'a') {
+					reads[i].str[k] = A[(int)((long int)3*rand()/RAND_MAX)];
+				} else if(*(ref_s+reads[i].start+j) == 'T'||*(ref_s+reads[i].start+j) == 't') {
+					reads[i].str[k] = T[(int)((long int)3*rand()/RAND_MAX)];
+				} else if(*(ref_s+reads[i].start+j) == 'C'||*(ref_s+reads[i].start+j) == 'c') {
+					reads[i].str[k] = C[(int)((long int)3*rand()/RAND_MAX)];
+				} else if(*(ref_s+reads[i].start+j) == 'G'||*(ref_s+reads[i].start+j) == 'g') {
+					reads[i].str[k] = G[(int)((long int)3*rand()/RAND_MAX)];
+				} else { reads[i].str[k] = *(ref_s+reads[i].start+j); }
 				k++;
 #ifdef DEBUG
-printf("replacing %c with %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),readsi[k-1],i,k,j+1,startsi+j+1);
+printf("replacing %c with %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),reads[i].str[k-1],i,k,j+1,reads[i].start+j+1);
 #endif
 			} else {
 #ifdef DEBUG
-printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k+1,j+1,startsi+j+1);
+printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),i,k+1,j+1,reads[i].start+j+1);
 #endif
 			}
 		}
-		readsi[k] = '\0';
-
+		reads[i].str[k] = '\0';
 		int l = 0;
-		for(l=0;l<strlen(readsi);l++) {
+		for(l=0;l<strlen(reads[i].str);l++) {
 			qualstr[l] = '>';
 		}
 		qualstr[l] = '\0';
 
-		fprintf(fq_file, "@Start_POS:%d\n", startsi+1);
-		fprintf(fq_file, "%s\n", readsi);
+		fprintf(fq_file, "@Start_POS:%d:%d\n", reads[i].start+1,reads_hap[i%100]);
+		fprintf(fq_file, "%s\n", reads[i].str);
 		fprintf(fq_file, "+\n");
 		fprintf(fq_file, "%s\n", qualstr);
+//		fprintf(log_file,"%d\t%d\n",startsi,reads_hap[i%100]);
+	} // end n_reads
+	for(i=0;i<n_reads;i++) {
+		free(reads[i].str);
 	}
-	int q=0;
-	for(q=0;q<5200;q++) {
-		readsi[q] = '>';
-	}
-	readsi[q-1]='\0';
-	free(readsi);
 	fclose(fq_file);
+	fclose(log_file);
 	free(qualstr);
 	free(ref_s);
-#ifdef OLD
-	for(i=0;i<n_reads;i++) {
-		free(reads[i]);
-	}
-	free(reads);
-#endif
 }
 
