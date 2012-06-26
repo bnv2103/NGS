@@ -35,7 +35,9 @@ class CObsSeq{
 public:
   CObsSeq(void){};
 //  CObsSeq(long nbSequences, long nbObs);
-  CObsSeq(CObs *obsType, vector<SNP*> *snp_list, vector<READ*> *reads_list);
+//  GLOBAL
+//  CObsSeq(CObs *obsType, vector<SNP*> *snp_list, vector<READ*> *reads_list);
+  CObsSeq(CObs *obsType);
   CObsSeq(CObs *obsType, char **sequences, int nbSequences, int nbDimensions);
   CObsSeq(CObs *obsType, long nbSequences, long nbObs);
   CObsSeq(CObs *obsType, ifstream &inFile);

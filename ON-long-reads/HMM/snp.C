@@ -24,9 +24,9 @@ SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, bool know
 	posterior_count = 0;
 	position = snp_pos;
 	likelihood_ratio = -1;
-	reads = new READ*[80];
+	reads = new READ*[70];
 	gl = new double[3];
-	posteriors = new double*[80];
+	posteriors = new double*[70];
 	posterior = new double[3];
 
 //	add_read(type, read);
@@ -35,7 +35,7 @@ SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, bool know
 	gl[1] = pow(10, -(atof(gl3[1].c_str()))/10);
 	gl[2] = pow(10, -(atof(gl3[2].c_str()))/10);
 
-	for(int p=0; p<80; p++) {
+	for(int p=0; p<70; p++) {
 		posteriors[p] = new double[3];
 	}
 	posterior[0]=posterior[1]=posterior[2]=0.0;
@@ -62,10 +62,10 @@ void SNP::add_read(int type, READ *read)
 	reads[++count] = read;
 }
 
-void SNP::add_posteriors(double posterior[3])
+void SNP::add_posteriors(double post[3])
 {
 	for(int i=0; i<3; i++) {
-		posteriors[posterior_count][i] = posterior[i];
+		posterior[i] = post[i];
 	}
 	posterior_count++;
 }
@@ -151,6 +151,16 @@ int SNP::GetReadCount()
 int SNP::GetRefCount()
 {
 	return refcount;
+}
+
+int SNP::GetAltCount()
+{
+	return altcount;
+}
+
+int SNP::GetErrCount()
+{
+	return nrefcount;
 }
 
 double* SNP::GetGenLik()

@@ -359,9 +359,10 @@ public:
 	     return (CObs*)obs;};
 
   inline obsType* GetVect(void){return mVect;};
+  inline obsType* GetMyVect(void){return &(mVect[1]);};
   inline obsType Get(int index){return mVect[index];};
   int GetDim(void){return mDimension;};
-  inline void Set(double val, int index){mVect[index] = (obsType)val;};
+  inline void Set(obsType val, int index){mVect[index] = (obsType)val;};
   inline void SetComponents(double val){for(int i=1;i<=mDimension;i++) mVect[i] = (obsType)val;};
   inline int GetInt(int index){return int(mVect[index]);};
   inline void SetInt(int val, int index){mVect[index] = (obsType)val;};

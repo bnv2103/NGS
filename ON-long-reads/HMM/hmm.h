@@ -62,7 +62,9 @@ public:
 	void PrintStatesAndExpectedObs(CObsSeq *obsSeq, 
 						 ostream& stateFile, ostream& bestObsFile);
         double FindDistance(CObsSeq *obsSeq, ostream &outFile);
-        double FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile, vector<READ*> *reads_list);
+	//GLOBAL
+        //double FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile, vector<READ*> *reads_list, vector<SNP*> *snp_list);
+        double FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile);
         double FindCrossEntropyDistance(CObsSeq *obsSeq, ostream &outFile);
         double FindQToPiProb(long T, int *q);
         void Print(ostream &outFile);
@@ -75,7 +77,12 @@ public:
 	unsigned long long com (int n, int m);
 	double compute_new_emission(int obs, int type, int hap);
 //	double compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, int t, int *index, int hap);
-	double compute_new_emission(SNP**reads_snp_list, int count, CObs **obs, int t, int *index, int hap);
+	double compute_new_emission(SNP**reads_snp_list, int count, CObs **obs, int t, int *index, int hap, double obslik[3], double genlik[3]);
+	double* haplotypeProbability(vector<SNP*>::iterator snp_it);
+	//double* haplotypeProbability(SNP *snp_it);
+	//GLOBAL
+	//void UpdateGenotypes(vector<SNP*> *snp_list);
+	void UpdateGenotypes();
 
 protected:
         int mN;// nb of states

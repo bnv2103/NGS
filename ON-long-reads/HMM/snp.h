@@ -20,7 +20,9 @@ public:
   char GetAlt();
   int GetReadCount();
   int GetRefCount();
-  double *GetGenLik();
+  int GetAltCount();
+  int GetErrCount();
+  double* GetGenLik();
   bool GetKnown();
   void add_posteriors(double posterior[3]);
   void PrintPosterior();

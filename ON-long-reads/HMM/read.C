@@ -14,8 +14,11 @@ using namespace std;
 READ::READ(void)
 {
 	snp_count = -1;
-	snps = new SNP*[1000];
-	alleles = new char[1000];
+	hap = 0;
+	hprob = 1.0;
+	snps = new SNP*[700];
+	alleles = new char[700];
+cout << "Invoking plain READ" << endl;
 }
 
 READ::READ(const READ &read) {*this = read;}
@@ -34,15 +37,39 @@ READ::READ(long st, int len)
 {
 	length = len;
 	snp_count = -1;
+	hap = 1;
+	hprob = 1.0;
 	start = st;
-	snps = new SNP*[1000];
-	alleles = new char[1000];
+	snps = new SNP*[700];
+	alleles = new char[700];
 }
 
 void READ::addsnp(SNP *snp, char allele)
 {
 	snps[++snp_count] = snp;
 	alleles[snp_count] = allele;
+}
+
+void READ::assignHaplotype(int haplotype, double prob)
+{
+	if(haplotype!=1&&haplotype!=2) {
+		cout << "Assigning incorrect haplotype value " << haplotype << endl;
+	}
+	if(prob<=0||prob>=1) {
+		cout << "Assigning incorrect haplotype probability " << prob << " to haplotype " << haplotype << endl;
+	}
+	hap = haplotype;
+	hprob = prob;
+}
+
+int READ::GetHap(void)
+{
+	return hap;
+}
+
+double READ::GetHapProb(void)
+{
+	return hprob;
 }
 
 long READ::GetPos(void)

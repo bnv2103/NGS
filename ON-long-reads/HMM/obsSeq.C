@@ -45,9 +45,10 @@ using namespace std;
 #include "obs.h"
 #include "obsSeq.h"
 
-//===============================================================================
+extern vector<SNP*> snp_list;
+extern vector<READ*> reads_list;
 
-#define DEBUG
+//===============================================================================
 
 //===============================================================================
 
@@ -97,10 +98,11 @@ CObsSeq::CObsSeq(CObs *obsType, long nbSequences, long nbObs)
 }
 
 //===============================================================================
-
-CObsSeq::CObsSeq(CObs *obsType, vector<SNP*> *snp_list, vector<READ*> *reads_list)
+//GLOBAL
+//CObsSeq::CObsSeq(CObs *obsType, vector<SNP*> *snp_list, vector<READ*> *reads_list)
+CObsSeq::CObsSeq(CObs *obsType)
 {
-	long i, j, T = (*reads_list).size();
+	long i, j, T = (reads_list).size();
 
 	mObsType = obsType;
 	mObsCount = 0;
@@ -110,14 +112,14 @@ CObsSeq::CObsSeq(CObs *obsType, vector<SNP*> *snp_list, vector<READ*> *reads_lis
 	mNbObs = new long[mNbSequences+1];
 
 	for(i=1;i<=mNbSequences;i++){
-		cout <<"Sequence "<< i <<endl;
+		cout <<"Sequence "<< i <<endl << endl;
 
 		mNbObs[i] =  T;
 		mObsCount += T;
 		mObs[i] = mObsType->AllocateVector(T+1);// This array is from 1 to T
 
 		for(j=1; j <=T; j++){
-			mObs[i][j]->SetSequence((*reads_list)[j-1]);
+			mObs[i][j]->SetSequence((reads_list)[j-1]);
 		}
 	}
 #if 0
@@ -141,7 +143,7 @@ CObsSeq::CObsSeq(CObs *obsType, char **sequences, int nbObs, int nbDimensions)
 	mNbObs = new long[mNbSequences+1];
 
 	for(i=1;i<=mNbSequences;i++){
-		cout <<"Sequence "<< i <<endl;
+		cout <<"Sequence "<< i <<endl << endl;
 
 		mNbObs[i] =  T;
 		mObsCount += T;
