@@ -31,7 +31,7 @@ using namespace std;
 #include "hmm.h"
 
 #define ncells 1
-//#define FULL
+#define FULL
 //#define DEBUG
 
 vector<SNP*> snp_list;
@@ -46,7 +46,8 @@ vector<string> &split(const string &s, char delim, vector<string> &elems) {
 	return elems;
 }
 
-vector<string> split(const string &s, char delim) {
+vector<string> split(const string &s, char delim,int flag) {
+if(flag) cout << s << endl;
 	vector<string> elems;
 	return split(s, delim, elems);
 }
@@ -157,7 +158,7 @@ void read_known_snp_file(const char *file)
 		if(feof(snp_file))
 			break;
 		line = str;
-		vector<string> snp_line = split(line, ' ');
+		vector<string> snp_line = split(line, ' ',0);
 		if(snp_line[1]!="N") {
 			known_snps.insert(known_snps.end(),snp_line[0]);
 		}
@@ -182,12 +183,12 @@ void read_snp_file(const char *snpfile)
 		if(str[0]=='#')
 			continue;
 		line = str;
-		vector<string> vcf_line = split(line, '\t');
+		vector<string> vcf_line = split(line, '\t',0);
 		if(vcf_line[4].find(',')==string::npos) {
 			long pos = atol(vcf_line[1].c_str());
 			string info = vcf_line[9];
-			vector<string> format = split(info, ':');
-			vector<string> gl3 = split(format[1], ',');
+			vector<string> format = split(info, ':',0);
+			vector<string> gl3 = split(format[1], ',',0);
 			bool known = false;
 			for(vector<string>::iterator known_snpit = vec_start; known_snpit != known_snps.end(); known_snpit++) {
 				if(atol((*known_snpit).c_str()) > pos) {
@@ -199,7 +200,7 @@ void read_snp_file(const char *snpfile)
 					break;
 				}
 			}
-			SNP *snp = new SNP(pos, vcf_line[3].c_str()[0], vcf_line[4].c_str()[0], gl3, known);
+			SNP *snp = new SNP(pos, vcf_line[3].c_str()[0], vcf_line[4].c_str()[0], gl3, known, atof(vcf_line[5].c_str()));
 			snp_list.insert(snp_list.end(), snp);
 //cout << "Insert.." << sizeof(*snp) << endl;
 		}
@@ -228,7 +229,7 @@ void read_sam_files(char *fq_files)
 
 		if(start != '@') { // for each new read in the file
 			line = str;
-			vector<string> read_line = split(line, '\t');
+			vector<string> read_line = split(line, '\t',0);
 			long start = atol(read_line[3].c_str());
 #ifdef DEBUG
 cout << start << endl;
@@ -319,7 +320,7 @@ void runHMM()
 	CHMM *learnedHMM;
 	CObs *obsType;
 
-	obsType = new CFlexibleObs<READ>(nbDimensions);
+	obsType = new CFlexibleObs<READ*>(nbDimensions);
 
 	transitionMatrix = SetMatrix(nbStates, nbStates);
 	AssignMatrix(transitionMatrix, transProb, nbStates, nbStates);
@@ -365,10 +366,10 @@ int main(int argc, char **argv)
 	int i;
 	const char *ext = ".sam";
 #ifdef FULL
-	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_6.vcf";
+	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_0.01.vcf";
 	//const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/temp.vcf";
 	const char *knownsnpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21.txt";
-	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_6.sorted";
+	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_0.01.sorted";
 	//const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/temp";
 #else
 	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/short_6.vcf";

@@ -14,7 +14,7 @@ using namespace std;
 #include "snp.h"
 
 //SNP::SNP(long snp_pos, char snp_ref, char snp_alt, int type, READ *read, vector<string> gl3, bool known_par)
-SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, bool known_par)
+SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, bool known_par, double qualscore)
 {
 	known = known_par;
 	ref = snp_ref;
@@ -23,6 +23,7 @@ SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, bool know
 	count = -1;
 	posterior_count = 0;
 	position = snp_pos;
+	qual = qualscore;
 	likelihood_ratio = -1;
 	reads = new READ*[70];
 	gl = new double[3];
@@ -171,5 +172,10 @@ double* SNP::GetGenLik()
 bool SNP::GetKnown()
 {
 	return known;
+}
+
+double SNP::GetQualScore()
+{
+	return qual;
 }
 

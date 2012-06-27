@@ -425,16 +425,15 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q, double *probarray)
 		zeroProbCount = 0;
 		int common_snp_count = 0;
 		double obslik[1000][2][3], genlik[1000][2][3];
-cout << "Calling reads" << endl;
 #define PTR
 #ifdef PTR
-		READ *pd = (((CFlexibleObs<READ>*)(obs[t-1]))->GetMyVect());
-		READ *nd = (((CFlexibleObs<READ>*)(obs[t]))->GetMyVect());
+		READ *pd = (((CFlexibleObs<READ*>*)(obs[t-1]))->Get(1));
+		READ *nd = (((CFlexibleObs<READ*>*)(obs[t]))->Get(1));
 		int rd_start = (*pd).GetPos() < (*nd).GetPos() ? (*nd).GetPos() : (*pd).GetPos();
 		int rd_end = (*pd).GetPos()+(*pd).GetLen() > (*nd).GetPos()+(*nd).GetLen() ? (*nd).GetPos()+(*nd).GetLen()-1 : (*pd).GetPos()+(*pd).GetLen()-1;
 #else
-		READ *pd = (((CFlexibleObs<READ>*)(obs[t-1]))->GetMyVect());
-		READ *nd = (((CFlexibleObs<READ>*)(obs[t]))->GetMyVect());
+		READ *pd = (((CFlexibleObs<READ*>*)(obs[t-1]))->GetMyVect());
+		READ *nd = (((CFlexibleObs<READ*>*)(obs[t]))->GetMyVect());
 		int rd_start = (pd).GetPos() < (nd).GetPos() ? (nd).GetPos() : (pd).GetPos();
 		int rd_end = (pd).GetPos()+(pd).GetLen() > (nd).GetPos()+(nd).GetLen() ? (nd).GetPos()+(nd).GetLen()-1 : (pd).GetPos()+(pd).GetLen()-1;
 #endif
@@ -447,6 +446,7 @@ cout << "Calling reads" << endl;
 		if(common_snp_count==0) {
 			cout << "Read " << t-1 << " and " << t << " have no overlapping snps. Skipping to the next pair.." << endl << endl;
 			//exit(1);
+			(nd)->assignHaplotype(1,0.5);
 			continue;
 		}
 		for (j = 1; j <= mN; j++) {
@@ -472,7 +472,7 @@ cout << "Calling reads" << endl;
 			int abs_hap = prevDelta[j] >= prevDelta[(j%mN)+1] ? j : (j%mN)+1;
 
 #ifdef DEBUG
-cout << "Read " << t-1 << " and " << t << ", Hap " << hap << ", Abs Hap = " << abs_hap << ", " << rd_start << ", " << rd_end << endl << endl;
+cout << "Read " << t-1 << " and " << t << ", Hap " << hap << ", Abs Hap = " << abs_hap << ", " << rd_start << ", " << rd_end << " with " << common_snp_count << " overlapping snps" << endl << endl;
 cout << "K SnpPos  R A L L\tAA_gen\tAA_obs\tAA_genob\tAB_gen\tAB_obs\tAB_genob\tBB_gen\tBB_obs\tBB_genob\tprob\tlogprob\n";
 #endif
 			for(int count=0; count<common_snp_count; count++) {
@@ -535,7 +535,7 @@ cout << "Assigning read " << (nd).GetPos() << " haplotype " << ind_snp << " and 
 #endif
 #endif
 #ifdef PTR
-		(*nd).assignHaplotype(ind_snp, hap_prob);
+		(nd)->assignHaplotype(ind_snp, hap_prob);
 #else
 		(nd).assignHaplotype(ind_snp, hap_prob);
 #endif
@@ -586,30 +586,33 @@ void CHMM::UpdateGenotypes()
 		double post[3];
 		double *prior = new double[3];
 		double *happrob = new double[3];
-		double norm;
+		double norm = 0.0;
 
-		//int ref_ct = (*snp_it)->GetRefCount();
-		//int alt_ct = (*snp_it)->GetAltCount();
-		//int err_ct = (*snp_it)->GetErrCount();
+		int ref_ct = (*snp_it)->GetRefCount();
+		int alt_ct = (*snp_it)->GetAltCount();
+		int err_ct = (*snp_it)->GetErrCount();
 
 		prior = (*snp_it)->GetGenLik();
 		happrob = haplotypeProbability(snp_it);
 		for(g=0; g<3; g++) {
 			norm += prior[g]*happrob[g];
 		}
+norm = 1.0;
+norm = happrob[1];
 		for(g=0; g<3; g++) {
 			post[g] = prior[g]*happrob[g]/norm;
 		}
     		(*snp_it)->add_posteriors(post);
 
-#ifdef DEBUG
-		cout << "SNP: " << (*snp_it)->GetPos() << endl;
-		cout << "Priors:" << endl;
+		cout << "SNP: " << (*snp_it)->GetPos() << " " << (*snp_it)->GetKnown() << endl;
+		cout << ref_ct << "\t" << alt_ct << "\t" << err_ct << endl;
+		cout << "Priors:\t";
 		cout << prior[0] << "\t" << prior[1] << "\t" << prior[2] << endl;
-		cout << "Happrobs:" << endl;
+		cout << "Happrobs:\t";
 		cout << happrob[0] << "\t" << happrob[1] << "\t" << happrob[2] << endl;
-		cout << "Posteriors:" << endl;
+		cout << "Posteriors:\t";
 		cout << post[0] << "\t" << post[1] << "\t" << post[2] << endl << endl;
+#ifdef DEBUG
 #endif
 	}
 }
@@ -621,7 +624,11 @@ double* CHMM::haplotypeProbability(vector<SNP*>::iterator snp_it)
 	probs[0] = probs[1] = probs[2] = 1.0;
 	char ref = (*snp_it)->GetRef();
 	char alt = (*snp_it)->GetAlt();
+	double qual = (*snp_it)->GetQualScore();
+	double qualscore = pow(10,-(qual/10)); // P(alt==wrong)
 	double errate = 0.01;
+
+cout << "SNP: " << (*snp_it)->GetPos() << " Qual: " << qual << ", " << qualscore << endl;
 
 	// Here I assume that if an observed allele is not ref (or alt in case of BB),
 	// then it belongs to the other haplotype.
@@ -632,11 +639,11 @@ double* CHMM::haplotypeProbability(vector<SNP*>::iterator snp_it)
 
 		if(all == ref) {
 			probs[0] = probs[0]; //Do nothing
-			probs[1] *= haprob;
-			probs[2] *= (1-haprob);
+			probs[1] *= 1-haprob;//*qualscore;
+			probs[2] *= (1-haprob)*(qualscore);
 		} else if(all = alt) {
-			probs[0] *= (1-haprob);
-			probs[1] *= haprob;
+			probs[0] *= (1-haprob)*(qualscore);
+			probs[1] *= 1-haprob;//*qualscore;
 			probs[2] = probs[2]; //Do nothing
 		} else {
 			probs[0] *= errate;
@@ -652,14 +659,14 @@ cout << probs[0] << "\t" << probs[1] << "\t" << probs[2] << endl;
 
 void CHMM::GetCommonSnpList(CObs**obs, SNP**reads_snp_list, int *common_snp_count, int *index, int t)
 {
-	READ prev_read = ((CFlexibleObs<READ>*)(obs[t-1]))->Get(1);
+	READ prev_read = *(((CFlexibleObs<READ*>*)(obs[t-1]))->Get(1));
 	int prev_read_snp_count = prev_read.GetSnpCount();
 	SNP **prev_snp_list = prev_read.GetSnpList();
-	READ curr_read = ((CFlexibleObs<READ>*)(obs[t]))->Get(1);
+	READ curr_read = *(((CFlexibleObs<READ*>*)(obs[t]))->Get(1));
 	int curr_read_snp_count = curr_read.GetSnpCount();
 	SNP **curr_snp_list = curr_read.GetSnpList();
 	int it1 = 0, it2 = 0;
-cout << prev_read.GetPos() << "\t" << curr_read.GetPos() << endl;
+//cout << prev_read.GetPos() << "\t" << curr_read.GetPos() << endl;
 	while(it1<prev_read_snp_count && it2<curr_read_snp_count) {
 		SNP* snp1 = prev_snp_list[it1];
 		SNP* snp2 = curr_snp_list[it2];
@@ -695,8 +702,8 @@ double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, i
 
 	char ref = reads_snp_list[count]->GetRef();
 	char alt = reads_snp_list[count]->GetAlt();
-	char all1 = ((CFlexibleObs<READ>*)(obs[t-1]))->Get(1).GetAllele(index[2*count]);
-	char all2 = ((CFlexibleObs<READ>*)(obs[t]))->Get(1).GetAllele(index[(2*count)+1]);
+	char all1 = ((CFlexibleObs<READ*>*)(obs[t-1]))->Get(1)->GetAllele(index[2*count]);
+	char all2 = ((CFlexibleObs<READ*>*)(obs[t]))->Get(1)->GetAllele(index[(2*count)+1]);
 	int obt = (ref==all1) ? ((ref==all2) ? 1 : 2) : ((ref==all2) ? 3 : 4);
 	if(reads_snp_list[count]->GetKnown())
 		snp_rate = known_snp_rate;

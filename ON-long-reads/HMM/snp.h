@@ -9,7 +9,7 @@ public:
 
   SNP(void);
   //SNP(long snp_pos, char snp_ref, char snp_alt, int type, READ *read, vector<string>, bool known);
-  SNP(long snp_pos, char snp_ref, char snp_alt, vector<string>, bool known);
+  SNP(long snp_pos, char snp_ref, char snp_alt, vector<string>, bool known, double qual);
 
   ~SNP(void) {}
 
@@ -24,6 +24,7 @@ public:
   int GetErrCount();
   double* GetGenLik();
   bool GetKnown();
+  double GetQualScore();
   void add_posteriors(double posterior[3]);
   void PrintPosterior();
   void PrintLR();
@@ -38,6 +39,7 @@ private:
   int count;
   int posterior_count;
   long position;
+  double qual;
   double likelihood_ratio;
   READ **reads;
   double *gl;

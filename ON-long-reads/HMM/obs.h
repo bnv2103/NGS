@@ -26,6 +26,7 @@
  
 //===============================================================================
 
+//#include "read.h"
 
 class CObs{
 
@@ -297,6 +298,7 @@ private:
 //===============================================================================
 
 template <class obsType>
+//typedef READ* obsType;
 class CFlexibleObs: public CObs{
 
 public:
@@ -324,33 +326,40 @@ public:
      return *this;};
 	    
   CObs& operator=(const double k){
-     for(int i=1;i<=mDimension;i++)mVect[i] = k; return *this;};
+//     for(int i=1;i<=mDimension;i++)mVect[i] = k;
+return *this;};
 
   CObs& operator+=(CObs& obs){
   		CFlexibleObs* obs2 = (CFlexibleObs*)(&obs);
-     for(int i=1;i<=mDimension;i++)mVect[i] += obs2->Get(i); return *this;};
+//     for(int i=1;i<=mDimension;i++)mVect[i] += obs2->Get(i);
+return *this;};
         
   CObs& operator+=(const double k){
-     for(int i=1;i<=mDimension;i++)mVect[i] += k; return *this;};
+//     for(int i=1;i<=mDimension;i++)mVect[i] += k;
+     return *this;};
 
   CObs& operator-=(CObs& obs){
 		CFlexibleObs* obs2 = (CFlexibleObs*)(&obs);
-     for(int i=1;i<=mDimension;i++)mVect[i] -= obs2->Get(i); return *this;};
+//     for(int i=1;i<=mDimension;i++)mVect[i] -= obs2->Get(i);
+     return *this;};
 
   CObs& operator*=(const double k){
-     for(int i=1;i<=mDimension;i++)mVect[i] *= k; return *this;};
+//     for(int i=1;i<=mDimension;i++)mVect[i] *= k;
+     return *this;};
        
   CObs& operator*=(CFlexibleObs& obs){
-     for(int i=1;i<=mDimension;i++)mVect[i] *= obs.Get(i); return *this;};
+//     for(int i=1;i<=mDimension;i++)mVect[i] *= obs.Get(i);
+     return *this;};
 
   CObs& operator/=(const double k){
-     for(int i=1;i<=mDimension;i++)mVect[i] /= k; return *this;};
+//     for(int i=1;i<=mDimension;i++)mVect[i] /= k;
+     return *this;};
      
   void SquareCoords(void){
   		double obsVal;
       for(int i=1;i<=mDimension;i++){
-     		obsVal = mVect[i] * mVect[i];
-     		mVect[i] = obsVal;
+     		//obsVal = mVect[i] * mVect[i];
+     		//mVect[i] = obsVal;
      	}
   }
   
@@ -359,15 +368,14 @@ public:
 	     return (CObs*)obs;};
 
   inline obsType* GetVect(void){return mVect;};
-  inline obsType* GetMyVect(void){return &(mVect[1]);};
   inline obsType Get(int index){return mVect[index];};
   int GetDim(void){return mDimension;};
   inline void Set(obsType val, int index){mVect[index] = (obsType)val;};
-  inline void SetComponents(double val){for(int i=1;i<=mDimension;i++) mVect[i] = (obsType)val;};
-  inline int GetInt(int index){return int(mVect[index]);};
-  inline void SetInt(int val, int index){mVect[index] = (obsType)val;};
-  inline double GetDouble(int index){return (obsType)(mVect[index]);};
-  inline void SetDouble(double val, int index){mVect[index] = (obsType)val;};
+  inline void SetComponents(double val){for(int i=1;i<=mDimension;i++) /*mVect[i] = (obsType)val*/;};
+  inline int GetInt(int index){return 0;/*int(*(mVect[index]));*/};
+  inline void SetInt(int val, int index){/*(mVect[index]) = (obsType)val;*/};
+  inline double GetDouble(int index){return 0.0;/*(obsType)(*(mVect[index]));*/};
+  inline void SetDouble(double val, int index){/*mVect[index] = (obsType)val;*/};
   void Print(ostream &sequenceFile)
      {for(int i=1;i<=mDimension;i++) sequenceFile << " ";};
      //{for(int i=1;i<=mDimension;i++) sequenceFile << mVect[i] << " ";};
@@ -375,13 +383,13 @@ public:
      {for(int i=1;i<=mDimension;i++) sequenceFile >> i;};
      //{for(int i=1;i<=mDimension;i++) sequenceFile >> mVect[i];};
   void SetSequence(char *sequence)
-     {for(int i=1;i<=mDimension;i++) mVect[i] = sequence[i];};
-  void SetSequence(READ *read) {mVect[1] = *read;};
+     {for(int i=1;i<=mDimension;i++) /*mVect[i] = sequence[i]*/;};
+  void SetSequence(READ *read) {mVect[1] = read;};
 	
   void WriteBinaryTo(ostream &sequenceFile)
-     {for(int i=1;i<=mDimension;i++) sequenceFile.put(char(mVect[i]));};
+     {for(int i=1;i<=mDimension;i++) /*sequenceFile.put(char(*(mVect[i])))*/;};
   void ReadBinaryFrom(ifstream &sequenceFile)
-     {for(int i=1;i<=mDimension;i++) mVect[i] = sequenceFile.get();};
+     {for(int i=1;i<=mDimension;i++) /*(mVect[i]) = sequenceFile.get()*/;};
   void ReadHeader(ifstream &inFile){
     char magicID[3]; inFile >> magicID; assert(strcmp(magicID, "P6")==0);};
   void PrintHeader(ostream &outFile){outFile << "P6" << endl;};
@@ -417,7 +425,7 @@ public:
 
   void MapValueToComponents(int value){
 		int jump = 77 * value;
-		for(int i=1;i<=mDimension;i++) mVect[i] = (jump + (i-1)*85) % 256;};
+		for(int i=1;i<=mDimension;i++) /*(mVect[i]) = (jump + (i-1)*85) % 256*/;};
 
   double SquaredDistanceTo(CObs *obs){
     CFlexibleObs* obs2 = (CFlexibleObs*)(obs);

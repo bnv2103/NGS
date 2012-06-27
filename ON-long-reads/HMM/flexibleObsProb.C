@@ -122,7 +122,7 @@ double CFlexibleObsProb::at(int state, CObs *obs)
 	double componentProb;
 	
 	for(i=1;i<= mDimension; i++){
-		val = (((CFlexibleObs<READ>*)obs)->Get(i)); // component of obs
+		val = *(((CFlexibleObs<READ*>*)obs)->Get(i)); // component of obs
 		if(!val) break;
 		intObs->Set(val);
 		componentProb = mComponentProb[i]->at(state, intObs);// prob of component
@@ -179,7 +179,7 @@ void CFlexibleObsProb::BWSum(double *gamma, CObs *obs)
 	CIntObs *intObs = new CIntObs;
 	
 	for(i=1; i<=mDimension; i++){
-		val = (int)(((CFlexibleObs<READ>*)obs)->Get(i)); // component i of obs flexible
+		val = (int)*(((CFlexibleObs<READ*>*)obs)->Get(i)); // component i of obs flexible
 		intObs->Set(val);
 		mComponentProb[i]->BWSum(gamma, intObs);
 	}
@@ -195,7 +195,7 @@ void CFlexibleObsProb::SKMSum(int state, CObs *obs)
 	CIntObs *intObs = new CIntObs;
 	
 	for(i=1;i<= mDimension; i++){
-		val = (int)(((CFlexibleObs<READ>*)obs)->Get(i)); // component of obs flexible
+		val = (int)*(((CFlexibleObs<READ*>*)obs)->Get(i)); // component of obs flexible
 		intObs->Set(val);
 		mComponentProb[i]->SKMSum(state, intObs);
 	}
@@ -236,11 +236,12 @@ CObs* CFlexibleObsProb::PickObservation(int state)
 {
 	int i;
 	CIntObs *intObs;
-	CFlexibleObs<READ> *vectObs = new CFlexibleObs<READ>(mDimension);
+	CFlexibleObs<READ*> *vectObs = new CFlexibleObs<READ*>(mDimension);
 
 	for(i=1;i<= mDimension; i++){
 		intObs = (CIntObs*)(mComponentProb[i]->PickObservation(state));
-		vectObs->Set(intObs->Get(), i);
+cout << "Alert: Entering PickObservation. Following line will fail" << endl;
+		//vectObs->Set(intObs->Get(), i);
 	}
 	return vectObs;
 }
@@ -252,23 +253,24 @@ CObs** CFlexibleObsProb::MapStateToObs(void)
 {
         int i, j;
 	CIntObs ***expectedComponentObs;
-	CFlexibleObs<READ> **expectedObs;
-	CFlexibleObs<READ> *flexibleObs;
+	CFlexibleObs<READ*> **expectedObs;
+	CFlexibleObs<READ*> *flexibleObs;
 	int obsVal;
 
 	expectedComponentObs = new CIntObs**[mN+1];// array of maps 
-	expectedObs = new CFlexibleObs<READ>*[mN+1];
+	expectedObs = new CFlexibleObs<READ*>*[mN+1];
 
 	for(i=1;i<= mDimension; i++){
 	  expectedComponentObs[i] =  (CIntObs**)mComponentProb[i]->MapStateToObs();
 	}  
 
 	for (j=1; j <= mN; j++){// states
-	  expectedObs[j] = new CFlexibleObs<READ>(mDimension);
+	  expectedObs[j] = new CFlexibleObs<READ*>(mDimension);
 	  flexibleObs = expectedObs[j];
 	  for(i=1;i<= mDimension; i++){
 	         obsVal = expectedComponentObs[i][j]->Get();
-		 flexibleObs->Set(obsVal, i);
+cout << "Alert: Entering MapStateToObs. Following line will fail" << endl;
+		 //flexibleObs->Set(obsVal, i);
 	  }
 	}
 	delete [] expectedComponentObs[1];
@@ -292,7 +294,7 @@ void CFlexibleObsProb::Print(ostream &outFile)
 
 CObs* CFlexibleObsProb::ReadObsFrom(ifstream &inFile)
 {
-	CFlexibleObs<READ> *obs = new CFlexibleObs<READ>(mDimension);
+	CFlexibleObs<READ*> *obs = new CFlexibleObs<READ*>(mDimension);
 	obs->ReadFrom(inFile);
 
 	return obs;

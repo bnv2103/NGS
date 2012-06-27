@@ -23,19 +23,19 @@ public:
   int GetSnpCount(void);
   SNP **GetSnpList();
 
-  READ operator=(int i);
-  READ operator+=(double i);
-  READ operator-=(double i);
-  READ operator*=(double i);
-  READ operator/=(double i);
-  READ operator+=(READ read);
-  READ operator-=(READ read);
-  READ operator*=(READ read);
-  READ operator/=(READ read);
+  READ* operator=(int i);
+  READ* operator+=(double i);
+  READ* operator-=(double i);
+  READ* operator*=(double i);
+  READ* operator/=(double i);
+  READ* operator+=(READ* read);
+  READ* operator-=(READ* read);
+  READ* operator*=(READ* read);
+  READ* operator/=(READ* read);
   operator char();
   operator int();
   operator double();
-  double operator*(READ read);
+  double operator*(READ* read);
   double operator-(double i);
   double operator+(double i);
 
