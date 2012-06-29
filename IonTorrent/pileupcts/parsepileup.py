@@ -3,8 +3,8 @@
 import sys, re
 
 fin = open(sys.argv[1], 'r')
-fout = sys.stdout
-#fout = open("parsepileup.out", 'w')
+#fout = sys.stdout
+fout = open(sys.argv[1]+'.cts', 'w')
 
 fout.write("position\tdepth\tmismatch\tref\tallele1\tallele2\tallele3\n")
 

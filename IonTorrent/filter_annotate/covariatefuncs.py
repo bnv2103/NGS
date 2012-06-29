@@ -1,0 +1,1 @@
+/ifs/home/c2b2/ngs_lab/wsd2102/git_code/NGS/IonTorrent/covariate_table/covariatefuncs.py
