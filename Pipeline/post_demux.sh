@@ -58,8 +58,8 @@ do
 		continue;
 ## Fire QC on the Fastq
 
-        if [ ! -d $fqdir/../QC ];then mkdir -p $fqdir/../QC ; fi
-        QCDir="$fqdir/../QC/$lane_$sampleid/"
+        if [ ! -d $fqdir/QC ];then mkdir -p $fqdir/QC ; fi
+        QCDir="$fqdir/QC/$lane_$sampleid/"
         if [ ! -d $QCDir ];then mkdir -p $QCDir ; fi
         CMD="qsub -o $QCDir/log.qc.$sampleid.o -e $QCDir/log.qc.$sampleid.e -N QC.$sampleid -l mem=6G,time=8:: $UTILS/picard_Fastq_Sam.sh -i $fq -p $fq_3 -o $QCDir/ -m 4 -s $sampleid -g $organism "
         echo $CMD
@@ -83,13 +83,9 @@ do
 	fi
 
 	if [ ! -d $DIR/$APP/$projectid/$runid/logs ];then mkdir -p $DIR/$APP/$projectid/$runid/logs; fi
-## Fire QC on the Fastq
-#	if [ ! -d $DIR/$APP/$projectid/$runid/QC ];then mkdir -p $DIR/$APP/$projectid/$runid/QC ; fi
-#	QCDir="$DIR/$APP/$projectid/$runid/QC/$sampleid"_"$lane"_"$rundate/"
-        if [ ! -d $fqdir/../QC ];then mkdir -p $fqdir/../QC ; fi
-        QCDir="$fqdir/../QC/$lane_$sampleid/"
+        if [ ! -d $fqdir/QC ];then mkdir -p $fqdir/QC ; fi
+        QCDir="$fqdir/QC/$lane_$sampleid/"
 	if [ ! -d $QCDir ];then mkdir -p $QCDir ; fi
-#	CMD="qsub -o $DIR/$APP/$projectid/$runid/logs/qc.$sampleid.o -e $DIR/$APP/$projectid/$runid/logs/qc.$sampleid.e -N QC.$sampleid -l mem=6G,time=8:: $UTILS/picard_Fastq_Sam.sh -i $ln_fq -p $ln_fq_3 -o $QCDir/ -m 4 -s $sampleid -g $organism "
         CMD="qsub -o $QCDir/log.qc.$sampleid.o -e $QCDir/log.qc.$sampleid.e -N QC.$sampleid -l mem=6G,time=8:: $UTILS/picard_Fastq_Sam.sh -i $ln_fq -p $ln_fq_3 -o $QCDir/ -m 4 -s $sampleid -g $organism "
 	echo $CMD 
 	$CMD
