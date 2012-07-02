@@ -193,22 +193,22 @@ if [[ $chain != "" ]]; then
 		  # trigger downstream analysis (dedup and recalibrate)
 		  echo "dedup"
 		  
-#		  cmd="${BPATH}/deduplication.sh -i $OUTDIR/all.realigned.bam -s $GLOBAL"
-#		  echo $cmd
-#		  $cmd
+		  cmd="${BPATH}/deduplication.sh -i $OUTDIR/all.realigned.bam -s $GLOBAL"
+		  echo $cmd
+		  $cmd
 		  
-		  ${SAMTOOLS} rmdup $OUTDIR/all.realigned.bam   $OUTDIR/all.realigned.bam.dedup
-
-		if [[ $? == 0 ]]
-		then
-		    mv $OUTDIR/all.realigned.bam.dedup  $OUTDIR/all.realigned.bam 
-		    rm $OUTDIR/all.realigned.bam.bai
-		    ${SAMTOOLS} index $OUTDIR/all.realigned.bam
-			echo "dedup complete"
-		else
-			echo "dedup failed"
-			exit 1
-		fi
+#		  ${SAMTOOLS} rmdup $OUTDIR/all.realigned.bam   $OUTDIR/all.realigned.bam.dedup
+#
+#		if [[ $? == 0 ]]
+#		then
+#		    mv $OUTDIR/all.realigned.bam.dedup  $OUTDIR/all.realigned.bam 
+#		    rm $OUTDIR/all.realigned.bam.bai
+#		    ${SAMTOOLS} index $OUTDIR/all.realigned.bam
+#			echo "dedup complete"
+#		else
+#			echo "dedup failed"
+#			exit 1
+#		fi
 	  
 		  echo "recalibrate quality"
 		  date 

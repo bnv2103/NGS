@@ -2,7 +2,7 @@
 #$ -cwd
 
 ANNOVAR="/ifs/scratch/c2b2/ngs_lab/sz2317/softwares/annovar/"
-BPATH="/ifs/scratch/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/"
+BPATH="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/"
 
 if [ ! -e $1.annovar ]
 then
