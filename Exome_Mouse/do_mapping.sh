@@ -6,11 +6,11 @@ setting=$2
 automated=$3	#if initiated by automated pipeline then input argument must be ProjectID, this triggers automated downstream steps
 
 ##Mouse: call maping with no -c (chain=0 i.e. no realignment) , and no AUTO
-BPATH="/ifs/scratch/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/"
+BPATH="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/"
 
 
 if [[ $setting == "" ]]; then
-    setting="/ifs/scratch/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/global_setting_mm9.sh"
+    setting="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/global_setting.sh"
 fi
 
 . $setting 
