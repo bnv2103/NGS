@@ -136,6 +136,11 @@ mv $output.bam.temp $output.bam
 $samtools index $output.bam
 
 date
+g=`basename $output.bam | sed 's/\//_/g'`
+
+CMD="qsub -o $OUTDIR/logs/GC.o -e $OUTDIR/logs/GC.e -N GC.$g -l mem=5G,time=6:: $UTILS/picard_GCMetrics.sh -i $output.bam -o $OUTDIR -m 4 -g $setting -w 200 "
+echo $CMD
+$CMD
 
 if [[ $chain != "0" ]]; then ## call realign
     
@@ -160,7 +165,7 @@ if [[ $chain != "0" ]]; then ## call realign
 	  heapm=7
       fi
       
-      g=`basename $output.bam | sed 's/\//_/g'`
+#      g=`basename $output.bam | sed 's/\//_/g'`
 	if [[ $AUTO == "" ]];then
               cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm "
   	else

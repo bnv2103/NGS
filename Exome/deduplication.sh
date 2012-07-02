@@ -34,7 +34,7 @@ mkdir -p $temp
 JAVA="java -Xmx${HEAP}g -Djava.io.tmpdir="${temp}
 MarkDup="$JAVA -jar ${PICARD}/MarkDuplicates.jar"
 
-$MarkDup I=$bam O=$bam.temp METRICS_FILE=$bam.dup VALIDATION_STRINGENCY=SILENT
+$MarkDup I=$bam O=$bam.temp METRICS_FILE=$bam.dup VALIDATION_STRINGENCY=SILENT REMOVE_DUPLICATES=false
 
 if [[ $? == 0 ]]
     then

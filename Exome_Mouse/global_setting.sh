@@ -15,4 +15,5 @@ export REF="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Mus_musculus/UCSC/mm9
 export DBSNP="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/mouse/resources/snp128.mod.rod"
 export DBSNPVCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/mouse/resources/snp128.mod.vcf"
 export ANNOVAR="/ifs/scratch/c2b2/ngs_lab/sz2317/softwares/annovar/"
+export DBSNPVCF="/ifs/scratch/c2b2/ngs_lab/sz2317/resources/mouse/snp128.mod.vcf"
 

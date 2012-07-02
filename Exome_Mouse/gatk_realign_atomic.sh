@@ -182,10 +182,21 @@ if [[ $chain != "" ]]; then
 
 	      if [[  -s $OUTDIR/all.realigned.bam  ]]; then
 ##		  rm -rf $INP  # delete original bam
+		  if [ -s $INP.flagstat ]; then
+			rm -rf $INP  # delete original bam
+		  else
+			samtools flagstat $INP > $INP.flagstat
+			samtools idxstats $INP > $INP.idxstats
+			rm -rf $INP
+		  fi
 
 		  # trigger downstream analysis (dedup and recalibrate)
 		  echo "dedup"
-		 
+		  
+#		  cmd="${BPATH}/deduplication.sh -i $OUTDIR/all.realigned.bam -s $GLOBAL"
+#		  echo $cmd
+#		  $cmd
+		  
 		  ${SAMTOOLS} rmdup $OUTDIR/all.realigned.bam   $OUTDIR/all.realigned.bam.dedup
 
 		if [[ $? == 0 ]]
