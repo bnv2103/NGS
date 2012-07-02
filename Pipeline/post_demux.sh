@@ -19,6 +19,7 @@ do
 	sampleid=`basename $fq | cut -f6 -d '_' ` ;
 	lane=`basename $fq | cut -f5 -d '_' |sed 's/lane//' ` ; 
 	barcode=`basename $fq | cut -f7 -d '_' ` ;
+#	rundate=`echo $runid | cut -f1,3 -d'_' ` 
 
 	#search for sample in tsv file, return organism, application, capture, reads, service, projectID
 	#if any fields have blanks they are replaced with "_" for ease. Fields expected to have blanks are organism, capture, reads, application
@@ -44,7 +45,8 @@ do
 	reads=${arr[3]}			#(SE,PE, SE100 etc)
 	projectid=${arr[5]}
 
-echo "$lane $sampleid $barcode $projectid"
+	echo "$lane $sampleid $barcode $projectid"
+
 
         if [[ $app =~ "rna-seq" ]];
         then
@@ -54,6 +56,15 @@ echo "$lane $sampleid $barcode $projectid"
 		APP="Exome-seq/"
 	else
 		continue;
+## Fire QC on the Fastq
+
+        if [ ! -d $fqdir/../QC ];then mkdir -p $fqdir/../QC ; fi
+        QCDir="$fqdir/../QC/$lane_$sampleid/"
+        if [ ! -d $QCDir ];then mkdir -p $QCDir ; fi
+        CMD="qsub -o $QCDir/log.qc.$sampleid.o -e $QCDir/log.qc.$sampleid.e -N QC.$sampleid -l mem=6G,time=8:: $UTILS/picard_Fastq_Sam.sh -i $fq -p $fq_3 -o $QCDir/ -m 4 -s $sampleid -g $organism "
+        echo $CMD
+        $CMD
+
 	fi
 	
 	if [ ! -d $DIR/$APP/$projectid ];then mkdir -p $DIR/$APP/$projectid; fi
@@ -72,6 +83,18 @@ echo "$lane $sampleid $barcode $projectid"
 	fi
 
 	if [ ! -d $DIR/$APP/$projectid/$runid/logs ];then mkdir -p $DIR/$APP/$projectid/$runid/logs; fi
+## Fire QC on the Fastq
+#	if [ ! -d $DIR/$APP/$projectid/$runid/QC ];then mkdir -p $DIR/$APP/$projectid/$runid/QC ; fi
+#	QCDir="$DIR/$APP/$projectid/$runid/QC/$sampleid"_"$lane"_"$rundate/"
+        if [ ! -d $fqdir/../QC ];then mkdir -p $fqdir/../QC ; fi
+        QCDir="$fqdir/../QC/$lane_$sampleid/"
+	if [ ! -d $QCDir ];then mkdir -p $QCDir ; fi
+#	CMD="qsub -o $DIR/$APP/$projectid/$runid/logs/qc.$sampleid.o -e $DIR/$APP/$projectid/$runid/logs/qc.$sampleid.e -N QC.$sampleid -l mem=6G,time=8:: $UTILS/picard_Fastq_Sam.sh -i $ln_fq -p $ln_fq_3 -o $QCDir/ -m 4 -s $sampleid -g $organism "
+        CMD="qsub -o $QCDir/log.qc.$sampleid.o -e $QCDir/log.qc.$sampleid.e -N QC.$sampleid -l mem=6G,time=8:: $UTILS/picard_Fastq_Sam.sh -i $ln_fq -p $ln_fq_3 -o $QCDir/ -m 4 -s $sampleid -g $organism "
+	echo $CMD 
+	$CMD
+
+	
 	cd $DIR/$APP/$projectid/$runid
 
 	#Initiate Pipelines according to app!
@@ -116,7 +139,8 @@ echo "$lane $sampleid $barcode $projectid"
 		if [ ! -e global_setting_b37.sh ];then
 		        cp $EXOMEBASE/global_setting_b37.sh $DIR/$APP/$projectid/$runid/global_setting.sh
 			if [[ $capture =~ "mouse" ]]; then
-				cp $EXOMEBASE/global_setting_mm9.sh $DIR/$APP/$projectid/$runid/global_setting.sh
+				EXOMEBASE="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/";
+				cp $EXOMEBASE/global_setting.sh $DIR/$APP/$projectid/$runid/global_setting.sh
 		        elif [[ $capture =~ "44mb" ]]; then
 		                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V2_with_annotation.hg19.bed.mod"" >> $DIR/$APP/$projectid/$runid/global_setting.sh
                         elif [[ $capture =~ "51mb" ]]; then
@@ -124,8 +148,9 @@ echo "$lane $sampleid $barcode $projectid"
 		        fi
 		fi
 		#Call Mapping
-		sh $EXOMEBASE/do_mapping.sh $ln_fq $DIR/$APP/$projectid/$runid/global_setting.sh $projectid
+		CMD="sh $EXOMEBASE/do_mapping.sh $ln_fq $DIR/$APP/$projectid/$runid/global_setting.sh $projectid "
+		echo $CMD
+		$CMD
 	fi
-
 done
 
