@@ -56,7 +56,7 @@ date
 . $setting
 
 if [[ $readgroup == "" ]]; then
-    readgroup=`basename $fastq1 | sed 's/.fastq$//'  | sed 's/.txt$//'`
+    readgroup=`basename $fastq1  | sed 's/.gz$//'  | sed 's/.fastq$//'  | sed 's/.txt$//'`
 fi
 
 if [[ $sampleName == "" ]]; then

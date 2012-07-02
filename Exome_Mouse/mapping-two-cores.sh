@@ -167,8 +167,4 @@ if [[ $chain != "0" ]]; then ## call realign
       $cmd
     done
 
-
-###     $QSUB -l mem=8G,time=58::  $BPATH/gatk_realign_all.sh   -g $setting -I $output.bam 
-
-
 fi

@@ -118,7 +118,7 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo '#!/bin/bash'  > $out
   echo '#$ -cwd' >> $out
   echo 'uname -a' >> $out
-  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR15 -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 50.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist  -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  --dbsnp ${DBSNPVCF}  $infofields"
+  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR15 -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 30.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist  -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  --dbsnp ${DBSNPVCF}  $infofields"
 
   echo $cmd >> $out
   echo "if [ ! -e $temp/status.Varcalling ];then touch $temp/status.Varcalling; fi " >> $out

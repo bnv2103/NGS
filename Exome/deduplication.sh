@@ -9,7 +9,7 @@ while getopts i:s:m:h o
   case "$o" in
       i) bam="$OPTARG";;
       s) setting="$OPTARG";;
-      m) mem="$OPTARG";;
+      m) MEM="$OPTARG";;
       h) echo $USAGE
 	  exit 1;;
   esac
