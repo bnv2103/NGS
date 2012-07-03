@@ -11,8 +11,8 @@ fi
  
 perl $ANNOVAR/annotate_variation.pl -filter -dbtype snp128 --buildver mm9  $1.annovar  $ANNOVAR/mousedb/ -webfrom annovar 
 
-cat $1.mm9_snp128_dropped | awk 'BEGIN{OFS="\t";}{print $3,$4,$5,$6,$7,$8,$9,$2,$11,$12,$13,$14,$15";"$1,$16,$17; }' > $1.dbsnp.annovar
-cat $1.mm9_snp128_filtered >> $1.dbsnp.annovar
+cat $1.annovar.mm9_snp128_dropped | awk 'BEGIN{OFS="\t";}{print $3,$4,$5,$6,$7,$8,$9,$2,$11,$12,$13,$14,$15";"$1,$16,$17; }' > $1.dbsnp.annovar
+cat $1.annovar.mm9_snp128_filtered >> $1.dbsnp.annovar
 
 perl $ANNOVAR/annotate_variation.pl --geneanno  -dbtype gene --buildver mm9  $1.dbsnp.annovar  $ANNOVAR/mousedb/ -webfrom annovar 
 
