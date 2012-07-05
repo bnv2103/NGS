@@ -43,6 +43,8 @@ public:
 	~CHMM(void);
 	double Forward(double **alpha, double *scale, CObs **obs, long T, boolean doLog);
 	void Backward(double **beta, double *scale, CObs **obs, long T);
+	double ForwardAlgo(double **alpha, double *scale, CObs **obs, long T, boolean doLog);
+	void BackwardAlgo(double **beta, double *scale, CObs **obs, long T);
         double Viterbi(CObs **obs, long T, int *q);
         double ViterbiLog(CObs **obs, long T, int *q);
         double ViterbiLog(CObs **obs, long T, int *q, double *prob);
@@ -64,7 +66,7 @@ public:
         double FindDistance(CObsSeq *obsSeq, ostream &outFile);
 	//GLOBAL
         //double FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile, vector<READ*> *reads_list, vector<SNP*> *snp_list);
-        double FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile);
+        double FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile, ostream &gtFile);
         double FindCrossEntropyDistance(CObsSeq *obsSeq, ostream &outFile);
         double FindQToPiProb(long T, int *q);
         void Print(ostream &outFile);
@@ -79,6 +81,7 @@ public:
 //	double compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, int t, int *index, int hap);
 	double compute_new_emission(SNP**reads_snp_list, int count, CObs **obs, int t, int *index, int hap, double obslik[3], double genlik[3]);
 	double* haplotypeProbability(vector<SNP*>::iterator snp_it);
+	double* genotypeProbability(vector<SNP*>::iterator snp_it);
 	//double* haplotypeProbability(SNP *snp_it);
 	//GLOBAL
 	//void UpdateGenotypes(vector<SNP*> *snp_list);

@@ -14,12 +14,12 @@ using namespace std;
 #include "snp.h"
 
 //SNP::SNP(long snp_pos, char snp_ref, char snp_alt, int type, READ *read, vector<string> gl3, bool known_par)
-SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, bool known_par, double qualscore)
+SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, int known_par, double qualscore)
 {
 	known = known_par;
 	ref = snp_ref;
 	alt = snp_alt;
-	refcount = altcount = nrefcount = 0;
+	refcount = altcount = errcount = 0;
 	count = -1;
 	posterior_count = 0;
 	position = snp_pos;
@@ -59,7 +59,7 @@ void SNP::add_read(int type, READ *read)
 	else if(type==1)
 		altcount++;
 	else
-		nrefcount++;
+		errcount++;
 	reads[++count] = read;
 }
 
@@ -69,6 +69,12 @@ void SNP::add_posteriors(double post[3])
 		posterior[i] = post[i];
 	}
 	posterior_count++;
+}
+
+void SNP::assign_genotype(int gt, double genp)
+{
+	genotype = gt;
+	genprob = genp;
 }
 
 void SNP::CalculateLikelihoodRatio()
@@ -114,7 +120,7 @@ void SNP::PrintPosterior()
 		}
 
 		cout << known << "\t" << position << "\t" << count+1;
-		cout << "\t" << refcount << "\t" << altcount << "\t" << nrefcount;
+		cout << "\t" << refcount << "\t" << altcount << "\t" << errcount;
 		cout << "\t" << posterior[0]/posterior_count << "\t" << posterior[1]/posterior_count << "\t" << posterior[2]/posterior_count << endl;
 	} else {
 		cout << "Snp " << position << " does not overlap among any reads" << endl;
@@ -161,7 +167,7 @@ int SNP::GetAltCount()
 
 int SNP::GetErrCount()
 {
-	return nrefcount;
+	return errcount;
 }
 
 double* SNP::GetGenLik()
@@ -169,7 +175,8 @@ double* SNP::GetGenLik()
 	return gl;
 }
 
-bool SNP::GetKnown()
+int SNP::GetKnown()
+
 {
 	return known;
 }
@@ -177,5 +184,10 @@ bool SNP::GetKnown()
 double SNP::GetQualScore()
 {
 	return qual;
+}
+
+double* SNP::GetPosteriors()
+{
+	return posterior;
 }
 

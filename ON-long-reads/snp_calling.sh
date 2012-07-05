@@ -10,7 +10,7 @@ prefix=$1
 samtools mpileup ${prefix}.sorted.bam -uIf bcm_hg18.fasta -C 1 -d 300 -E -q 10 -Q 15 -gDS > ${prefix}.bcf
 bcftools view -gv -e -p 1.1 -t 0.001 ${prefix}.bcf > ${prefix}.temp.vcf
 grep ^# ${prefix}.temp.vcf > ${prefix}.vcf.1.1
-grep -v ^# ${prefix}.temp.vcf | awk '{if($4!="N"&&length($5)==1) print }' >> ${prefix}.vcf.1.1
+grep -v ^# ${prefix}.temp.vcf | awk -F'\t' '{if($4!="N"&&length($5)==1) { split($8,info,";");split(info[1],dp,"="); if(dp[2]>=3) print $0;} }' >> ${prefix}.vcf.1.1
 rm ${prefix}.temp.vcf
 cp ${prefix}.vcf.1.1 ${prefix}.vcf
 #samtools mpileup simulated_reads_3.sorted.bam -uIf bcm_hg18.fasta -C 50 -d 300 -B -gDS | bcftools view -gv -e -p 1.1 -t 0.001 - 
