@@ -168,6 +168,9 @@ void read_known_snp_file(const char *file)
 void read_snp_file(const char *snpfile)
 {
 	string line;
+	int hash_ctr = 0;
+	int known_hash = 10;
+	int homon_hash = 100;
 	FILE *snp_file = fopen(snpfile, "r");
 	if(snp_file==NULL) {
 		printf("Cannot open snp file %s\n",snpfile);
@@ -189,13 +192,20 @@ void read_snp_file(const char *snpfile)
 			string info = vcf_line[9];
 			vector<string> format = split(info, ':',0);
 			vector<string> gl3 = split(format[1], ',',0);
-			bool known = false;
+			int known = 0;
 			for(vector<string>::iterator known_snpit = vec_start; known_snpit != known_snps.end(); known_snpit++) {
 				if(atol((*known_snpit).c_str()) > pos) {
 					break;
 				}
 				if(atol((*known_snpit).c_str()) == pos) {
-					known = true;
+					hash_ctr = distance(known_snps.begin(), known_snpit);
+					if((hash_ctr%known_hash)+1!=known_hash) {
+						known = 1;
+					} else if((hash_ctr%homon_hash)+1!=homon_hash) {
+						known = 2;
+					} else {
+						known = 3;
+					}
 					vec_start = known_snpit;
 					break;
 				}
@@ -342,18 +352,20 @@ void runHMM()
 	ofstream stateOutput(stateOutputName);
 	ofstream expectedObsOutput(expectedObsOutputName);
 	ofstream distanceOutput(distanceOutputName);
-	stateOutput.close();
 	expectedObsOutput.close();
 	//GLOBAL
 //	double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput, &reads_list, &snp_list);
-	double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput);
+	double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput,stateOutput);
 	distanceOutput.close();
 
 	cout << endl << endl;
 	for(vector<SNP*>::iterator snp_it = snp_list.begin(); snp_it != snp_list.end(); snp_it++) { // check for snps in vector
-		//(*snp_it)->PrintPosterior();
-		//(*snp_it)->PrintLR();
+		double *gt = new double[3];
+		gt = (*snp_it)->GetPosteriors();
+		int gp = gt[0]>gt[1] ? (gt[0]>gt[2] ? 0:2) : (gt[1]>gt[2] ? 1:2);
+		stateOutput << (*snp_it)->GetPos() << "\t" << (*snp_it)->GetKnown() << "\t" << gp << "\t" << gt[0] << "\t" << gt[1] << "\t" << gt[2] << endl;
 	}
+	stateOutput.close();
 	delete learnedHMM;
 	delete pi;
 	delete b;
@@ -366,10 +378,10 @@ int main(int argc, char **argv)
 	int i;
 	const char *ext = ".sam";
 #ifdef FULL
-	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_0.01.vcf";
+	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_1.01.vcf";
 	//const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/temp.vcf";
 	const char *knownsnpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21.txt";
-	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_0.01.sorted";
+	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_1.01.sorted";
 	//const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/temp";
 #else
 	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/short_6.vcf";
@@ -388,4 +400,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-

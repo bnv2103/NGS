@@ -216,6 +216,8 @@ int main(int argc, char **argv)
 		int pos=0,hap=0;
 		char ref,alt;
 
+		// 10% of these snps will be made novel snps with low prior values in the HMM.
+		// How we infer these 10% for now is basically every 10th such snp.
 		if(fgets(line,sizeof(line),snp_f)) {
 			pos = atoi(line);
 			ref = line[strlen(line)-4];
@@ -344,6 +346,7 @@ printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k+1,
 		int j_st = 0;
 		int flag = 0;
 		for(j=0;j<reads[i].len;j++) {
+			int homon_hash = 100;
 			int ct = 0, common_snp = 0;
 			int ctj_start = ct_start > j_st ? ct_start : j_st;
 			for(ct = ctj_start; ct <= ctr; ct++) {
@@ -355,7 +358,8 @@ printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+startsi+j),i,k+1,
 					}
 				} else if(snps[ct].position == reads[i].start+j+1) {
 					j_st = ct+1;
-					if(reads_hap[i%100] == snps[ct].hap) {
+					// Every 100th common snp is made homozygous null reference
+					if(reads_hap[i%100] == snps[ct].hap || (ct%homon_hash)+1==homon_hash) {
 						reads[i].str[k] = snps[ct].alt;
 						common_snp = 1;
 						k++;
