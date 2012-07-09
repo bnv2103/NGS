@@ -18,17 +18,18 @@ echo "printing pdf"
  # for f in *cufflinks; do  sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/cpIsoforms_nonRef.sh  $f $dirName; done
  cd $dirName
 
+ Rscript $RNABASE/combineFPKM.R
  fileName=$out".pdf"
  Rscript $RNABASE/printPDF.R $fileName  $isMA
  echo "done PDF"
 
- rm *genes
+#  rm *genes
  rm *isoforms
 # rm *nonRef
 cp ../../summary.csv ./
 cp ../summary.csv ./
 cp $RNABASE/README* ./
 
-for f in *cufflinks; do
-qsub -l mem=1G,time=6:: /ifs/scratch/c2b2/ngs_lab/xs2182/code/cpBams.sh $f $dirName
-done
+# for f in *cufflinks; do
+# qsub -l mem=1G,time=6:: /ifs/scratch/c2b2/ngs_lab/xs2182/code/cpBams.sh $f $dirName
+# done

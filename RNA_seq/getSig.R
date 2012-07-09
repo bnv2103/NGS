@@ -17,3 +17,10 @@ CompName = args[2]
     write.csv(b, tempName)
 
 # }
+tempName = paste(CompName, ".pdf", sep="")
+pdf(file = tempName)
+title= paste(CompName, "p_value", sep="-")
+hist(a$p_value, xlab="p_value", main=title)
+title= paste(CompName, "q_value", sep="-")
+hist(a$q_value, xlab="q_value", main=title)
+dev.off()

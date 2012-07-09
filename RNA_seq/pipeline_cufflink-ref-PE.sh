@@ -71,6 +71,12 @@ cmd1="cufflinks -o $cuffout --GTF-guide  $GENES $bam"
 echo -e "do cufflinks without ref genes: \n $cmd1"
 $cmd1
 
+cd $outdir
+ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb accepted_hits.bam $outdir "QC.pdf"
+cd ..
+
+samtools sort $bam $outdir"/accepted_hits.sorted"
+samtools index $outdir"/accepted_hits.sorted.bam"
 
 # after run cufflink, statistics of number of reads and FPKM
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats_PE.rb $outdir "summary.csv"

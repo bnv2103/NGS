@@ -13,4 +13,4 @@ for (i in 3:length(fileList) ){
 
 
 }
-write.csv(b, "result.csv")
+write.csv(b, "FPKM.csv")

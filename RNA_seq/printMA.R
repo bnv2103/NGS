@@ -10,7 +10,8 @@ pdf(file = outPDF)
 # print MA plot
 for (i in 1:(length(fileList)) ){
     for (j in i:(length(fileList)) ){
-    	if (i != j){
+    	par(mfrow(length(fileList), length(fileList)))
+    	# if (i != j){
 	t1 = strsplit(fileList[i], "_")
         t2 = strsplit(fileList[j], "_")
    
@@ -29,7 +30,7 @@ for (i in 1:(length(fileList)) ){
 	   #corrValue = cor(a$FPKM, b$FPKM)	
 	   mainText = paste("M-A plot:", title1, "~", title2, sep=" ")
            plot(A,M, xlab="A = (1/2) * (log2(FPKM) + log2(FPKM))", ylab="M = log2(FPKM) - log2(FPKM)", main=mainText, ylim=c(-20,20), xlim=c(-10,20))
-	  }
+	 # }
 	#}
     }
  }

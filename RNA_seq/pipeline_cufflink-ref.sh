@@ -67,13 +67,21 @@ $cmd
 
 ## reference-guided assembly
 # cmd2="cufflinks -o $cuffout2 --compatible-hits-norm --GTF-guide  $GENES $bam"
+case 
 cmd2="cufflinks -o $cuffout2 --GTF-guide  $GENES $bam"
 echo -e "do cufflinks with ref genes -guide: \n $cmd2"
 $cmd2
 
+cd $outdir
+ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb "accepted_hits.bam" "QC.pdf" 
+cd ..
+
+samtools sort $bam $outdir"/accepted_hits.sorted"
+samtools index $outdir"/accepted_hits.sorted.bam"
 
 # for f in *cufflinks; do ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $f "summary.csv"; done
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $outdir "summary.csv"
+
 
 if [[ $GENO == "mouse" ]];
     then
