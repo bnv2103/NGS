@@ -40,13 +40,14 @@ class CGaussianObsProb: public CObsProb{
         void SKMSum(int state, CObs *obs);
 	double EndIter();
 	void End();
-        void SetVal(int state, int symbol, int value);
+        void SetVal(int state, int symbol, double value);
         void InitStateProb();
 	CObs* PickObservation(int state);
 	void Print(ostream &outFile);
         CObs** MapStateToObs(void);
 	double at(int state, CObs *obs);
 	double at(int state, int symbol) {}
+	void addEmission(int state, int symbol, double emission) {}
   //	int GetM(void){return M};
 #if 1
 	CObs* ReadObsFrom(ifstream &inFile);

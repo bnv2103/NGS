@@ -3,6 +3,15 @@
 
 prefix=$1
 
+rm homoref.txt het.txt homonull.txt
+for i in `seq 1 100`
+do
+	thresh=`echo "$i/100" | bc -l`
+	awk -v d=$thresh '{ if($2==0) { if($5<d&&$4>=$6) trueaa++; else aab++; } else { if($5>=d||$4<$6) falseaa++; else baa++; } } END{aasens = trueaa/(trueaa+aab); aaspc = falseaa/(falseaa+baa); print 1-aaspc, "\t", aasens;}' HMM/output.sta >> homoref.txt
+	awk -v d=$thresh '{ if($2==1||$2==2) { if($5>=d) trueab++; else abh++; } else { if($5<d) falseab++; else hab++;} }          END{absens = trueab/(trueab+abh); abspc = falseab/(falseab+hab); print 1-abspc, "\t", absens;}' HMM/output.sta >> het.txt
+	awk -v d=$thresh '{ if($2==3) { if($5<d&&$6>=$4) truebb++; else bba++; } else { if($5>=d||$6<$4) falsebb++; else abb++; } } END{bbsens = truebb/(truebb+bba); bbspc = falsebb/(falsebb+abb); print 1-bbspc, "\t", bbsens;}' HMM/output.sta >> homonull.txt
+done
+
 # Code to get list of all prefix soft clip lengths
 grep Start ${prefix}.sorted.sam | cut -f 6 | cut -d'S' -f 1 | grep -v [A-Z]
 

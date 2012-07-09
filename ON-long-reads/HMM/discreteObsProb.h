@@ -40,7 +40,7 @@ public:
 	void SKMSum(int state, CObs *obs);
 	double EndIter();
 	void End();
-	void SetVal(int state, int symbol, int value);
+	void SetVal(int state, int symbol, double value);
 	void InitStateProb();
 	CObs*  PickObservation(int state);
 	uChar* FindAverageStateGray(void);
@@ -48,6 +48,7 @@ public:
 	void Print(ostream &outFile);
 	inline double at(int state, CObs *obs){return mThisB[state][((CIntObs*)obs)->Get()];};
 	inline double at(int state, int symbol){return mThisB[state][symbol];};
+        void addEmission(int state, int symbol, double emission) {mThisB[state][symbol] = emission;}
   //	inline double logAt(int state, CObs *obs){return mLogB[state][((CIntObs*)obs)->Get()];};
   //	int GetM(void){return mM;};// see below
 #if 1

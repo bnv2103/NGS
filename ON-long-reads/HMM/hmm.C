@@ -105,7 +105,7 @@ double CHMM::Forward(double **alpha, double *scale, CObs **obs, long T, boolean 
 
 // 1. Initialization
 // alpha = f(i)
-// bjti = emission
+// bjt1 = emission
 	for (i = 1; i <= mN; i++) {
 	  bi1 = mB->at(i, obs[1]);
 	  alpha[1][i] = mPi->at(i) *  bi1;
@@ -156,33 +156,79 @@ double CHMM::ForwardAlgo(double **alpha, double *scale, CObs **obs, long T, bool
 
 // 1. Initialization
 // alpha = f(i)
-// bjti = emission
+// bjt1 = emission
 	for (i = 1; i <= mN; i++) {
-	  bi1 = mB->at(i, obs[1]);
+// Experimental: Need to confirm the emission for the first read
+	  bi1 = mB->at(i, 1);
 	  alpha[1][i] = mPi->at(i) *  bi1;
 	}
 	scale[1] = Normalize(alpha[1], mN);
 
 // 2. Induction
+	int nread = 2;
+        SNP **reads_snp_list = new SNP*[1000];
+        int *index = new int[2000];
+
 	for (t = 1; t <= T - 1; t++) {
-	  for (j = 1; j <= mN; j++) {
-	    sum = 0.0;
-	    for (i = 1; i <= mN; i++){
-	      aij = mA->at(i, j);
-	      sum += alpha[t][i] * aij;
-	    }
-	    bjt1 =  mB->at(j, obs[t+1]);
-	    alpha[t+1][j] = sum * bjt1;
-	  }
-// scale is the normalization factor s(i)
-// alpha is the normalized ~f(i)
-	  scale[t+1] = Normalize(alpha[t+1], mN);
+		int common_snp_count = 0;
+		bool overlap;
+		overlap = TRUE;
+                double obslik[1000][2][3], genlik[1000][2][3];
+                READ *pd = (((CFlexibleObs<READ*>*)(obs[t]))->Get(1));
+                READ *nd = (((CFlexibleObs<READ*>*)(obs[t+1]))->Get(1));
+                int rd_start = (*pd).GetPos() < (*nd).GetPos() ? (*nd).GetPos() : (*pd).GetPos();
+                int rd_end = (*pd).GetPos()+(*pd).GetLen() > (*nd).GetPos()+(*nd).GetLen() ? (*nd).GetPos()+(*nd).GetLen()-1 : (*pd).GetPos()+(*pd).GetLen()-1;
+
+                GetCommonSnpList(obs, reads_snp_list, &common_snp_count, index, t+1);
+                if(common_snp_count==0) {
+                        cout << "Read " << t << " and " << t+1 << " have no overlapping snps. Skipping to the next pair.." << endl << endl;
+                        //exit(1);
+                        // (nd)->assignHaplotype(1,0.5);
+			overlap = FALSE;
+                        // continue;
+                }
+
+		for (j = 1; j <= mN; j++) {
+			sum = 0.0;
+			for (i = 1; i <= mN; i++){
+				aij = mA->at(i, j);
+				// sum += alpha[nread-1][i] * aij;
+				// This is the scaled alpha
+				sum += alpha[t][i] * aij;
+	    		}
+
+			double logBiOt = 0;
+			for(int count=0; count<common_snp_count; count++) {
+                                SNP *sp = reads_snp_list[count];
+                                double emission = compute_new_emission(reads_snp_list, count, obs, t+1, index, j, obslik[count][j-1], genlik[count][j-1]);
+                                logBiOt += log(emission)/common_snp_count;
+			}
+			if(common_snp_count==0) {
+				logBiOt = log(0.5);
+			}
+			bjt1 = pow(2.7182, logBiOt);
+			mB->addEmission(j,t+1,bjt1);
+	    		bjt1 =  mB->at(j, t+1);
+			// Computing emission here
+	    		// alpha[nread][j] = sum * bjt1;
+	    		// Unscaled yet
+	    		alpha[t+1][j] = sum * bjt1;
+	  	}
+		// scale is the normalization factor s(i)
+		// alpha is the normalized ~f(i)
+	  	// scale[nread] = Normalize(alpha[nread], mN);
+	  	scale[t+1] = Normalize(alpha[t+1], mN);
+		nread++;
 	}
-	logProb = 0.0;
+	nread--;
+	//logProb = 0.0;
+	// Experimental: logProb contains P(x)
+	logProb = 1.0;
 
 // 3. Termination
 	if(doLog){
 	  for (t = 1; t <= T; t++){
+	    // logProb += log(scale[nread-1]);
 	    logProb += log(scale[t]);
 	  }
 	}// endif
@@ -237,7 +283,8 @@ void CHMM::BackwardAlgo(double **beta, double *scale, CObs **obs, long T)
 	  for (i = 1; i <= mN; i++){
 	    sum = 0.0;
 	    for (j = 1; j <= mN; j++){
-	      sum += mA->at(i,j) * mB->at(j, obs[t+1]) * beta[t+1][j];
+	      sum += mA->at(i,j) * mB->at(j, t+1) * beta[t+1][j];
+	      // sum += mA->at(i,j) * mB->at(j, obs[t+1]) * beta[t+1][j];
 	    }
 // beta is the normalized ~b(i)
 	    beta[t][i] = sum/scale[t];
@@ -519,7 +566,7 @@ double CHMM::ViterbiLog(CObs **obs, long T, int *q, double *probarray)
 
 		GetCommonSnpList(obs, reads_snp_list, &common_snp_count, index, t);
 
-		//REVISIT: There is a bug here. In case two consecutive reads with 0 overlapping snps are encountered, it may not
+		//Ignore this for now: REVISIT: There is a bug here. In case two consecutive reads with 0 overlapping snps are encountered, it may not
 		//continue to work as expected. We might have to reset haplotype assumptions, or compare the last read with overlapping
 		//snps to the next such one (again to which there might be very little chance)
 		if(common_snp_count==0) {
@@ -596,7 +643,7 @@ cout << "Total emission = " << logBiOt[j][nread] << "," << maxval << endl << end
 		int ind_snp = 0;
 		double hap_prob = 0.0;
 		ind_snp = delta[1] > delta[2] ? 1 : 2;
-		// REVISIT: hap_prob assignment seems incorrect
+		// Ignore this for now: REVISIT: hap_prob assignment seems incorrect
 		//hap_prob = pow(2.7182, -(logBiOt[ind_snp][nread] - logBiOt[ind_snp%mN + 1][nread]) );
 		double prob1 = pow(2.7182, logBiOt[ind_snp][nread]);
 		double prob2 = pow(2.7182, logBiOt[ind_snp%mN+1][nread]);
@@ -665,11 +712,19 @@ void CHMM::UpdateGenotypes()
 		prior = (*snp_it)->GetGenLik();
 		happrob = haplotypeProbability(snp_it);
 
+#ifdef DEBUG
+//cout << "Returned happrob =" << "\t" << happrob[0] << "\t" << happrob[1] << "\t" << happrob[2] << endl;
+#endif
+
 		for(g=0; g<3; g++) {
 			norm += prior[g]*happrob[g];
 		}
-norm = 1.0;
-norm = happrob[1];
+
+// REVISIT: Figure out what the norm should be here
+
+//norm = happrob[1];
+//norm = 1.0;
+
 		for(g=0; g<3; g++) {
 			post[g] = prior[g]*happrob[g]/norm;
 		}
@@ -723,7 +778,9 @@ norm = happrob[1];
 double* CHMM::haplotypeProbability(vector<SNP*>::iterator snp_it)
 {
 	double *probs = new double[3];
-	probs[0] = probs[1] = probs[2] = 1.0;
+	probs[0] = 1.0;
+	probs[1] = 1.0;
+	probs[2] = 1.0;
 	char ref = (*snp_it)->GetRef();
 	char alt = (*snp_it)->GetAlt();
 	double qual = (*snp_it)->GetQualScore();
@@ -741,11 +798,11 @@ cout << "SNP: " << (*snp_it)->GetPos() << " Qual: " << qual << ", " << qualscore
 
 		if(all == ref) {
 			probs[0] = probs[0]; //Do nothing
-			probs[1] *= 1-haprob;//*qualscore;
-			probs[2] *= (1-haprob)*(qualscore);
+			probs[1] *= (1-haprob);//*qualscore;
+			probs[2] *= ((1-haprob)*(qualscore));
 		} else if(all = alt) {
-			probs[0] *= (1-haprob)*(qualscore);
-			probs[1] *= 1-haprob;//*qualscore;
+			probs[0] *= ((1-haprob)*(qualscore));
+			probs[1] *= (1-haprob);//*qualscore;
 			probs[2] = probs[2]; //Do nothing
 		} else {
 			probs[0] *= errate;
@@ -753,7 +810,10 @@ cout << "SNP: " << (*snp_it)->GetPos() << " Qual: " << qual << ", " << qualscore
 			probs[2] *= errate;
 		}
 #ifdef DEBUG
-cout << probs[0] << "\t" << probs[1] << "\t" << probs[2] << endl;
+//cout << "qual = " << qual << endl;
+//cout << "qualscore = " << qualscore << endl;
+//cout << "haprob = " << haprob << endl;
+//cout << "Computing happrobs:" << "\t" << probs[0] << "\t" << probs[1] << "\t" << probs[2] << endl;
 #endif
 	}
 	return probs;
@@ -787,6 +847,10 @@ double *CHMM::genotypeProbability(vector<SNP*>::iterator snp_it)
 			probs[1] *= errate;
 		}
 	}
+	// Experimental: Logs for revisit above
+	probs[0] = pow(2.7182, log(probs[0])/read_count);
+	probs[1] = pow(2.7182, log(probs[1])/read_count);
+	probs[2] = pow(2.7182, log(probs[2])/read_count);
 	return probs;
 }
 		
@@ -922,19 +986,19 @@ double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, i
 		break;
 		}
 #ifdef DEBUG
-cout << "\t" << gen_lik[i] << " " << obs_lik[i] << " " << gen_lik[i] * obs_lik[i];
+//cout << "\t" << gen_lik[i] << " " << obs_lik[i] << " " << gen_lik[i] * obs_lik[i];
 #endif
 		prob += gen_lik[i] * obs_lik[i];
 		obslik[i] = obs_lik[i];
 		genlik[i] = gen_lik[i];
 	}
 #ifdef DEBUG
-cout << "\t" << prob << "\t" << log(prob);// << endl;
-cout << "\nPosterior:";
+//cout << "\t" << prob << "\t" << log(prob);// << endl;
+//cout << "\nPosterior:";
 	for(int p=0;p<3;p++) {
-		cout << "\t" << (gen_lik[p]*obs_lik[p])/prob;
+//		cout << "\t" << (gen_lik[p]*obs_lik[p])/prob;
 	}
-cout << endl;
+//cout << endl;
 #endif
 	return prob;
 }
@@ -1023,24 +1087,73 @@ double CHMM::IterBaumWelch(CObsSeq *obsSeq, double *gamma, double **xi)
 
 //===============================================================================
 
-void CHMM::RunFwdBwd(CObsSeq *obsSeq)
+// Supposed to run forward and backward algorithms
+// Obtain P(x) and thus posteriors
+// Perform haplotype calling
+// Perform genotype calling
+// Perform EM
+
+void CHMM::FindFBDistance(CObsSeq *obsSeq, ostream &outFile)
 {
-  double *scale;
-  double **alpha, **beta;
-  double logProb;
-  int i;
+	double *scale;
+	double **alpha, **beta;
+	double logProb;
+	int i, j, em, t, k;
+	double **posterior;
+	double post;
 
-    for(i=1;i<=obsSeq->mNbSequences;i++){ // Loop over observation files:
-      long T = obsSeq->mNbObs[i];
-      CObs **obs = obsSeq->mObs[i];
-      alpha = SetMatrix(T, mN);// different size every time
-      beta = SetMatrix(T, mN);
-      scale = SetVector(T);
+	for(i=1;i<=obsSeq->mNbSequences;i++){ // Loop over observation files:
+		long T = obsSeq->mNbObs[i];
+		CObs **obs = obsSeq->mObs[i];
+		alpha = SetMatrix(T, mN);// different size every time
+		beta = SetMatrix(T, mN);
+		scale = SetVector(T);
+		int *q = SetIntVector(T);
+		posterior = SetMatrix(T,mN);
 
-        // logProb = BaumWelchCore(obsSeq->mObs[i], obsSeq->mNbObs[i], gamma, xi, NOLOG);
-        logProb = Forward(alpha, scale, obsSeq->mObs[i], obsSeq->mNbObs[i], FALSE);
-        Backward(beta, scale, obs, T);
-    }
+		for(em=0; em<EM; em++) {
+			// logProb = BaumWelchCore(obsSeq->mObs[i], obsSeq->mNbObs[i], gamma, xi, NOLOG);
+			// logProb contains log P(x)
+			// Haplotype Calling
+			logProb = ForwardAlgo(alpha, scale, obs, T, TRUE);
+			BackwardAlgo(beta, scale, obs, T);
+
+			for(t=1;t<=T;t++) {
+				READ *nd = (((CFlexibleObs<READ*>*)(obs[t]))->Get(1));
+				for(k=1;k<=mN;k++) {
+					// Experimental: P(x) cancels scaling for alpha and beta
+					// so posterior is just their product
+					double st = 1.0;
+					for(j=T; j>t; j--) {
+						st *= scale[j];
+					}
+					post = (alpha[t][k]*beta[t][k]*scale[t]);
+#ifdef DEBUG
+cout << endl;
+cout << "Scale = " << scale[t] << endl;
+cout << "Scaled alpha = " << alpha[t][k] << endl;
+cout << "beta = " << beta[t][k] << endl;
+cout << "Scaled beta = " << beta[t][k]*scale[t] << endl;
+#endif
+					posterior[t][k] = post;
+				}
+				// REVISIT: hardcoding #states.
+				q[t] = posterior[t][1] > posterior[t][2] ? 1 : 2;
+#ifdef DEBUG
+//cout << "q[t] = " << q[t] << endl;
+//cout << "posterior = " << posterior[t][q[t]] << endl;
+#endif
+				nd->assignHaplotype(q[t],posterior[t][q[t]]);
+			}
+
+			// Genotype Calling
+			UpdateGenotypes();
+		}
+		for(j=1;j<=T;j++) {
+			outFile << q[j] << "\t" << ((reads_list)[j-1])->GetPos() << endl;
+		}
+		delete [] q;
+	}
 }
 
 void CHMM::LearnBaumWelch(CObsSeq *obsSeq)

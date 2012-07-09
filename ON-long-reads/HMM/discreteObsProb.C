@@ -181,7 +181,7 @@ void CDiscreteObsProb::End()
 
 void CDiscreteObsProb::InitStateProb(void) { }
 
-void CDiscreteObsProb::SetVal(int state, int symbol, int value)
+void CDiscreteObsProb::SetVal(int state, int symbol, double value)
 {
 	mThisB[state][symbol] = value;
 }

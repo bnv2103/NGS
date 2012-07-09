@@ -37,12 +37,13 @@ class CObsProb{
 	virtual double EndIter() = 0;
 	virtual void End() = 0;
 	virtual void InitStateProb() = 0;
-        virtual void SetVal(int state, int symbol, int value) = 0;
+        virtual void SetVal(int state, int symbol, double value) = 0;
 	virtual CObs* PickObservation(int state) = 0;
 	virtual void Print(ostream &outFile) = 0;
 	virtual CObs** MapStateToObs(void) = 0;
 	virtual double at(int state, CObs *obs) = 0;
 	virtual double at(int state, int symbol) = 0;
+	virtual void addEmission(int state, int symbol, double emission) = 0;
 //	virtual double logAt(int state, CObs *obs) = 0;
       
 	int GetM(void){return mM;};
