@@ -19,7 +19,6 @@ then
 	cmetindex -d $chr -k 15 -b 15
 	echo "CMETINDEX COMPLETE"
 
-fi
 
 for i in `cat $file`
 do
@@ -48,12 +47,13 @@ do
 done
 
 echo "MERGE COMPLETE"
+fi
 
 merged_file="merged.list"
 
 ls Sample_RK*.entries | cut -d'.' -f 1 > $merged_file
 
-goby 30g discover-sequence-variants `cat ${merged_file}` --compare A/B --groups A=`cat ${file1} | tr ' ' ','`/B=`cat ${file2} | tr ' ' ','`  --format methylation --output meth.vcf --genome $chr
+goby 30g discover-sequence-variants `cat ${merged_file}` --compare A/B --groups A=`cat ${file1} | tr '\n' ','`/B=`cat ${file2} | tr '\n' ','`  --format methylation --output meth.vcf --genome $chr
 
 echo "METHYLATION COMPLETE"
 
