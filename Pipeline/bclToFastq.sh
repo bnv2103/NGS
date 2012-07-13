@@ -136,6 +136,14 @@ done
 if [ $flag -eq "1" ]
 then
  	cp -r $absIN/Data/reports/ $absOUT/
+	mkdir $absOUT/RunData
+	cp -r $absIN/runParameters.xml $absOUT/RunData/
+	cp -r $absIN/RunInfo.xml $absOUT/RunData/
+	cp -r $absIN/Config $absOUT/RunData/
+	cp -r $absIN/Data/Intensities/config.xml $absOUT/RunData/
+	cp -r $absIN/Data/Intensities/RTAConfiguration.xml  $absOUT/RunData/
+	cp -r $absIN/InterOp/  $absOUT/RunData/
+	cp -r $absIN/Recipe/ $absOUT/RunData/
 	rm s_*.txt
 	rm -rf Matrix/
 	rm -rf Phasing/
@@ -143,12 +151,23 @@ then
 	rm -rf SignalMeans/
 fi
 
-## do  demultiplexing
+# do QC
+# TODO
+mkdir $fastqout/logs
+for i in `seq 1 8`
+do
+	j=1
+	echo ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/fastq_QCplot.rb $fastqout/s_$i"_$j.fastq" $fastqout/s_$i"_$j.pdf" | qsub -o $fastqout/logs/QC.$i.$j.o -e $fastqout/logs/QC.$i.$j.e -l mem=4G,time=8:: -N QC_lane.$i.$j
+	j=3
+	if [ -e $fastqout/s_$i"_$j.fastq" ];then
+		echo ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/fastq_QCplot.rb $fastqout/s_$i"_$j.fastq" $fastqout/s_$i"_$j.pdf" | qsub -o $fastqout/logs/QC.$i.$j.o -e $fastqout/logs/QC.$i.$j.e -l mem=4G,time=8:: -N QC_lane.$i.$j
+	fi
+done
 
 # get barcode stats
+qsub -o $fastqout/logs/barcode-stats.o -e $fastqout/logs/barcode-stats.e -l mem=3G,time=48:: -N barcode_stats.$runName $PIPEBASE/do-barcode-stats.sh $fastqout/s_*_2.fastq
 
-qsub -o $fastqout/log.barcode-stats.o -e $fastqout/log.barcode-stats.e -l mem=3G,time=48:: -N barcode_stats $PIPEBASE/do-barcode-stats.sh $fastqout/s_*_2.fastq
-
+## do  demultiplexing
 # demultiplex                                                                                                     
 sampleSheet=$SampleSheets/$runName.csv
 

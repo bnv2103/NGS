@@ -102,7 +102,7 @@ if [[ ! $fastq2 == "" ]]; then  # paired-ends
     date
     echo "bwa alignment complete. Sorting the bam file ..."
     $samtools sort $output.bam.temp  $output
-    rm -f $fastq1.sai $fastq2.sai $output.bam.temp
+#    rm -f $fastq1.sai $fastq2.sai $output.bam.temp
    
 else  # single-end
     
@@ -117,7 +117,7 @@ else  # single-end
     echo "bwa alignment complete. Sorting the bam file ..."
     $samtools sort $output.bam.temp  $output
    
-    rm -f $fastq1.sai $output.bam.temp
+#    rm -f $fastq1.sai $output.bam.temp
 fi
 
 # fix a bug in samtools sort / bwa

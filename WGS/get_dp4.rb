@@ -84,6 +84,8 @@ end
 def calculate(ref, depth, reads)
  arr = reads.split(//)
  fr,rr,fa,ra = 0,0,0,0
+# fA, fC,fT,fG
+# fa fc ft fg
 
  i = -1;
  while i < reads.length  do
@@ -111,7 +113,8 @@ def calculate(ref, depth, reads)
  puts fr+rr+fa+ra
  puts depth
  dp4="#{fr},#{rr},#{fa},#{ra}"
- return dp4
+# puts o "FreqA= #{(fA+fa)/depth} ; FreqC= #{(fc+fC)/depth} ;  fG+fg/depth , \n"
+  return dp4
 end
 
 def getopt
