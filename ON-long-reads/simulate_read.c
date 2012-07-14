@@ -1,5 +1,5 @@
 // Usage information
-// > ./a.out -snp_rate=<double>, -err_rate=<double>, -coverage=<int>, -max_read_len=<int>, -min_read_len=<int>, -ref_file=<string> -snp_file=<string> -ncells=<int> -out_base=<string>
+// > ./a.out -snp_rate=<double>, -err_rate=<double>, -coverage=<int>, -max_read_len=<int>, -min_read_len=<int>, -ref_file=<string> -snp_file=<string> -ncells=<int> -out_base=<string> -region=<int>
 //
 // All parameters are optional. Check is performed for duplicate parametes, but not for inconsistency of values.
 
@@ -8,9 +8,11 @@
 #include<string.h>
 
 #define FULL
-//#define SIMULATION
-#define DEBUG
-int reads_hap[250] = {1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1};
+//#define DEBUG
+
+int reads_hap[111] = {1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1,2,1,1,1,1,2,2,2,1,2,1,2,1,1,2,2,1,2,1,2,2,1,2,1,1,2,1,2,1,2,1,2,2,1};
+long int nbp[23] = {0, 24724971, 24295114, 19950182, 19127306, 18085786, 17089999, 15882142, 14627482, 14027325, 13537473, 13445238, 13234953, 11414298, 10636858, 10033891, 8882725, 7877474, 7611715, 6381165, 6243596, 4694432, 4969143};
+//long int nbp[23] = {0, 247249719, 242951149, 199501827, 191273063, 180857866, 170899992, 158821424, 146274826, 140273252, 135374737, 134452384, 132349534, 114142980, 106368585, 100338915, 88827254, 78774742, 76117153, 63811651, 62435964, 46944323, 49691432};
 
 struct snp_struct {
 	int position;
@@ -27,62 +29,61 @@ struct read_struct {
 	double snp_errors;
 };
 
+// By default, it will run only for chr21 if FULL is defined, or a small portion of it if FULL is not defined.
 #ifdef FULL
-struct snp_struct snps[81000];
+struct snp_struct snps[310000];
+long int N_BP = 46944323; // chr21
+int reads_max = 140000;
 #else
 struct snp_struct snps[100];
+long int N_BP = 20000;
+int reads_max = 1000;
 #endif
 
-//int read_cmp(const struct read_struct *r1, const struct read_struct *r2)
+double def_snp_rate = 0.01;
+double def_err_rate = 0.04;
+double snp_rate;
+double err_rate;
+
+int CLT = 30;
+char A[3] = "TCG";
+char T[3] = "CGA";
+char C[3] = "GAT";
+char G[3] = "ATC";
+
+int def_coverage = 10;
+int coverage;
+int max_read_len = 5000;
+int min_read_len = 2000;
+int max_ref_len = 250000000;
+int ncells = 0;
+int region = 21;
+
+// RESUME
+//const char *snp_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/snps/snp_21.list";
+char *snp_file;
+const char *file_base = "simulated_reads";
+const char *ref_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/reference/bcm_hg18.fasta";
+FILE *fq_file, *log_file;
+
 int read_cmp(const void *r1, const void *r2)
 {
 	return (((struct read_struct*)r1)->start < ((struct read_struct*)r2)->start ? -1 : (((struct read_struct*)r1)->start == ((struct read_struct*)r2)->start ? 0 : 1) );
 }
 
+void simulate(int chrnum);
+
 int main(int argc, char **argv)
 {
-	double snp_rate = 0.01;
-	double err_rate = 0.04;
-	double def_snp_rate = snp_rate;
-	double def_err_rate = err_rate;
-
-	int CLT = 30;
-	char A[3] = "TCG";
-	char T[3] = "CGA";
-	char C[3] = "GAT";
-	char G[3] = "ATC";
-
-#ifdef FULL
-	long int N_BP = 46944323;
-	int reads_max = 140000;
-	const char *snp_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21.txt";
-#else
-	long int N_BP = 20000;
-	int reads_max = 1000;
-	const char *snp_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21_short.txt";
-#endif
-	int coverage = 10;
-	int def_coverage = coverage;
-	int max_read_len = 5000;
-	int min_read_len = 2000;
-	int max_ref_len = 50000000;
-	int ncells = 0;
-	struct read_struct reads[reads_max];
-
-	int c=0;
-	for(c=0;c<reads_max;c++) {
-		reads[c].str = NULL;
-	}
-
-	//REVISIT: Phased snps needed here
-	//const char *snp_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/phased_indi_snps.txt";
-	const char *ref_file = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/bcm_hg18_chr21.fasta";
-	const char *file_base = "simulated_reads";
+	snp_rate = def_snp_rate;
+	err_rate = def_err_rate;
+	coverage = def_coverage;
+	snp_file = (char*)malloc(sizeof(char)*200);
 
 	// override parameters
 	if(argc>1) {
 		int param = 1;
-		int snp_ck = 0, err_ck = 0, max_ck = 0, min_ck = 0, cov_ck = 0, ref_ck = 0, snf_ck = 0, cel_ck = 0, out_ck = 0;
+		int snp_ck = 0, err_ck = 0, max_ck = 0, min_ck = 0, cov_ck = 0, ref_ck = 0, snf_ck = 0, cel_ck = 0, out_ck = 0, reg_ck = 0;
 		for(param=1;param<argc;param++) {
 			char *token[2];
 			token[0] = strtok(argv[param], "=");
@@ -158,6 +159,13 @@ int main(int argc, char **argv)
 						out_ck++;
 						file_base = token[1];
 					}
+				} else if(strcmp(token[0],"-region")==0) {
+					if(reg_ck>0) {
+						printf("Duplicate parameter %s=%s, ignoring..\n", token[0],token[1]);
+					} else {
+						reg_ck++;
+						region = atoi((const char *)token[1]);
+					}
 				} else {
 					printf("Invalid parameter %s=%s. Ignoring..\n", token[0],token[1]);
 				}
@@ -170,25 +178,72 @@ int main(int argc, char **argv)
 		}
 	}
 
-	long int i=0;
-	long int n_reads = (2 * N_BP * coverage)/(max_read_len+min_read_len);
-	
-	// Read ref fasta here
-	FILE *ref = fopen(ref_file,"rt");
-	if(ref == NULL) { printf("Can't open ref file \"%s\"\n", ref_file); exit(1); }
+	int chrnum;
+	char file_name[200];
+	char log_file_name[200];
+	char *ext = ".fq";
+	char *log = ".log";
 
-	// Read snp file here
-	// cut -d' ' -f 4,181 genotypes_chr21_CEU_r27_nr.b36_fwd.txt | awk -F "" '{if(NR!=1) {for(i=1;i<=NF;i++) {if(i!=(NF-1)) printf $i;}printf "\n";}}' > phased_indi_snps.txt 
-	FILE *snp_f = fopen(snp_file,"rt");
-	if(snp_f == NULL) { printf("Can't open snp file \"%s\"\n", snp_f); exit(1); }
+	sprintf(file_name, "%s%s", file_base, ext);
+	sprintf(log_file_name, "%s%s", file_base, log);
+	fq_file = fopen(file_name, "w");
+	//log_file = fopen(log_file_name, "w");
+
+	if (fq_file == NULL)
+		printf("Error opening output file [%s]\n", (const char *) file_name);
+	if (log_file == NULL)
+		printf("Error opening output file [%s]\n", (const char *) log_file_name);
+
+//	if(region==0) {
+//		for(chrnum=21; chrnum<23; chrnum++) {
+//			simulate(chrnum);
+//		}
+//	} else {
+	simulate(region);
+//	}
+	fclose(fq_file);
+	//fclose(log_file);
+}
+
+void simulate(int chrnum)
+{
+	int c=0;
+	long int i=0;
+	N_BP = nbp[chrnum];
+	sprintf(snp_file, "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/snps/snp_%d.list",chrnum);
+	long int n_reads = 2 * (nbp[chrnum] * coverage)/(max_read_len + min_read_len);
+	struct read_struct *reads = (struct read_struct*)malloc(sizeof(struct read_struct)*n_reads);
+
+	for(c=0;c<n_reads;c++) {
+		reads[c].str = NULL;
+	}
 
 	int ctr=0;
 	char line[100];
 	char *ref_s = (char*) malloc(sizeof(char)*max_ref_len);
 	
-	while(fgets(line,sizeof(line),ref)) {
+	// Read ref fasta here
+	FILE *ref = fopen(ref_file,"rt");
+	if(ref == NULL) { printf("Can't open ref file \"%s\"\n", ref_file); exit(1); }
+
+	int read_flag = 0;
+	while(1) {
+		fgets(line,sizeof(line),ref);
+		if(feof(ref))
+			break;
 		int c_ptr = 0;
 		int line_len = strlen(line) - 1;
+		if(line[0]=='>') {
+			if(read_flag==1) {
+				break;
+			} else {
+				if((line_len==5&&line[4]-48==chrnum)||(line_len==6&&(line[4]-48)*10+line[5]-48==chrnum))
+					read_flag = 1;
+					continue;
+			}
+		}
+		if(read_flag==0)
+			continue;
 		for(c_ptr = 0;c_ptr<line_len;c_ptr++) {
 			ref_s[ctr+c_ptr] = line[c_ptr];
 		}
@@ -197,40 +252,33 @@ int main(int argc, char **argv)
 	ref_s[ctr] = '\0';
 	fclose(ref);
 
-	// Add snps, indels to ref file
-#ifdef OLD
-	while(1) {
-		int pos = 0, r = 0;
-		char allele;
-		if(fgets(line,sizeof(line),snp_f)) {
-			pos = atoi(line);
-			allele = line[strlen(line)-2];
-		} else {
-			break;
-		}
-		ref_s[pos-1] = allele;
-	}
-#endif
+	// Read snp file here
+	FILE *snp_f = fopen(snp_file,"rt");
+	if(snp_f == NULL) { printf("Can't open snp file \"%s\"\n", snp_f); exit(1); }
+
 	ctr = 0;
 	while(1) {
 		int pos=0,hap=0;
-		char ref,alt;
+		char ref,alt, *spl;
 
 		// 10% of these snps will be made novel snps with low prior values in the HMM.
 		// How we infer these 10% for now is basically every 10th such snp.
-		if(fgets(line,sizeof(line),snp_f)) {
-			pos = atoi(line);
-			ref = line[strlen(line)-4];
-			alt = line[strlen(line)-2];
-			hap = ctr%2+1;
-			snps[ctr].position = pos;
-			snps[ctr].hap = hap;
-			snps[ctr].ref = ref;
-			snps[ctr].alt = alt;
-		} else
+		// RESUME - obtaining phased genotype
+		fgets(line,sizeof(line),snp_f);
+		if(feof(snp_f))
 			break;
+		strtok(line," ");
+		pos = atoi(strtok(NULL," "));
+		ref = strtok(NULL," ")[0];
+		alt = strtok(NULL," ")[0];
+		hap = ctr%2+1;
+		snps[ctr].position = pos;
+		snps[ctr].hap = hap;
+		snps[ctr].ref = ref;
+		snps[ctr].alt = alt;
 		ctr++;
 	}
+	fclose(snp_f);
 
 	srand ( (unsigned)time ( NULL ) );
 	for(i=0;i<n_reads;i++) {
@@ -241,9 +289,6 @@ int main(int argc, char **argv)
 		int read_position_start = 9880000;
 		int rnd = rand();
 		reads[i].start = (int)((rnd*N_BP)/RAND_MAX) + read_position_start;
-#endif
-#ifdef SIMULATION
-		reads[i].start = i*((N_BP-max_read_len)/n_reads) + 1;
 #endif
 	}
 	for(i=0;i<n_reads;i++) {
@@ -258,10 +303,8 @@ int main(int argc, char **argv)
 			sum += (((rand()*(err_rate*1000))/RAND_MAX) + (err_rate*1000/2));
 			ssum += (((rand()*(snp_rate*1000))/RAND_MAX) + (snp_rate*1000/2));
 		}
-		//sum += 15;
 		reads[i].del_errors = sum/(CLT*10);
 		reads[i].snp_errors = ssum/(CLT*10);
-//printf("%f\t%f\n",ssum,reads[i].snp_errors);
 		sum = 0; ssum = 0;
 	}
 #ifdef DEBUG
@@ -270,7 +313,7 @@ for(i=0; i<n_reads; i++) {
 	printf("Read %d starts at %d,%d,%f,%f\n", i, reads[i].start,reads[i].len,reads[i].del_errors,reads[i].snp_errors);
 }
 #endif
-	qsort(&reads, n_reads, sizeof(struct read_struct), read_cmp);
+	qsort(reads, n_reads, sizeof(struct read_struct), read_cmp);
 
 #ifdef DEBUG
 printf("After sorting\n");
@@ -278,25 +321,10 @@ for(i=0; i<n_reads; i++) {
 	printf("Read %d starts at %d,%d,%d,%f,%f\n", i, reads[i].start,reads[i].len,reads[i].start+reads[i].len,reads[i].del_errors,reads[i].snp_errors);
 }
 #endif
-	// RAND_MAX = 2147483647
-	char file_name[30];
-	char log_file_name[30];
-	char *ext = ".fq";
-	char *log = ".log";
-	sprintf(file_name, "%s_%d%s", file_base, ncells, ext);
-	sprintf(log_file_name, "%s_%d%s", file_base, ncells, log);
-	FILE *fq_file = fopen(file_name, "w");
-	FILE *log_file = fopen(log_file_name, "w");
-
-	if (fq_file == NULL)
-		printf("Error opening output file [%s]\n", (const char *) file_name);
-	if (log_file == NULL)
-		printf("Error opening output file [%s]\n", (const char *) log_file_name);
-
-	char *qualstr = (char *)malloc(sizeof(char) * max_read_len);
 
 	int ct_start = 0;
-//	srand ((unsigned)time(NULL));
+	char *qualstr = (char *)malloc(sizeof(char) * max_read_len);
+
 	for(i=0;i<n_reads;i++) {
 		int j, k = 0;
 
@@ -419,8 +447,6 @@ printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j)
 	for(i=0;i<n_reads;i++) {
 		free(reads[i].str);
 	}
-	fclose(fq_file);
-	fclose(log_file);
 	free(qualstr);
 	free(ref_s);
 }

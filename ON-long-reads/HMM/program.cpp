@@ -34,6 +34,7 @@ using namespace std;
 #define FULL
 //#define DEBUG
 
+int region;
 vector<SNP*> snp_list;
 vector<READ*> reads_list;
 vector<string> known_snps;
@@ -296,14 +297,11 @@ cout << slen << "\t" << rev_slen << "\t" << Ndels << "\t" << length << endl;
 	cout << "number of snps = " << snp_list.size() << endl;
 }
 
-void runHMM()
+void runHMM(const char *outputName)
 {
 	int i;
-#ifdef FULL
-	int nbDimensions = 1, nbSymbols = 140000, nbStates = 2;
-#else
-	int nbDimensions = 1, nbSymbols = 250, nbStates = 2;
-#endif
+//	int nbDimensions = 1, nbSymbols = 140000, nbStates = 2;
+	int nbDimensions = 1, nbSymbols = reads_list.size(), nbStates = 2;
 	int isGaussian = 0;
 	int *listNbSymbols = new int[(nbDimensions)+1];;
 	double **transitionMatrix, **emissionMatrix;
@@ -313,15 +311,12 @@ void runHMM()
 		listNbSymbols[i] = nbSymbols;
 	}
 
-	const char *outputName = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/HMM/output";
-	char hmmOutputName[256];
+//	const char *outputName = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/HMM/output/";
 	char stateOutputName[256];
 	char expectedObsOutputName[256];
 	char distanceOutputName[256];
 
-	sprintf(hmmOutputName,"%s%s",outputName, ".hmm");
 	sprintf(stateOutputName,"%s%s",outputName, ".sta");
-	sprintf(expectedObsOutputName,"%s%s",outputName, ".obs");
 	sprintf(distanceOutputName,"%s%s",outputName, ".obs");
 
 	CStateTrans *a;
@@ -350,12 +345,17 @@ void runHMM()
 	//CObsSeq *obsSeq = new CObsSeq(obsType, &snp_list, &reads_list);
 
 	ofstream stateOutput(stateOutputName);
-	ofstream expectedObsOutput(expectedObsOutputName);
 	ofstream distanceOutput(distanceOutputName);
-	expectedObsOutput.close();
 	//GLOBAL
 //	double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput, &reads_list, &snp_list);
-	double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput,stateOutput);
+	//double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput,stateOutput);
+	//
+	// Supposed to run forward and backward algorithms
+	// Obtain P(x) and thus posteriors
+	// Perform haplotype calling
+	// Perform genotype calling
+	// Perform EM
+	learnedHMM->FindFBDistance(obsSeq, distanceOutput);
 	distanceOutput.close();
 
 	cout << endl << endl;
@@ -377,26 +377,40 @@ int main(int argc, char **argv)
 {
 	int i;
 	const char *ext = ".sam";
+
 #ifdef FULL
-	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_1.01.vcf";
-	//const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/temp.vcf";
-	const char *knownsnpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21.txt";
-	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/sim_1.01.sorted";
-	//const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/temp";
+	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/vcfs/0.01_0.04_2_5000_2000_0_20.1.1.vcf";
+	const char *knownsnps="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/snps/snp_20.list";
+	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/reads/0.01_0.04_2_5000_2000_0_20.sorted";
+	char knownsnpfile[200], *base;
+
+	if(argc>1) {
+		file_base=argv[1];
+		snpfile=argv[2];
+		region=atoi(argv[3]);
+		sprintf(knownsnpfile,"/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/snps/snp_%d.list",region);
+		base=argv[4];
+	} else {
+		strcpy(knownsnpfile,knownsnps);
+		strcpy(base,"/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/HMM/output/output.1.1");
+	}
 #else
 	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/short_6.vcf";
 	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/short_6.sorted";
-	const char *knownsnpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/common_snps_21_short.txt";
+	const char *knownsnpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/snps/short_snp.list";
+	const char *base="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/HMM/output/output_short";
 #endif
 
-	char file_name[100];
+	char file_name[200];
 	sprintf(file_name, "%s%s", file_base, ext);
 
-	read_known_snp_file(knownsnpfile);
+cout << knownsnpfile << endl << snpfile << endl << file_name << endl << base << endl << endl;
+
+	//read_known_snp_file(knownsnpfile);
 	read_snp_file(snpfile);
 	read_sam_files(file_name);
 
-	runHMM();
+	runHMM(base);
 
 	return 0;
 }
