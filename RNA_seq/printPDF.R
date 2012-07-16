@@ -18,8 +18,9 @@ for (i in 1:length(fileList) ){
     # get the smaple name
     title = B[[1]][6]
     brNum = 500
-    
+    # par(mfrow = c(2,1))
     hist(log10(a$FPKM), br=brNum, xlim=range(c(-10, 10)),xlab="log10(FPKM)", main = paste("Histogram of" , title))
+    # plot(density(log10(a$FPKM)), xlim=range(c(-10, 10)),xlab="log10(FPKM)")
     a.s = a[order(-a$FPKM*a$length), ]
     c = a.s[1:100, ]
     plot(1:100, log(c$FPKM*c$length), ylab="Normalized # Reads: log(FPKM*length)", main=paste("Plot of Top 100 Isoforms", title))
@@ -37,19 +38,20 @@ for (i in 1:length(fileList) ){
 # qplot(a$FPKM, b$FPKM, ylim=c(-10, 2000), xlim=c(-10,2000))
 # print MA plot
 if (isMA ==1){
-   if (length(fileList) <=3 ){
-      par(mfrow = c(length(fileList),length(fileList)))
-   }
+   # if (length(fileList) <=3 ){
+   #   par(mfrow = c(length(fileList),length(fileList)))
+   # }
+   par(mfrow = c(2,1))
 for (i in 1:(length(fileList)) ){
     for (j in 1:(length(fileList)) ){
         # par(mfrow= c(length(fileList),length(fileList)))
-        # if (i != j){
-        t1 = strsplit(fileList[i], "_")
-        t2 = strsplit(fileList[j], "_")
-        title1 = t1[[1]][6]
-        title2 = t2[[1]][6]
-        title_sub1 = strsplit(title1, "-")
-        title_sub2 = strsplit(title2, "-")
+        if (i != j){
+           t1 = strsplit(fileList[i], "_")
+           t2 = strsplit(fileList[j], "_")
+           title1 = t1[[1]][6]
+           title2 = t2[[1]][6]
+           title_sub1 = strsplit(title1, "-")
+           title_sub2 = strsplit(title2, "-")
         # if (title_sub1[[1]][2] == title_sub2[[1]][2]){
            a = read.table(fileList[i], header=T)
            b = read.table(fileList[j], header=T)
@@ -63,22 +65,26 @@ for (i in 1:(length(fileList)) ){
 	   }
 	   }
 }
+}
 
 if (isMA ==1){
     if (length(fileList) <=3 ){
       par(mfrow = c(length(fileList),length(fileList)))
+      }
+      else { 
+      par(mfrow = c(2,1))
    }
 
 for (i in 1:(length(fileList)) ){
     for (j in 1:(length(fileList)) ){
     	# par(mfrow= c(length(fileList),length(fileList)))
-    	# if (i != j){
-	t1 = strsplit(fileList[i], "_")
-        t2 = strsplit(fileList[j], "_")
-        title1 = t1[[1]][6]
-        title2 = t2[[1]][6]
-	title_sub1 = strsplit(title1, "-")
-	title_sub2 = strsplit(title2, "-")
+    	if (i != j){
+	   t1 = strsplit(fileList[i], "_")
+           t2 = strsplit(fileList[j], "_")
+           title1 = t1[[1]][6]
+           title2 = t2[[1]][6]
+	   title_sub1 = strsplit(title1, "-")
+	   title_sub2 = strsplit(title2, "-")
 	# if (title_sub1[[1]][2] == title_sub2[[1]][2]){
     	   a = read.table(fileList[i], header=T)
     	   b = read.table(fileList[j], header=T)
@@ -99,6 +105,7 @@ for (i in 1:(length(fileList)) ){
 		
     }
  }
+}
 }
 
 dev.off()

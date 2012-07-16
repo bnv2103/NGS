@@ -23,11 +23,6 @@ def main
     # puts line
     # numReads = numReads + 1
     s = infile.take(1)
-    # cols = line.chomp.split(' ')
-    
-    # readName = cols[0]
-    # readSeq = cols[9]
-    # readQual = cols[10]
     
     readName = s
     s = infile.take(1)

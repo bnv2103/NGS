@@ -23,7 +23,7 @@ echo "printing pdf"
  Rscript $RNABASE/printPDF.R $fileName  $isMA
  echo "done PDF"
 
-#  rm *genes
+ rm *genes
  rm *isoforms
 # rm *nonRef
 cp ../../summary.csv ./
