@@ -50,7 +50,7 @@ cmd="java -Xmx${HEAP}G -Djava.io.tmpdir=${TEMP} -jar ${PICARD}/CollectGcBiasMetr
 echo $cmd
 $cmd
 
-cmd="java -Xmx${HEAP}G -Djava.io.tmpdir=${TEMP} -jar ${PICARD}/CollectInsertSizeMetrics.jar INPUT=$input OUTPUT=$output/InsertSize_detail HISTOGRAM_FILE=$output/InsertSize.pdf REFERENCE_SEQUENCE=$REF  VALIDATION_STRINGENCY=SILENT ASSUME_SORTED=null "
+cmd="java -Xmx${HEAP}G -Djava.io.tmpdir=${TEMP} -jar ${PICARD}/CollectInsertSizeMetrics.jar INPUT=$input OUTPUT=$output/InsertSize_detail HISTOGRAM_FILE=$output/InsertSize.pdf REFERENCE_SEQUENCE=$REF  VALIDATION_STRINGENCY=SILENT ASSUME_SORTED=true "
 echo $cmd
 $cmd
 

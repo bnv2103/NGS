@@ -25,8 +25,8 @@ echo "Finished Annovar Annotation : $1.summary.*";
 
 # Convert annovar result back to VCF using original VCF for header
 echo "Converting Annovar Summary to VCF : $1.summary.exome/genome_summary.csv";
-perl /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/WGS/convert_annovar_vcf-all-samples.pl $1.summary.exome_summary.csv $1
-perl /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/WGS/convert_annovar_vcf-all-samples.pl $1.summary.genome_summary.csv $1
+perl /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/GIT_CODE/NGS/WGS/convert_annovar_vcf-all-samples.pl $1.summary.exome_summary.csv $1
+perl /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/GIT_CODE/NGS/WGS/convert_annovar_vcf-all-samples.pl $1.summary.genome_summary.csv $1
 echo "Annovar COMPLETE ";
 echo "OUTPUT - $1.summary.exome_summary.csv.vcf ";
 echo "OUTPUT - $1.summary.genome_summary.csv.vcf ";
