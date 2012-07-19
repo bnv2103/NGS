@@ -43,7 +43,7 @@ library=$rg
 
 
 ## SE
-cmd="tophat --solexa-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library $BOWTIEDB $fq"
+cmd="tophat --phred64-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library $BOWTIEDB $fq"
 
 # --solexa-quals
 # --phred64-quals
