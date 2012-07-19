@@ -67,7 +67,7 @@ $cmd
 
 ## reference-guided assembly
 # cmd2="cufflinks -o $cuffout2 --compatible-hits-norm --GTF-guide  $GENES $bam"
-case 
+ 
 cmd2="cufflinks -o $cuffout2 --GTF-guide  $GENES $bam"
 echo -e "do cufflinks with ref genes -guide: \n $cmd2"
 $cmd2
