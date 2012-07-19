@@ -146,14 +146,12 @@ date
 ## Get GC Stats
 g=`basename $output.bam | sed 's/\//_/g'`
 
-CMD="qsub -o $OUTDIR/logs/GC.o -e $OUTDIR/logs/GC.e -N GC.$g  -l mem=5G,time=6:: $UTILS/picard_GCMetrics.sh -i $output.bam -o $OUTDIR -m 4 -g $setting -w 200 "
+CMD="qsub -o log.GC.$g.o -e log.GC.$g.e -N GC.$g  -l mem=5G,time=6:: $UTILS/picard_GCMetrics.sh -i $output.bam -o $output.bam -m 4 -g $setting -w 200 "
 echo $CMD
 $CMD
 
 if [[ $chain != "0" ]]; then ## call realign
-    
     OUTDIR=$output.bam_refine
-
     if [ ! -d $OUTDIR ]; then
 	mkdir $OUTDIR
     fi  

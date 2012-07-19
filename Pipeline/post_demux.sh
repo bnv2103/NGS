@@ -4,14 +4,19 @@
 
 fqdir=$1
 runid=$2
+setting=$3
 
-SampleSheets="/ifs/data/c2b2/ngs_lab/ngs/status/SampleSheets/"
+if [[ $fqdir == "" || $runid == ""  || $setting == "" ]]
+    then
+    echo "Error: Missing Argument :: $0 $1 $2 $3"
+    echo "USAGE: $0 path/fqdir runID path/pipeline_global_settings_file "
+    exit 1
+fi
+
+. $setting
+
 DIR="/ifs/scratch/c2b2/ngs_lab/ngs/Projects/"
 APP=""
-
-RESOURCES="/ifs/data/c2b2/ngs_lab/ngs/resources/"
-EXOMEBASE="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/Exome/"
-RNABASE="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/RNA_seq/"
 
 for fq in `ls $fqdir/*_1.fastq`
 do
@@ -55,21 +60,29 @@ do
         then
 		APP="Exome-seq/"
 	else
+		## Fire QC on the Fastq
+	        if [ ! -d $fqdir/QC ];then mkdir -p $fqdir/QC ; fi
+	        if [ ! -d $fqdir/logs ];then mkdir -p $fqdir/logs ; fi
+		j=`basename $fq`
+		fq3=`echo $fq | sed 's/_1.fastq$/_3.fastq' `
+		scriptfile="$fqdir/QC/$j.runQC.sh"
+		echo '#!/bin/bash ' > $scriptfile 
+		echo '#$ -cwd ' >> $scriptfile
+		echo " ruby $UTILS/fastq_QCplot.rb $fqdir/QC/$j.QC $fq $fq3  & " >> $scriptfile
+	        echo " sh  $UTILS/picard_LibraryComplexity.sh -i $fq -p  $fq3 -o $fqdir/QC/$j.LibComplexity -m 7 -s $j " >> $scriptfile
+		echo " wait " >>  $scriptfile
+		## Finally GZip the demuxed file.
+		echo " qsub -o $fqdir/logs/zip.$j.o -e $fqdir/logs/zip.$j.e -N Zip.$j -l mem=512M,time=2::  $NGSSHELL/do_gzip.sh $fq $fq3 " >> $scriptfile
+		CMD="qsub -o $fqdir/logs/QC.$j.o -e $fqdir/logs/QC.$j.e -N QC.$j -l mem=9G,time=12:: $scriptfile "
+		echo $CMD
+		$CMD
 		continue;
-## Fire QC on the Fastq
-
-        if [ ! -d $fqdir/QC ];then mkdir -p $fqdir/QC ; fi
-        QCDir="$fqdir/QC/$lane_$sampleid/"
-        if [ ! -d $QCDir ];then mkdir -p $QCDir ; fi
-        CMD="qsub -o $QCDir/log.qc.$sampleid.o -e $QCDir/log.qc.$sampleid.e -N QC.$sampleid -l mem=6G,time=8:: $UTILS/picard_Fastq_Sam.sh -i $fq -p $fq_3 -o $QCDir/ -m 4 -s $sampleid -g $organism "
-        echo $CMD
-        $CMD
-
 	fi
 	
 	if [ ! -d $DIR/$APP/$projectid ];then mkdir -p $DIR/$APP/$projectid; fi
 	if [ ! -d $DIR/$APP/$projectid/$runid ];then mkdir -p $DIR/$APP/$projectid/$runid; fi
         if [ ! -d $DIR/$APP/$projectid/$runid/fastq ];then mkdir -p $DIR/$APP/$projectid/$runid/fastq; fi
+	if [ ! -d $DIR/$APP/$projectid/$runid/logs ];then mkdir -p $DIR/$APP/$projectid/$runid/logs; fi
 
 	#move fastq files to destination dir
 	mv  $fq $DIR/$APP/$projectid/$runid/fastq/
@@ -82,14 +95,21 @@ do
 		ln_fq_3=""
 	fi
 
-	if [ ! -d $DIR/$APP/$projectid/$runid/logs ];then mkdir -p $DIR/$APP/$projectid/$runid/logs; fi
+	## Fire QC on the Fastq for RNA-seq & Exome-Seq 
         if [ ! -d $fqdir/QC ];then mkdir -p $fqdir/QC ; fi
-        QCDir="$fqdir/QC/$lane_$sampleid/"
-	if [ ! -d $QCDir ];then mkdir -p $QCDir ; fi
-        CMD="qsub -o $QCDir/log.qc.$sampleid.o -e $QCDir/log.qc.$sampleid.e -N QC.$sampleid -l mem=6G,time=8:: $UTILS/picard_Fastq_Sam.sh -i $ln_fq -p $ln_fq_3 -o $QCDir/ -m 4 -s $sampleid -g $organism "
-	echo $CMD 
-	$CMD
-
+        if [ ! -d $fqdir/logs ];then mkdir -p $fqdir/logs ; fi
+	scriptfile="$fqdir/QC/$j.runQC.sh"
+		echo '#!/bin/bash ' > $scriptfile 
+		echo '#$ -cwd ' >> $scriptfile
+		echo " ruby $UTILS/fastq_QCplot.rb $fqdir/QC/$base_fq.QC $ln_fq $fq3  & " >> $scriptfile
+	        echo " sh  $UTILS/picard_LibraryComplexity.sh -i $ln_fq -p $fq3 -o $fqdir/QC/$base_fq.LibComplexity -m 7 -s $base_fq " >> $scriptfile
+		echo " wait " >>  $scriptfile
+		## Finally GZip the demuxed file.
+		CMD="qsub -o $fqdir/logs/QC.$base_fq.o -e $fqdir/logs/QC.$base_fq.e -N QC.$base_fq -l mem=9G,time=12:: $scriptfile "
+		echo $CMD
+		$CMD
+#        QCDir="$fqdir/QC/$lane_$sampleid/"
+#	if [ ! -d $QCDir ];then mkdir -p $QCDir ; fi
 	
 	cd $DIR/$APP/$projectid/$runid
 
@@ -131,12 +151,13 @@ do
 	elif [[ $app =~ "exome" ]];
 	then
 		#initiate exome-seq pipeline
+		EXOMEBASE_1=$EXOMEBASE
 		if [ ! -d $DIR/$APP/$projectid/$runid/mapping ]; then mkdir -p $DIR/$APP/$projectid/$runid/mapping; fi
 		if [ ! -e global_setting_b37.sh ];then
-		        cp $EXOMEBASE/global_setting_b37.sh $DIR/$APP/$projectid/$runid/global_setting.sh
+		        cp $EXOMEBASE_1/global_setting_b37.sh $DIR/$APP/$projectid/$runid/global_setting.sh
 			if [[ $capture =~ "mouse" ]]; then
-				EXOMEBASE="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/";
-				cp $EXOMEBASE/global_setting.sh $DIR/$APP/$projectid/$runid/global_setting.sh
+				EXOMEBASE_1="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/";
+				cp $EXOMEBASE_1/global_setting.sh $DIR/$APP/$projectid/$runid/global_setting.sh
 		        elif [[ $capture =~ "44mb" ]]; then
 		                echo -e "export ExonFile="/ifs/data/c2b2/ngs_lab/ngs/resources/Agilent/SureSelect_All_Exon_V2_with_annotation.hg19.bed.mod"" >> $DIR/$APP/$projectid/$runid/global_setting.sh
                         elif [[ $capture =~ "51mb" ]]; then
@@ -144,7 +165,7 @@ do
 		        fi
 		fi
 		#Call Mapping
-		CMD="sh $EXOMEBASE/do_mapping.sh $ln_fq $DIR/$APP/$projectid/$runid/global_setting.sh $projectid "
+		CMD="sh $EXOMEBASE_1/do_mapping.sh $ln_fq $DIR/$APP/$projectid/$runid/global_setting.sh $projectid "
 		echo $CMD
 		$CMD
 	fi
