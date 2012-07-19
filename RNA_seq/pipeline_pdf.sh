@@ -7,7 +7,7 @@ out=$1
 isMA=$2
 
 RNABASE="/ifs/scratch/c2b2/ngs_lab/xs2182/code"
-echo "printing pdf"
+echo "copy files"
 
  dirName="to_release"
  if [ ! -d $dirName ]; then mkdir -p $dirName; fi
@@ -17,9 +17,10 @@ echo "printing pdf"
  for f in *cufflinks; do  sh $RNABASE/cpIsoforms.sh  $f $dirName; done
  # for f in *cufflinks; do  sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/cpIsoforms_nonRef.sh  $f $dirName; done
  cd $dirName
-
- Rscript $RNABASE/combineFPKM.R
+# echo "combineFPKM"
+#  Rscript $RNABASE/combineFPKM.R
  fileName=$out".pdf"
+echo "print pdf"
  Rscript $RNABASE/printPDF.R $fileName  $isMA
  echo "done PDF"
 
