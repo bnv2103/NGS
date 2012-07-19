@@ -201,6 +201,10 @@ def doSplit(bfq, targetfq, lane, multiplex, outprefix, barcodesize)
 	temp_out << "\t#{reads}"
 	$reads_lane[lane].push(reads)	
   end
+  lane_out << "\tDecoded"
+  temp_out << "\t#{ndecode}"
+  lane_out << "\tUnknown"
+  temp_out << "\t#{ndiscard}"
   read_summary_file.puts lane_out
   read_summary_file.puts temp_out
   read_summary_file.close
