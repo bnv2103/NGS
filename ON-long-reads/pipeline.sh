@@ -12,10 +12,10 @@ pval=$8
 
 snprate=0.01
 errrate=0.04
-coverage=2
+coverage=10
 maxreadlen=5000
 minreadlen=2000
-region=20
+region=0
 iteration=0
 pval=1.1
 
@@ -34,25 +34,29 @@ output_base=${base}/HMM/output/${pre}
 
 if [[ $region -eq 0 ]]
 then
-	qsub -sync y -t 21-22 -l mem=1G,time=16:: ./simulate_read.sh $snprate $errrate $coverage $maxreadlen $minreadlen $region $iteration ${read_base}
+	let "qmem=400*$coverage"
+	qsub -sync y -t 1-2 -l mem=4G,time=16:: ./simulate_read.sh $snprate $errrate $coverage $maxreadlen $minreadlen $region $iteration ${read_base}
 	echo simulation complete
 
-	qsub -sync y -t 21-22 -l mem=6G,time=10:: ./long_read_map.sh ${read_base} $region
+	let "qtime=3*$coverage"
+	qsub -sync y -t 1-2 -l mem=8G,time=8:: ./long_read_map.sh ${read_base} $region
 	rm ${read_base}.ibs
-	for i in `seq 21 22`
+	for i in `seq 1 2`
 	do
 		cat ${read_base}_${i}.ibs >> ${read_base}.ibs
+		rm ${read_base}_${i}.ibs
 	done
 	echo alignment complete
 
-	qsub -sync y -t 21-22 -l mem=1G,time=20:: ./snp_calling.sh ${read_base} $pval ${vcf_base} $region
+	let "qtime=3*$coverage"
+	qsub -sync y -t 1-2 -l mem=1G,time=8:: ./snp_calling.sh ${read_base} $pval ${vcf_base} $region
 	echo snp calling complete
 
 	cd HMM
-	qsub -sync y -t 21-22 -l mem=3G,time=1:: ./program.sh ${read_base} ${vcf_base} $region $pval ${output_base}
+	qsub -sync y -t 1-2 -l mem=32G,time=8:: ./program.sh ${read_base} ${vcf_base} $region $pval ${output_base}
 	rm ${output_base}.${pval}.obs
 	rm ${output_base}.${pval}.sta
-	for i in `seq 21 22`
+	for i in `seq 1 2`
 	do
 		cat ${output_base}_${i}.${pval}.obs >> ${output_base}.${pval}.obs
 		rm ${output_base}_${i}.${pval}.obs
@@ -63,17 +67,20 @@ then
 
 	./analysis.sh ${output_base}.${pval} ${read_base}
 else
-	qsub -sync y -l mem=1G,time=16:: ./simulate_read.sh $snprate $errrate $coverage $maxreadlen $minreadlen $region $iteration ${read_base}
+	let "qmem=400*$coverage"
+	qsub -sync y -l mem=4G,time=16:: ./simulate_read.sh $snprate $errrate $coverage $maxreadlen $minreadlen $region $iteration ${read_base}
 	echo simulation complete
 
-	qsub -sync y -l mem=6G,time=10:: ./long_read_map.sh ${read_base} $region
+	let "qtime=3*$coverage"
+	qsub -sync y -l mem=8G,time=8:: ./long_read_map.sh ${read_base} $region
 	echo alignment complete
 
-	qsub -sync y -l mem=1G,time=20:: ./snp_calling.sh ${read_base} $pval ${vcf_base} $region
+	let "qtime=3*$coverage"
+	qsub -sync y -l mem=1G,time=8:: ./snp_calling.sh ${read_base} $pval ${vcf_base} $region
 	echo snp calling complete
 
 	cd HMM
-	qsub -sync y -l mem=8G,time=1:: ./program.sh ${read_base} ${vcf_base} $region $pval ${output_base}
+	qsub -sync y -l mem=32G,time=8:: ./program.sh ${read_base} ${vcf_base} $region $pval ${output_base}
 	echo HMM complete
 
 	./analysis.sh ${output_base}_${region}.${pval} ${read_base}_${region}

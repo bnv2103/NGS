@@ -32,7 +32,7 @@ using namespace std;
 
 #define ncells 1
 #define FULL
-//#define DEBUG
+#define DEBUG
 
 int region;
 vector<SNP*> snp_list;

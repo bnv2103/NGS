@@ -35,7 +35,7 @@ paste ${inp}.ibs ${prefix}.obs | awk '{if($2!=$4) printf "reads %d and %d do not
 
 # Maybe I'll combine these in the super master pipeline script to plot for all simulation parameters in single plot
 cp base.gnu ${prefix}.gnu
-echo "set output ‘${prefix}.png’" >> ${prefix}.gnu
-echo "plot ‘${prefix}.b’ w l ls 1" >> ${prefix}.gnu
+echo "set output '${prefix}.png'" >> ${prefix}.gnu
+echo "plot '${prefix}.b' w l ls 1" >> ${prefix}.gnu
 gnuplot ${prefix}.gnu
 

@@ -14,13 +14,14 @@ fi
 rbase=${prefix}_$region
 vbase=${suffix}_$region
 
-samtools mpileup ${rbase}.sorted.bam -uIf reference/bcm_hg18.fasta -C 1 -d 300 -E -q 10 -Q 15 -gDS > ${vbase}.bcf
-bcftools view -gv -e -p $pval -t 0.001 ${vbase}.bcf > ${vbase}.temp.vcf
-grep ^# ${vbase}.temp.vcf > ${vbase}.${pval}.vcf
-grep -v ^# ${vbase}.temp.vcf | awk -F'\t' '{if($4!="N"&&length($5)==1) { split($8,info,";");split(info[1],dp,"="); if(dp[2]>=2) print $0;} }' >> ${vbase}.${pval}.vcf
-rm ${vbase}.temp.vcf
+qsub -sync y -l mem=1G,time=8:: -t 1-10 mpileup.sh ${rbase} $region $vbase $pval
 
-#samtools mpileup -b bam.full.list -uIf bcm_hg18.fasta | bcftools view -gvc - | vcfutils.pl varFilter -D 200
-#samtools mpileup -b bam.full.list -uIf bcm_hg18.fasta | bcftools view -gvc -
-####samtools mpileup sim1.sorted.bam -uIf bcm_hg18.fasta -C 1 -d 300 -E -q 10 -Q 15 -gDS | bcftools view -gv -e -p 0.9 -t 0.001 - 
+grep ^# ${vbase}.1.temp.vcf > ${vbase}.${pval}.vcf
+mkdir -p ./tmp_${region}
+
+grep -hv ^# ${vbase}.1.temp.vcf ${vbase}.2.temp.vcf ${vbase}.3.temp.vcf ${vbase}.4.temp.vcf ${vbase}.5.temp.vcf ${vbase}.6.temp.vcf ${vbase}.7.temp.vcf ${vbase}.8.temp.vcf ${vbase}.9.temp.vcf ${vbase}.10.temp.vcf | sort -u -k2,2g -T ./tmp_${region} | awk -F'\t' '{if($4!="N"&&length($5)==1) { split($8,info,";");split(info[1],dp,"="); if(dp[2]>=2) print $0;} }' >> ${vbase}.${pval}.vcf
+
+rm -rf ./tmp_${region}
+rm ${vbase}.bcf.1 ${vbase}.bcf.2 ${vbase}.bcf.3 ${vbase}.bcf.4 ${vbase}.bcf.5 ${vbase}.bcf.6 ${vbase}.bcf.7 ${vbase}.bcf.8 ${vbase}.bcf.9 ${vbase}.bcf.10
+rm ${vbase}.1.temp.vcf ${vbase}.2.temp.vcf ${vbase}.3.temp.vcf ${vbase}.4.temp.vcf ${vbase}.5.temp.vcf ${vbase}.6.temp.vcf ${vbase}.7.temp.vcf ${vbase}.8.temp.vcf ${vbase}.9.temp.vcf ${vbase}.10.temp.vcf
 
