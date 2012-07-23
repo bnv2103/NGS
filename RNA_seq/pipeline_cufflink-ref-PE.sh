@@ -74,23 +74,17 @@ $cmd1
 # after run cufflink, statistics of number of reads and FPKM
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats_PE.rb $outdir "summary.csv"
 
-cd $outdir
-ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb accepted_hits.bam "QC.pdf"
-cd ..
+# cd $outdir
+# ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb accepted_hits.bam "QC.pdf"
+# cd ..
 
 samtools sort $bam $outdir"/accepted_hits.sorted"
 samtools index $outdir"/accepted_hits.sorted.bam"
 
+qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
+
+qsub -l mem=2G,time=10::  -o logs/QCplot.o -e logs/QCplots.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir "QC.pdf"
 
 
- if [[ $GENO == "mouse" ]];
-    then
-#    qsub -l mem=2G,time=10:: -o logs/getBed.o -e logs/getBed.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getBed_mouse.sh $bam $outdir
-    qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "mouse"
- fi
- if [[ $GENO == "human" ]];
-    then
-#    qsub -l mem=2G,time=10:: -o logs/getBed.o -e logs/getBed.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getBed_human.sh $bam $outdir
-    qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "human"
- fi
+
 
