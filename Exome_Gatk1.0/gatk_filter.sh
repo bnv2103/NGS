@@ -79,8 +79,8 @@ $GATK \
  -T VariantFiltration \
  -R $REF \
  -o $INP.filtered.vcf \
- --variant $INP \
- --mask  ${INDELVCF} \
+ -B:variant,VCF $INP \
+ -B:mask,VCF ${INDELVCF} \
  --maskName InDel \
  --clusterWindowSize 10 \
  --filterExpression "QUAL < 30.0 || QD < 5.0 || HRun > 5 || SB > -0.10" \
@@ -106,11 +106,10 @@ ${RUBY18} ${UTILS}/vcf_seperate-SNV-indel.rb $INP.filtered.vcf
 sh ${BPATH}/do_release.sh $INP.filtered.vcf.snv
 
 ## filter indels:
-fulldname=`readlink -f $dname `
 if [[ $AUTO == "" ]]; then
-	cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o $fulldname/filter-indel.o -e $fulldname/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL "
+	cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o $dname/filter-indel.o -e $dname/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL "
 else
-        cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o $fulldname/filter-indel.o -e $fulldname/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL  -A AUTO"
+        cmd="qsub -l mem=6G,time=24:: -N filter-indel.$job_ext -o $dname/filter-indel.o -e $dname/filter-indel.e ${BPATH}/vcf_filter-indel.sh -I $INP.indel -g $GLOBAL  -A AUTO"
 fi
 echo $cmd
 $cmd

@@ -1,11 +1,11 @@
 #!/bin/bash
 #$ -cwd
 
-nt=1 # default number of threads
+nt=2 # default number of threads
 dcov=300 # down sampling to dcov if depth is larger than dcov
 mbq=20 # min base qual 
 mmq=20 # min mapping qual
-njobs=100
+njobs=900
 
 USAGE="Usage: $0 -i <list of bam files> -m <heap> -s <global setting> [ -n number_of_threads] [ -j number_of_qjobs] [-d down_sampling] [ -b min_base_qual] [ -q min_mapping_qual] [ -v total_mem ]"
 
@@ -57,7 +57,7 @@ fi
 # fi
 
 bamlist=`readlink -e $bamlist`
-temp=$bamlist"_indel_dir"
+temp=$bamlist"_SNVcall_dir"
 
 mkdir -p $temp
 
@@ -79,7 +79,7 @@ for (( j=1; j<=$njobs; j++ ))  #
 
   mkdir -p $tempd
   
-  out=${temp}"/indel.slice."$j".sh"
+  out=${temp}"/snv.slice."$j".sh"
 #  chromosome=${chrprefix}${i}
   chrtarget=$out".targets.list" 
 
@@ -98,13 +98,11 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo '#!/bin/bash'  > $out
   echo '#$ -cwd' >> $out
   echo 'uname -a' >> $out
-##  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -glm DINDEL  -R $REF  -D $DBSNP  -nt ${nt} -o ${temp}/snv.slice.$j.raw.vcf -stand_call_conf 50.0 -stand_emit_conf 10.0 -dcov ${dcov} -mbq ${mbq}  -mmq ${mmq} -L $chrtarget -I $bamlist"
+  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF  -D $DBSNP  -nt ${nt} -o ${temp}/snv.slice.$j.raw.vcf -stand_call_conf 50.0 -stand_emit_conf 10.0 -dcov ${dcov} -mbq ${mbq}  -mmq ${mmq} -L $chrtarget -I $bamlist"
   
-  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/indel.slice.$j.raw.vcf -stand_call_conf 50.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm INDEL  -L $chrtarget -I $bamlist -metrics ${temp}/indel.slice.$j.raw.vcf.metrics -G Standard  -B:dbsnp,VCF ${DBSNPVCF}"
-
   echo $cmd >> $out
   
   
-  qsub -l mem=${qmem}G,time=240:: -o $temp/log.$j.o -e $temp/log.$j.e -N indel.$j.$bname $out 
+  qsub -l mem=${qmem}G,time=60:: -o $temp/log.$j.o -e $temp/log.$j.e -N snp.$j.$bname $out 
   # echo $qmem
 done

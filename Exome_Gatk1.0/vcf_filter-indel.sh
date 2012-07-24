@@ -12,11 +12,10 @@ REF=""
 
 USAGE="Usage: $0 -I <Input VCF file> -g "
 
-while getopts I:t:m:g:h:A:s: o
+while getopts I:t:m:g:h:A: o
 do      case "$o" in
         I)      INP="$OPTARG";;
         m)      MEM="$OPTARG";;
-	s)	SNV="$OPTARG";;
         g)      GLOBAL="$OPTARG";;
 	A)	AUTO="$OPTARG";;
         h)      echo $USAGE
@@ -32,13 +31,14 @@ fi
 
 . $GLOBAL
 
+
 if [ ! $MEM == "" ]
     then
     HEAP=$MEM
 fi
 
 if [ $JOB_ID == "" ]; then
-    JOB_ID="IndelFilter"
+    JOB_ID="VarFilter"
 fi
 
 # JOB_ID is the qsub job ID
@@ -52,11 +52,13 @@ fi
 JAVA="java -Xmx${HEAP}g -Djava.io.tmpdir="${TEMP}
 GATK="$JAVA -jar "${GATKJAR}
 
+
+
 $GATK \
     -T VariantFiltration \
     -R $REF \
     -o $INP.filtered.vcf \
-    --variant $INP \
+    -B:variant,VCF $INP \
     --filterExpression "MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)"  \
     --filterName "HARD_TO_VALIDATE" \
     --filterExpression "SB >= -1.0" \
@@ -65,10 +67,4 @@ $GATK \
     --filterName "QualFilter"
 
 sh ${BPATH}/do_release.sh $INP.filtered.vcf
-
-if [[ ! $SNV == "" ]];then  ## Merge the filtered snv and indel variants together.
-	CMD="sh $UTILS/gatk_merge_SNP_Indel.sh -s $SNV -i $INP.filtered.vcf -o $INP.allVariants.filtered.vcf "
-	echo $CMD
-	$CMD
-fi
 
