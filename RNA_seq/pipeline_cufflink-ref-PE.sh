@@ -85,6 +85,6 @@ qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ng
 
 qsub -l mem=2G,time=10::  -o logs/QCplot.o -e logs/QCplots.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir "QC.pdf"
 
-
+qsub -l mem=2G,time=5:: -o logs/getCounts.o -e logs/getCounts.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh "accepted_hits.sam"  "accepted_hits_counts.txt" $bam $GENES
 
 

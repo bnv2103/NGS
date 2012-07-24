@@ -28,6 +28,7 @@ def main
   uqMapped = 0;
   #uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1 | sort -u -S 29G | wc -l`.to_i
   uqMapped = `samtools view -X #{dir}/accepted_hits.bam | cut -f1,2 | grep 'pP' | cut -f1| wc -l`.to_i
+  uqMapped1 = `$((uqMapped/2))`.to_i
    # mappedline = `samtools flagstat #{dir}/accepted_hits.bam | grep mapped | head -1`
    # if mappedline =~ /^(\d+)\s+/
    #  mapped = $1
@@ -42,7 +43,7 @@ def main
         
     writer = CSV.open(output, 'a') do |csv|
       # csv << [#{dir},#{sampleName},#{nreads},#{mapped},#{a}]
-      csv << [sampleName_short[5], nreads, uqMapped, b[1], b[2], b[3], b[4], b[5], b[6]]
+      csv << [sampleName_short[5], nreads, uqMapped, uqMapped1, b[1], b[2], b[3], b[4], b[5], b[6]]
       end
   end
 end
