@@ -4,6 +4,9 @@ $VERBOSE = nil
 
 ## Plots the Quality Distribution, ACTG per cycle from raw fastq reads. Can take paired end file as 3rd argument. 
 def main
+
+rscript = "/nfs/apps/R/2.11.1/bin/Rscript "
+
   output = ARGV[0] #pdf file
   fq = ARGV[1] # sampl.fastq
   fq3 = ARGV[2] # sampl.fastq3 if there is 
@@ -176,9 +179,9 @@ end
 #  qsc_f.close
 
 
-puts "Rscript #{utils}/QCplot_qscore.R  #{numReads} #{output}.pdf #{output}_ACTG.txt #{output}_Qual.txt #{output}_QScore_f_hist.txt #{output}_QScore_r_hist.txt "
+puts " #{rscript} #{utils}/QCplot.R  #{numReads} #{output}.pdf #{output}_ACTG.txt #{output}_Qual.txt #{output}_QScore_f_hist.txt #{output}_QScore_r_hist.txt "
 
-`Rscript #{utils}/QCplot_qscore.R #{numReads} #{output}.pdf   #{output}_ACTG.txt #{output}_Qual.txt #{output}_QScore_f_hist.txt #{output}_QScore_r_hist.txt `
+` #{rscript} #{utils}/QCplot.R #{numReads} #{output}.pdf   #{output}_ACTG.txt #{output}_Qual.txt #{output}_QScore_f_hist.txt #{output}_QScore_r_hist.txt `
 
 end
 
