@@ -13,7 +13,7 @@ N=`grep chr $bed | wc -l`
 n=0
 
 # threshold for mapping quality (note, we keep all base qualities)
-q=30
+q=0 #30
 
 echo "generating pileups, mapQ filter = $q"
 
@@ -33,7 +33,7 @@ while read line; do
 	outfile=$genedir/$amplicon.mpileup
 
 	# samtools mpileup -BD -d 500 -m 1 -F 0.00001  -f $ref -r $region $bam >> $outfile
-        samtools mpileup -Q 0 -q $q -f $ref -r $region $bam >> $outfile
+        samtools mpileup -s -Q 0 -q $q -f $ref -r $region $bam >> $outfile
 
 	let "n++"
 	echo "$n of $N amplicons completed"
