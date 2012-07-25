@@ -12,6 +12,7 @@ fi
 if [[ $genome == "human" ]];
     then
     reference="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/NCBI/build37.2/Sequence/BowtieIndex/genome.fa"
+    # reference="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Homo_sapiens/UCSC/hg19/Sequence/BowtieIndex/genome.fa"
 fi
 
 if [[ $genome == "rat" ]];

@@ -2,13 +2,13 @@ require 'csv'
 $VERBOSE = nil
 
 def main
-  fq = ARGV[0] # bam file
-  output = ARGV[1] # QC.pdf
+  fq = ARGV[0] # bam file dir
+  # output = ARGV[1] # QC.pdf
 
-  `samtools view #{fq} > accepted_hits.sam`
-  infile = File.new("accepted_hits.sam", "r")
-  outfile = File.new("ACTG.txt", "w")
-  outfile1 = File.new("Qual.txt", "w")
+  `samtools view #{fq}/accepted_hits.bam > #{fq}/accepted_hits.sam`
+  infile = File.new("#{fq}/accepted_hits.sam", "r")
+  outfile = File.new("#{fq}/ACTG.txt", "w")
+  outfile1 = File.new("#{fq}/Qual.txt", "w")
   numReads = 0
   arrLen = 101
   qual = Array.new(arrLen){ |i| 0*i }
@@ -94,7 +94,7 @@ def main
 
   outfile.close
 
-  `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.R #{numReads} #{output}`
+  `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.R #{numReads} #{outfile} #{outfile1} #{fq}/QC.pdf`
 
 end
 

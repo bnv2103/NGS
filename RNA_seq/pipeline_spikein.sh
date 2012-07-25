@@ -51,7 +51,7 @@ $cmd
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSpikeInInfo.rb $outdir "spikeInfo.csv"
 
 
-
+# sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSpikeInTrans.sh $outdir
 
 
 

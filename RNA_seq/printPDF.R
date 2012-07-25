@@ -45,7 +45,7 @@ if (isMA ==1){
 for (i in 1:(length(fileList)) ){
     for (j in 1:(length(fileList)) ){
         # par(mfrow= c(length(fileList),length(fileList)))
-        if (i != j){
+        if (i < j){
            t1 = strsplit(fileList[i], "_")
            t2 = strsplit(fileList[j], "_")
            title1 = t1[[1]][6]
@@ -78,7 +78,7 @@ if (isMA ==1){
 for (i in 1:(length(fileList)) ){
     for (j in 1:(length(fileList)) ){
     	# par(mfrow= c(length(fileList),length(fileList)))
-    	if (i != j){
+    	if (i < j){
 	   t1 = strsplit(fileList[i], "_")
            t2 = strsplit(fileList[j], "_")
            title1 = t1[[1]][6]

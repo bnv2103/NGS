@@ -42,7 +42,7 @@ rg=$g
 sampleName=$rg
 library=$rg
 
-cmd="tophat --phred64-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library --mate-inner-dist 100 $BOWTIEDB $fq1 $fq2"
+cmd="tophat --solexa-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library --mate-inner-dist 100 $BOWTIEDB $fq1 $fq2"
 
 echo -e "do tophat: \n $cmd"
 $cmd
@@ -59,7 +59,7 @@ fi
 cuffout=$bam"_cufflinks_ref"
 
 # cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF  $GENES $bam"
-cmd="cufflinks -o $cuffout --GTF $GENES $bam"
+cmd="cufflinks -o $cuffout --compatible-hits-norm --GTF $GENES $bam"
 echo -e "do cufflinks with ref genes: \n $cmd"
 $cmd
 
@@ -74,26 +74,16 @@ $cmd1
 # after run cufflink, statistics of number of reads and FPKM
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats_PE.rb $outdir "summary.csv"
 
-# cd $outdir
-# ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb accepted_hits.bam "QC.pdf"
-# cd ..
+cd $outdir
+ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb accepted_hits.bam "QC.pdf"
+cd ..
 
 samtools sort $bam $outdir"/accepted_hits.sorted"
 samtools index $outdir"/accepted_hits.sorted.bam"
 
-sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh $outdir"/accepted_hits.sam"  $outdir"/accepted_hits_counts.txt" $bam $GENES
+qsub -l mem=2G,time=5:: -o logs/sam2count.o -e logs/sam2count.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/sam2count.sh $GENO
 
-qsub -l mem=2G,time=5::  /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
+qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
 
-qsub -l mem=2G,time=10:: /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir
-
-
-
-
-# qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
-
-# qsub -l mem=2G,time=10::  -o logs/QCplot.o -e logs/QCplots.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir "QC.pdf"
-
-# qsub -l mem=2G,time=5:: -o logs/getCounts.o -e logs/getCounts.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh "accepted_hits.sam"  "accepted_hits_counts.txt" $bam $GENES
 
 

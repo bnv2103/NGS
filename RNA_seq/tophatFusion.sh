@@ -42,10 +42,21 @@ rg=$g
 sampleName=$rg
 library=$rg
 
-cmd="tophat --phred64-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library --mate-inner-dist 100 $BOWTIEDB $fq1 $fq2"
+# cmd="tophat --phred64-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library --mate-inner-dist 100 $BOWTIEDB $fq1 $fq2"
+
+# echo -e "do tophat: \n $cmd"
+# $cmd
+
+# tophat -o tophat_MCF7 -p 8 --fusion-search --keep-fasta-order --bowtie1 --no-coverage-search -r 0 --mate-std-dev 80 --fusion-min-dist 100000 --fusion-anchor-length 13 --fusion-ignore-chromosomes chrM /path/to/h_sapiens/bowtie_index SRR064286_1.fastq SRR064286_2.fastq 
+
+cmd="tophat --phred64-quals -o $outdir --num-threads $nt --rg-id $rg --rg-sample $sampleName --rg-library $library --keep-fasta-order --no-coverage-search -r 50 --mate-std-dev 100  --fusion-min-dist 100000 --fusion-anchor-length 13 --fusion-ignore-chromosomes chrM $BOWTIEDB $fq1 $fq2"
 
 echo -e "do tophat: \n $cmd"
 $cmd
+ 
+# tophat-fusion-post -p 8 --num-fusion-reads 1 --num-fusion-pairs 2 --num-fusion-both 5 /path/to/h_sapiens/bowtie_index
+
+cmd="tophat-fusion-post -p $nt --num-fusion-reads 1 --num-fusion-pairs 2 --num-fusion-both 5 $BOWTIEDB" 
 
 bam=$outdir"/accepted_hits.bam"
 
@@ -74,26 +85,21 @@ $cmd1
 # after run cufflink, statistics of number of reads and FPKM
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats_PE.rb $outdir "summary.csv"
 
-# cd $outdir
-# ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb accepted_hits.bam "QC.pdf"
-# cd ..
+cd $outdir
+ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb accepted_hits.bam "QC.pdf"
+cd ..
 
 samtools sort $bam $outdir"/accepted_hits.sorted"
 samtools index $outdir"/accepted_hits.sorted.bam"
 
-sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh $outdir"/accepted_hits.sam"  $outdir"/accepted_hits_counts.txt" $bam $GENES
-
-qsub -l mem=2G,time=5::  /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
-
-qsub -l mem=2G,time=10:: /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir
 
 
-
-
-# qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
-
-# qsub -l mem=2G,time=10::  -o logs/QCplot.o -e logs/QCplots.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir "QC.pdf"
-
-# qsub -l mem=2G,time=5:: -o logs/getCounts.o -e logs/getCounts.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh "accepted_hits.sam"  "accepted_hits_counts.txt" $bam $GENES
-
+ if [[ $GENO == "mouse" ]];
+    then
+    qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "mouse"
+ fi
+ if [[ $GENO == "human" ]];
+    then
+    qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "human"
+ fi
 
