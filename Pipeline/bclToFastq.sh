@@ -152,15 +152,15 @@ mkdir $fastqout/logs
 mkdir $fastqout/QC
 for i in `seq 1 8`
 do
-	CMD="ruby $UTILS/fastq_QCplot.rb $fastqout/QC/s_$i.QC $fastqout/s_$i""_1.fastq $fastqout/s_$i""_3.fastq"
+	CMD="ruby $UTILS/fastq_QCplot.rb $fastqout/QC/s_$i.QC $fastqout/s_${i}_1.fastq $fastqout/s_${i}_3.fastq"
 	echo $CMD
-	echo $CMD | qsub -o $fastqout/logs/QC.$i.o -e $fastqout/logs/QC.$i.e -l mem=4G,time=8:: -N QC_lane.$i
+	echo $CMD | qsub -o $fastqout/logs/QC.$i.o -e $fastqout/logs/QC.$i.e -l mem=4G,time=20:: -N QC_lane.$i
 #	CMD="qsub -o $fastqout/logs/LC.$i.o -e $fastqout/logs/LC.$i.e -N LC__lane.$i -l mem=7G,time=8:: $UTILS/picard_LibraryComplexity.sh -i $fastqout/s_"$i"_1.fastq -p  $fastqout/s_"$i"_3.fastq -o $fastqout/QC/s_"$i".LibComplexity -m 7 -s s_$i "
 #        echo $CMD
 #	$CMD
-	CMD="ruby $UTILS/fastq_QCplot.rb $fastqout/QC/s_$i""_n.QC $fastqout/s_$i""n_1.fastq $fastqout/s_$i""n_3.fastq"
+	CMD="ruby $UTILS/fastq_QCplot.rb $fastqout/QC/s_${i}_n.QC $fastqout/s_${i}n_1.fastq $fastqout/s_${i}n_3.fastq"
 	echo $CMD
-	echo $CMD | qsub -o $fastqout/logs/QC.$i"_n.o -e $fastqout/logs/QC.$i"_n.e -l mem=4G,time=8:: -N QC_lane.$i.n
+	echo $CMD | qsub -o $fastqout/logs/QC.${i}_n.o -e $fastqout/logs/QC.${i}_n.e -l mem=4G,time=8:: -N QC_lane.${i}.n
 #	CMD="qsub -o $fastqout/logs/LC.$i.o -e $fastqout/logs/LC.$i.e -N LC__lane.$i -l mem=7G,time=8:: $UTILS/picard_LibraryComplexity.sh -i $fastqout/s_"$i"_1.fastq -p  $fastqout/s_"$i"_3.fastq -o $fastqout/QC/s_"$i".LibComplexity -m 7 -s s_$i "
 #        echo $CMD
 #	$CMD
@@ -189,7 +189,7 @@ if [[ -s $sampleSheet ]]; then
     outprefix=`echo $runName`		# outprefix=`echo $runName | cut -f1 -d '_' `
 
 #Demultiplex not passed filter reads to get stats only
-    cmd="$RUBY18 $PIPEBASE/demultiplex_n.rb $fastqout "$demultiplexout"_n $outprefix "$demultiplexout"_n/$runName.csv 4 &"
+    cmd="$RUBY18 $PIPEBASE/demultiplex_n.rb $fastqout ${demultiplexout}_n $outprefix ${demultiplexout}_n/$runName.csv 4 &"
     echo "$cmd" >> $StatusDir/history.txt
     $cmd
 
@@ -262,10 +262,10 @@ cd $demultiplexout
 
 ## zip up lane fastq
 for i in `seq 1 8`; do 
- qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq  $fastqout/s_"$i"n_1.fastq
- qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=2:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq $fastqout/s_"$i"n_2.fastq
+ qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=10:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq  $fastqout/s_"$i"n_1.fastq
+ qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq $fastqout/s_"$i"n_2.fastq
  if [[ -e $fastqout/s_"$i"_3.fastq ]];then
-   qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq  $fastqout/s_"$i"n_3.fastq
+   qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=10:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq  $fastqout/s_"$i"n_3.fastq
  fi
 done  
 
