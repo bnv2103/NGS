@@ -71,12 +71,12 @@ def main
   $stderr.puts "multiplex mapping: #{multiplex}"
 
   outprefix = outdir + "/" + prefix 
-# stat = sanity_check(inputdir, outprefix, coding) 
- # if stat == 0
-#	$stderr.puts "ERROR: Run Failed Sanity Chcheck "
- # else
-#	$stderr.puts "Sanity Check Sucessful "
- # end
+ stat = sanity_check(inputdir, outprefix, coding) 
+ if stat == 0
+	$stderr.puts "ERROR: Run Failed Sanity Chcheck "
+ else
+	$stderr.puts "Sanity Check Sucessful "
+ end
 
  ##  outputio["discarded"] = File.new(targetfastq + "_discarded.fastq", "w" )
   assignment = decode(inputdir, multiplex, outprefix, barcodesize, nt)
@@ -280,37 +280,35 @@ def readBar(b)
 end
 
 def sanity_check(inputdir, outprefix, coding)
- barcodefq = Dir.new(inputdir).select {|a| a.match(/s\_(\d+)n\_2\.fastq.barcode-stats$/) }
- 
  flag=1
- barcodefq.sort.each do |bfq|
-	if bfq.match(/s\_(\d+)n\_2\.(\S+)/)
-		lane = "#{$1}"
+   coding.each do |lane,junk|	
 		num_samples_this_lane = coding[lane].length
 		count = 0
 		all_codes=""
+		bfq="s_#{lane}n_2.fastq.barcode-stats"
 		f = File.new("#{inputdir}/#{bfq}","r")
+		i = 0
 		begin
 		    while (line = f.readline)
 		        line.chomp
-			break if line =~ /\.\.\./
+			break if i == 10
 			cols = line.chomp.split(/\t/)
 			all_codes <<  cols[0].strip 
 			all_codes << "\t"
-				count += 1	
+			count += 1
+			i += 1
 		    end
 		rescue EOFError
 		    f.close
 		end
 #		print "\nlane = #{lane}\t all_codes = #{all_codes}"
-		if count == num_samples_this_lane
 			sanity_flag=1
 			coding[lane].each_key do |code|
 #	                        print  "\n\t#{code}"
 				if all_codes.scan( "#{code}A" ).empty?		##Assuming one polyA base for HiSeq runs
 #					print "\tfailed\t"
 					sanity_flag=0
-#                                       print  all_codes.scan("#{code}" )
+ #                                      print  all_codes.scan("#{code}" )
 					break
 				else
 #					print "\tpassed\t"
@@ -323,13 +321,8 @@ def sanity_check(inputdir, outprefix, coding)
                         	$stderr.puts "Sanity Check - Lane #{lane} : Failed"
 	                        flag=0
                 	end
-		else
-			$stderr.puts "Sanity Check - Lane #{lane} : Failed"
-			flag=0
-		end
-	end
  end
- return flag
+ return flag 
 end
 
 main()
