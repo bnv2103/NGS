@@ -99,22 +99,22 @@ fi
 
 echo $CHR 
 
+#    -D $DBSNP \
 $GATK \
     -L $CHR \
     -T RealignerTargetCreator \
     -I $INP \
     -R $REF \
-    -D $DBSNP \
-    -B:indels,VCF $INDELVCF  \
+    -known $INDELVCF  \
     -o $OUTDIR/$CHR.forRealigner.intervals
 
+#    -D $DBSNP \
 $GATK \
     -L $CHR \
     -I $INP \
     -R $REF \
-    -D $DBSNP \
     -T IndelRealigner \
-    -B:indels,VCF $INDELVCF  \
+    -known $INDELVCF  \
     --maxReadsForRealignment $MaxReads \
     -compress 5 \
     -targetIntervals $OUTDIR/$CHR.forRealigner.intervals \

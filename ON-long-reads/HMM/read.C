@@ -38,7 +38,7 @@ READ::READ(long st, int len)
 	length = len;
 	snp_count = -1;
 	hap = 1;
-	hprob = 0.99;
+	hprob = 0.5;
 	start = st;
 	snps = new SNP*[700];
 	alleles = new char[700];
@@ -55,7 +55,8 @@ void READ::assignHaplotype(int haplotype, double prob)
 	if(haplotype!=1&&haplotype!=2) {
 		cout << "Assigning incorrect haplotype value " << haplotype << endl;
 	}
-	if(prob<=0||prob>=1) {
+cout << "Prob:: " << prob << endl;
+	if(prob<0.0||prob>1.0) {
 		cout << "Assigning incorrect haplotype probability " << prob << " to haplotype " << haplotype << endl;
 	}
 	hap = haplotype;

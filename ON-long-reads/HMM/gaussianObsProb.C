@@ -235,7 +235,7 @@ void CGaussianObsProb::End()
 
 //===============================================================================
 
-void CGaussianObsProb::SetVal(int state, int symbol, int value)
+void CGaussianObsProb::SetVal(int state, int symbol, double value)
 {
 	cout << "SetVal not to be called from CGaussianObsProb" << endl;
 }

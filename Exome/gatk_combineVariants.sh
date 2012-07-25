@@ -63,7 +63,7 @@ then
 fi
 
 JAVA="java -Xmx${HEAP}g -Djava.io.tmpdir="${TEMP}
-GATK="$JAVA -jar "${GATKJAR15}
+GATK="$JAVA -jar "${GATKJAR}
 
 cmd=" $GATK -T CombineVariants -R $REF "
  for i in `cat $INPLIST`;do 
@@ -74,6 +74,12 @@ cmd=" $GATK -T CombineVariants -R $REF "
 echo $cmd
 $cmd
 
-  cmd2="qsub -N gatk_filter.$sname.AUTO -o $dname/filter.SNV.o -e $dname/filter.SNV.e -l mem=6G,time=24:: ${BPATH}/gatk_filter.sh -I $OUTVCF.vcf -g $GLOBAL -A AUTO"
+cmd2=" sh $ANNOVAR/do_annovar_all.sh $OUTVCF.vcf $OUTVCF.complete.annotated.vcf "
 echo $cmd2
 $cmd2
+
+cmd3="qsub -N gatk_filter.$sname.AUTO -o $dname/filter.SNV.o -e $dname/filter.SNV.e -l mem=6G,time=24:: ${BPATH}/gatk_filter.sh -I $OUTVCF.complete.annotated.vcf  -g $GLOBAL -A AUTO"
+echo $cmd3
+$cmd3
+
+

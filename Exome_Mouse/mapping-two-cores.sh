@@ -20,10 +20,9 @@ chain="0"  # whether call downstream analysis (default 0 means not).
 setting=""
 
 ### Note: bwa sample uses about 3.5G RAM
+USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -y ID] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
 
-USAGE="Usage: $0 -i foo_1.fastq  -s global_setting [ -p foo_2.fastq ] [ -g maxgaps] [ -q qualtrim ] [ -z readgroup] [ -n sampleName] [ -f platform] [-o output_prefix]"
-
-while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A: opt
+while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A:y: opt
   do      
   case "$opt" in
       i) fastq1="$OPTARG";;
@@ -32,9 +31,10 @@ while getopts i:p:g:q:d:n:t:s:z:f:m:o:c:h:A: opt
       g) maxgaps="$OPTARG";;
       d) maxeditdist="$OPTARG";;
       q) qualtrim="$OPTARG";;
-      n) sampleName="$OPTARG";;
       t) threads="$OPTARG";;
+      y) ID="$OPTARG";;
       z) readgroup="$OPTARG";;
+      n) sampleName="$OPTARG";;
       f) platform="$OPTARG";;
       o) output="$OPTARG";;
       c) chain="$OPTARG";;
@@ -66,10 +66,13 @@ if [[ $output == "" ]]; then
     output=$fastq1.sorted
 fi
 
+if [[ $ID == "" ]]; then
+    ID=$readgroup
+fi
 
 ## read group specification:
 ##          -r STR   read group header line such as `@RG\tID:foo\tSM:bar' [null]
-rgheader="@RG\tID:$readgroup\tSM:$sampleName\tLB:$readgroup\tPL:$platform"
+rgheader="@RG\tID:$ID\tSM:$sampleName\tLB:$readgroup\tPL:$platform\tCN:NGSColumbia"
 
 ######### align step
 cmd="$bwa aln -I -q $qualtrim -o $maxgaps -n $maxeditdist -t  $threads  $REF  $fastq1 > $fastq1.sai"
@@ -133,6 +136,11 @@ mv $output.bam.temp $output.bam
 $samtools index $output.bam
 
 date
+g=`basename $output.bam | sed 's/\//_/g'`
+
+CMD="qsub -o $OUTDIR/logs/GC.o -e $OUTDIR/logs/GC.e -N GC.$g -l mem=5G,time=6:: $UTILS/picard_GCMetrics.sh -i $output.bam -o $OUTDIR -m 4 -g $setting -w 200 "
+echo $CMD
+$CMD
 
 if [[ $chain != "0" ]]; then ## call realign
     
@@ -157,7 +165,7 @@ if [[ $chain != "0" ]]; then ## call realign
 	  heapm=7
       fi
       
-      g=`basename $output.bam | sed 's/\//_/g'`
+#      g=`basename $output.bam | sed 's/\//_/g'`
 	if [[ $AUTO == "" ]];then
               cmd="qsub -N realign.$i.$g -l mem=${qmem}G,time=55:: -o $OUTDIR/logs/realign.$i.o -e $OUTDIR/logs/realign.$i.e ${BPATH}/gatk_realign_atomic.sh -I $output.bam -o $OUTDIR  -g $setting -L $i -c $status -m $heapm "
   	else
@@ -166,9 +174,5 @@ if [[ $chain != "0" ]]; then ## call realign
       echo $cmd
       $cmd
     done
-
-
-###     $QSUB -l mem=8G,time=58::  $BPATH/gatk_realign_all.sh   -g $setting -I $output.bam 
-
 
 fi

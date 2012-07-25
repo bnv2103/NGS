@@ -3,11 +3,7 @@
 
 
 OLB=/ifs/data/c2b2/ngs_lab/ngs/usr/OLB-1.9.3/
-PIPEBASE=/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Pipeline/
-StatusDir=/ifs/data/c2b2/ngs_lab/ngs/status/
-RUBY18="/ifs/data/c2b2/ngs_lab/ngs/usr/local/bin/ruby"
 setting="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Pipeline/global_setting.sh"
-NGSSHELL="/ifs/data/c2b2/ngs_lab/ngs/code/shell/"
 
 USAGE="Usage: $0 -i RunDir  -o OutDir  -s setting [-n num_threads]"
 
@@ -136,6 +132,14 @@ done
 if [ $flag -eq "1" ]
 then
  	cp -r $absIN/Data/reports/ $absOUT/
+	mkdir $absOUT/RunData
+	cp -r $absIN/runParameters.xml $absOUT/RunData/
+	cp -r $absIN/RunInfo.xml $absOUT/RunData/
+	cp -r $absIN/Config $absOUT/RunData/
+	cp -r $absIN/Data/Intensities/config.xml $absOUT/RunData/
+	cp -r $absIN/Data/Intensities/RTAConfiguration.xml  $absOUT/RunData/
+	cp -r $absIN/InterOp/  $absOUT/RunData/
+	cp -r $absIN/Recipe/ $absOUT/RunData/
 	rm s_*.txt
 	rm -rf Matrix/
 	rm -rf Phasing/
@@ -143,12 +147,29 @@ then
 	rm -rf SignalMeans/
 fi
 
-## do  demultiplexing
+# do Lane QC  ##and Picard: - Library Complexity
+mkdir $fastqout/logs
+mkdir $fastqout/QC
+for i in `seq 1 8`
+do
+	CMD="ruby $UTILS/fastq_QCplot.rb $fastqout/QC/s_$i.QC $fastqout/s_$i""_1.fastq $fastqout/s_$i""_3.fastq"
+	echo $CMD
+	echo $CMD | qsub -o $fastqout/logs/QC.$i.o -e $fastqout/logs/QC.$i.e -l mem=4G,time=8:: -N QC_lane.$i
+#	CMD="qsub -o $fastqout/logs/LC.$i.o -e $fastqout/logs/LC.$i.e -N LC__lane.$i -l mem=7G,time=8:: $UTILS/picard_LibraryComplexity.sh -i $fastqout/s_"$i"_1.fastq -p  $fastqout/s_"$i"_3.fastq -o $fastqout/QC/s_"$i".LibComplexity -m 7 -s s_$i "
+#        echo $CMD
+#	$CMD
+	CMD="ruby $UTILS/fastq_QCplot.rb $fastqout/QC/s_$i""_n.QC $fastqout/s_$i""n_1.fastq $fastqout/s_$i""n_3.fastq"
+	echo $CMD
+	echo $CMD | qsub -o $fastqout/logs/QC.$i"_n.o -e $fastqout/logs/QC.$i"_n.e -l mem=4G,time=8:: -N QC_lane.$i.n
+#	CMD="qsub -o $fastqout/logs/LC.$i.o -e $fastqout/logs/LC.$i.e -N LC__lane.$i -l mem=7G,time=8:: $UTILS/picard_LibraryComplexity.sh -i $fastqout/s_"$i"_1.fastq -p  $fastqout/s_"$i"_3.fastq -o $fastqout/QC/s_"$i".LibComplexity -m 7 -s s_$i "
+#        echo $CMD
+#	$CMD
+done
 
 # get barcode stats
+qsub -o $fastqout/logs/barcode-stats.o -e $fastqout/logs/barcode-stats.e -l mem=3G,time=48:: -N barcode_stats.$runName $PIPEBASE/do-barcode-stats.sh $fastqout/s_*_2.fastq
 
-qsub -o $fastqout/log.barcode-stats.o -e $fastqout/log.barcode-stats.e -l mem=3G,time=48:: -N barcode_stats $PIPEBASE/do-barcode-stats.sh $fastqout/s_*_2.fastq
-
+## do  demultiplexing
 # demultiplex                                                                                                     
 sampleSheet=$SampleSheets/$runName.csv
 
@@ -177,13 +198,15 @@ if [[ -s $sampleSheet ]]; then
     echo "$cmd" >> $StatusDir/history.txt
     $cmd
 
-echo "" > Reads.summary
-for sm in `ls $demultiplexout"/*summary*" `; do
-	head -2 $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> Reads.summary
+
+##Collect Read stats from the PF and nonPF Demuxed Samples.
+echo "" > $demultiplexout/Reads.stat
+for sm in  $demultiplexout"/*summary*" ; do
+	cat $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> $demultiplexout/Reads.stat
 done
-echo "" > Reads_n.summary
-for sm in `ls $demultiplexout"_n/*summary*" `; do
-	head -2 $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> Reads_n.summary
+echo "" > $demultiplexout"_n/Reads_n.stat"
+for sm in  $demultiplexout"_n/*summary*" ; do
+	cat $sm | awk '{ for (i=1; i<=NF; i++)  { a[NR,i] = $i; }}NF>p { p = NF; }END { for(j=1; j<=p; j++) { str=a[1,j]; for(i=2; i<=NR; i++){ str=str"\t"a[i,j];} print str; }}' >> $demultiplexout"_n/Reads_n.stat"
 done
 
 
@@ -195,24 +218,30 @@ fi
 echo "Cluster Density PF for all lanes"
 awk 'BEGIN{lane=0;ct=0;sum=0} /^[0-9]/{if ($1==lane) {ct++; sum+=$3;} else{ print lane, sum/ct; lane=$1; ct=1;sum=$3;}}END{ print lane, sum/ct;}'  $absOUT/reports/NumClusters\ By\ Lane\ PF.txt 
 
-
-## clean up
-##bzip2 s*qseq.txt  & 
-
-for i in `seq 1 8`; do 
- qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq  $fastqout/s_"$i"n_1.fastq
- qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=2:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq $fastqout/s_"$i"n_2.fastq
- if [[ -e $fastqout/s_"$i"_3.fastq ]];then
-   qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq  $fastqout/s_"$i"n_3.fastq
- fi
-done  
-
-#  popd 
 echo -e "conversion done" > $absOUT/BclToFastq.complete.txt
-cd $demultiplexout
+## Trigger nonPF QC 
+if [ ! -d $demultiplexout"_n/QC" ];then mkdir -p $demultiplexout"_n/QC" ; fi
+if [ ! -d $demultiplexout"_n/logs" ];then mkdir -p $demultiplexout"_n/logs" ; fi
+for fq1 in $demultiplexout"_n/*_1.fastq"
+do
+	j=`basename $fq1`
+	fq3=`echo $fq1 | sed 's/_1.fastq$/_3.fastq' `
+	scriptfile="$demultiplexout""_n/QC/$j.runQC.sh"
+	echo '#!/bin/bash ' > $scriptfile 
+	echo '#$ -cwd ' >> $scriptfile
+	echo " ruby $UTILS/fastq_QCplot.rb $demultiplexout""_n/QC/$j.QC $fq1 $fq3  & " >> $scriptfile
+        echo " sh  $UTILS/picard_LibraryComplexity.sh -i $fq1 -p  $fq3 -o $demultiplexout""_n/QC/$j.LibComplexity -m 5 -s $j " >> $scriptfile
+	echo " wait " >>  $scriptfile
+## Finally Zip the nonPF demuxed files.
+	echo " qsub -o $demultiplexout""_n/logs/zip.$j.o -e $demultiplexout""_n/logs/zip.$j.e -N Zip.$j -l mem=512M,time=2::  $NGSSHELL/do_bzip2.sh $fq1 $fq3 " >> $scriptfile
+	CMD="qsub -o $demultiplexout""_n/logs/QC.$j.o -e $demultiplexout""_n/logs/QC.$j.e -N QC.$j -l mem=7G,time=8:: $scriptfile "
+	echo $CMD
+	$CMD
+done
 
-#Trigger Automatic Pipeline
-        cmd="sh $PIPEBASE/post_demux.sh $demultiplexout $runName "
+cd $demultiplexout
+#Trigger Automatic Pipeline, and in there also do trigger the QC
+        cmd="sh $PIPEBASE/post_demux.sh $demultiplexout $runName $setting"
         echo $cmd
         $cmd
 	
@@ -226,11 +255,19 @@ cd $demultiplexout
         echo "Hi-Seq Run: $f " >> mailBody.txt
         echo "Command: $cmd " >> mailBody.txt
         echo ""  >> mailBody.txt
-
- #       qstat -j process.$f >>  mailBody.txt
-        cmd1="sh $PIPEBASE/sendMail.sh -t sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu,ecb2152@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
+        cmd1="sh $PIPEBASE/sendMail.sh -t sz2317@c2b2.columbia.edu,xs2182@c2b2.columbia.edu,yshen@c2b2.columbia.edu,oc2121@c2b2.columbia.edu,ecb2152@c2b2.columbia.edu,xf2118@c2b2.columbia.edu -s Hi-Seq-Run-$f-Complete -m mailBody.txt "
         echo $cmd1
         $cmd1
         rm mailBody.txt
 
+## zip up lane fastq
+for i in `seq 1 8`; do 
+ qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq  $fastqout/s_"$i"n_1.fastq
+ qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=2:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq $fastqout/s_"$i"n_2.fastq
+ if [[ -e $fastqout/s_"$i"_3.fastq ]];then
+   qsub -o $fastqout/zip."$i".o -e $fastqout/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq  $fastqout/s_"$i"n_3.fastq
+ fi
+done  
+
 popd
+

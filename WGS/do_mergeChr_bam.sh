@@ -16,18 +16,18 @@ if [ ! -d logs ]; then mkdir logs; fi
 
 grep "@HD" $firstsg > $2/outheader
 grep "@SQ" $firstsg >> $2/outheader
-if [ -e temp ] ; then rm temp; fi
+if [ -e $2/temp ] ; then rm  $2/temp;  fi
 for i in `cat $list` ;do
-	grep "@RG" $i"/head.sam" >> temp
+	grep "@RG" $i"/head.sam" >>  $2/temp
 done
-sort -u temp >> $2/outheader
+sort -u  $2/temp >> $2/outheader
 grep "@PG" $firstsg >> $2/outheader
 
+rm $2/temp
 
 for i in `ls $first/*.bam ` ;do
 	chr=`basename $i`
-    CMD="qsub -o logs/$chr.o -e logs/$chr.e -N merge.$chr -l mem=5G,time=6:: $WGS/mergeChr_bam.sh $chr `readlink -f $list` outheader `readlink -f $2`/"
+	CMD="qsub -o logs/$chr.o -e logs/$chr.e -N merge.$chr -l mem=10G,time=15:: $WGS/mergeChr_bam.sh $chr `readlink -f $list` outheader `readlink -f $2`/"
 	echo $CMD
 	$CMD
-    exit
 done

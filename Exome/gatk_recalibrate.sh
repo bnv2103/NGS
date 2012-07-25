@@ -57,6 +57,7 @@ if [ ! -d $TEMP ]; then
 fi
 
 JAVA="java -Xmx${HEAP}m -Djava.io.tmpdir="${TEMP}
+
 GATK="$JAVA -jar "${GATKJAR}
 
 if [[ $REFTYPE == "hg" ]]  # hg18/19 -> chr1, chr2 etc;  build36/37 -> 1, 2 etc                                            
@@ -74,14 +75,14 @@ Targets=$TEMP"/target.list"
 # mv $INP.temp $INP
 # $SAMTOOLS index $INP
 
-
 $GATK \
     -R $REF \
-    --DBSNP $DBSNP \
+    -knownSites $DBSNP132 \
     -I $INP \
     -L $Targets \
     -nt 2 \
     -T CountCovariates \
+    -standard  \
     -cov ReadGroupCovariate \
     -cov QualityScoreCovariate \
     -cov CycleCovariate \

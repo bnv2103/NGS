@@ -116,29 +116,49 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo '#!/bin/bash'  > $out
   echo '#$ -cwd' >> $out
   echo 'uname -a' >> $out
-  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 50.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  -B:dbsnp,VCF ${DBSNPVCF} -B:compdbSNP132,VCF $DBSNP132 $infofields"
-  
+  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 30.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  --comp:HapMapV3 $HapMapV3VCF --dbsnp ${DBSNP135}  $infofields"
+##  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 30.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  --comp:HapMapV3 $HapMapV3VCF --dbsnp ${DBSNPVCF}  $infofields"
+## or should we just do --dbsnp dbsnp13X , in gatk they say "This file subsetted to only sites discovered in or before dbSNPBuildID 129, which excludes the impact of the 1000 Genomes project and is useful for evaluation of dbSNP rate and Ti/Tv values at novel sites. " at http://www.broadinstitute.org/gsa/wiki/index.php/GATK_resource_bundle
+
   echo $cmd >> $out
-  echo "if [ ! -e $temp/status.Varcalling ];then touch $temp/status.Varcalling; fi " >> $out
-  echo "echo $j >> $temp/status.Varcalling " >> $out
-  echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
+#  echo "if [ ! -e $temp/status.Varcalling ];then touch $temp/status.Varcalling; fi " >> $out
+#  echo "echo $j >> $temp/status.Varcalling " >> $out
+#  echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
+#  echo "while [[ \$completed != \"\" ]]; do " >> $out
+#  echo "if [[ \$completed -eq \"100\" ]];then  echo \"all completed\" >>  $temp/status.Varcalling; break;" >> $out
+#  echo "elif [[ \$completed -lt \"100\" || \$completed -gt \"100\" ]]; then exit; " >>$out
+#  echo "else " >> $out
+#  echo "sleep 60 " >> $out
+#  echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
+#  echo "fi; done" >> $out
+  echo "echo $j >> $temp/status.Varcalling.$j " >> $out
+  echo "completed=\`ls $temp/status.Varcalling.* | wc -l | awk '{print \$1}'\` " >> $out
   echo "while [[ \$completed != \"\" ]]; do " >> $out
-  echo "if [[ \$completed -eq \"100\" ]];then  echo \"all completed\" >>  $temp/status.Varcalling; break;" >> $out
-  echo "elif [[ \$completed -lt \"100\" || \$completed -gt \"100\" ]]; then exit; " >>$out
+  echo "if [[ \$completed -eq \"$njobs\" ]];then  echo \"all completed\" >>  $temp/status.Varcalling.all; break;" >> $out
+  echo "elif [[ \$completed -lt \"$njobs\" || \$completed -gt \"$njobs\" ]]; then exit; " >>$out
   echo "else " >> $out
   echo "sleep 60 " >> $out
-  echo "completed=\`wc -l $temp/status.Varcalling | awk '{print \$1}'\` " >> $out
+  echo "completed=\`wc -l $temp/status.Varcalling.* | awk '{print \$1}'\` " >> $out
   echo "fi; done" >> $out
-  echo " for (( i=1;i <= 100;i++ )); do ls $outDir/var.slice.\$i.raw.vcf; done > $outDir/list.vcf-files.txt " >> $out
+##
+  echo " for (( i=1;i <= $njobs ;i++ )); do ls $outDir/var.slice.\$i.raw.vcf; done > $outDir/list.vcf-files.txt " >> $out
   echo " sh ${BPATH}/vcf_concat_slices.sh $outDir/list.vcf-files.txt $outDir/list.vcf-files.txt.vcf " >> $out
+  echo " cmd2=\" sh $ANNOVAR/do_annovar_all.sh $outDir/list.vcf-files.txt.vcf $outDir/list.vcf-files.txt.vcf.complete.annotated.vcf \" " >> $out
+  echo " echo \$cmd2 " >> $out
+  echo " \$cmd2 "  >> $out
+  echo " cmd3=\"qsub -N gatk_filter.$job_ext.AUTO -o $temp/filter.SNV.o -e $temp/filter.SNV.e -l mem=6G,time=24:: ${BPATH}/gatk_filter.sh -I $outDir/list.vcf-files.txt.vcf.complete.annotated.vcf  -g $GLOBAL -A AUTO \" "  >> $out
+  echo " echo \$cmd3  "  >> $out
+  echo " \$cmd3  "  >> $out
 
-if [[ $AUTO == "" ]]; then  
-  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o $temp/annotation.o -e $temp/annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist  " >> $out
-else
-  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o $temp/annotation.o -e $temp/annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist -A AUTO " >> $out
-fi
+
+##earlier we did gatk_annotate
+# if [[ $AUTO == "" ]]; then  
+#  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o $temp/annotation.o -e $temp/annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist  " >> $out
+# else
+#  echo " qsub -l mem=6G,time=$qtime:: -N annotation$job_ext -o $temp/annotation.o -e $temp/annotation.e ${BPATH}/gatk_annotator.sh  -v $outDir/list.vcf-files.txt.vcf -g $setting -m 4 -b $bamlist -A AUTO " >> $out
+# fi
 
 echo " qsub -pe smp $nt -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out "
 qsub -pe smp $nt -l mem=${qmem}G,time=${qtime}:: -o $temp/log.$j.o -e $temp/log.$j.e -N var.$j$job_ext $out 
-  # echo $qmem
+# echo $qmem
 done

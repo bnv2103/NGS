@@ -45,6 +45,9 @@ library=$rg
 ## SE
 cmd="tophat --phred64-quals --num-threads $nt  -o $outdir  --rg-id $rg --rg-sample $sampleName --rg-library $library $BOWTIEDB $fq"
 
+# --solexa-quals
+# --phred64-quals
+
 echo -e "do tophat: \n $cmd"
 $cmd
 
@@ -67,30 +70,27 @@ $cmd
 
 ## reference-guided assembly
 # cmd2="cufflinks -o $cuffout2 --compatible-hits-norm --GTF-guide  $GENES $bam"
+ 
 cmd2="cufflinks -o $cuffout2 --GTF-guide  $GENES $bam"
 echo -e "do cufflinks with ref genes -guide: \n $cmd2"
 $cmd2
 
-
 # for f in *cufflinks; do ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $f "summary.csv"; done
 ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $outdir "summary.csv"
 
-if [[ $GENO == "mouse" ]];
-    then
-    qsub -l mem=2G,time=10:: -o logs/getBed.o -e logs/getBed.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getBed_mouse.sh $bam $outdir
-    qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "mouse"
-fi
-if [[ $GENO == "human" ]];
-    then
-    qsub -l mem=2G,time=10:: -o logs/getBed.o -e logs/getBed.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getBed_human.sh $bam $outdir
-    qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "human"
-fi
-if [[ $GENO == "rat" ]];
-    then
-    qsub -l mem=2G,time=10:: -o logs/getBed.o -e logs/getBed.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getBed_mouse.sh $bam $outdir
-    qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir "rat"
-fi
 
+samtools sort $bam $outdir"/accepted_hits.sorted"
+samtools index $outdir"/accepted_hits.sorted.bam"
+
+qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
+
+qsub -l mem=2G,time=10::  -o logs/QCplot.o -e logs/QCplots.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir "QC.pdf"
+
+qsub -l mem=2G,time=5:: -o logs/getCounts.o -e logs/getCounts.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh "accepted_hits.sam"  "accepted_hits_counts.txt" $bam $GENES
+
+# cd $outdir
+# ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb "accepted_hits.bam" "QC.pdf"
+# cd ..
 
 
 # sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh

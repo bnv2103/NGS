@@ -5,7 +5,7 @@ export GATKJAR="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK/Sting/dist/GenomeAnalysisTK.
 export GATKJAR12="/ifs/scratch/c2b2/ngs_lab/sz2317/softwares/GenomeAnalysisTK-1.5-21-g979a84a/GenomeAnalysisTK.jar"
 export PICARD="/ifs/data/c2b2/ngs_lab/ngs/usr/picard-tools"
 export BWA="/ifs/data/c2b2/ngs_lab/ngs/usr/bin/bwa"  
-export BPATH="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/"
+export BPATH="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/"
 export STING="/ifs/data/c2b2/ngs_lab/ngs/usr/GATK"
 export RUBY18="/ifs/data/c2b2/ngs_lab/ngs/usr/local/bin/ruby"
 export UTILS="/ifs/data/c2b2/ngs_lab/ngs/code/NGS/utils/"
@@ -15,4 +15,5 @@ export REF="/ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Mus_musculus/UCSC/mm9
 export DBSNP="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/mouse/resources/snp128.mod.rod"
 export DBSNPVCF="/ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/mouse/resources/snp128.mod.vcf"
 export ANNOVAR="/ifs/scratch/c2b2/ngs_lab/sz2317/softwares/annovar/"
+export DBSNPVCF="/ifs/scratch/c2b2/ngs_lab/sz2317/resources/mouse/snp128.mod.vcf"
 

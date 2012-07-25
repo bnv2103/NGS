@@ -83,7 +83,7 @@ CFlexibleObsProb::~CFlexibleObsProb(void)
 
 //===============================================================================
 
-void CFlexibleObsProb::SetVal(int state,int symbo,int value)
+void CFlexibleObsProb::SetVal(int state,int symbo,double value)
 {
 	cout << "SetVal not to be called from CFlexibleObsProb" << endl;
 }
@@ -93,8 +93,8 @@ void CFlexibleObsProb::InitStateProb(void)
 	int i;
 
 	for(i=1;i<=mDimension;i++) {
-		mComponentProb[i]->SetVal(1,1,1);
-		mComponentProb[i]->SetVal(2,1,0);
+		mComponentProb[i]->SetVal(1,1,0.99);
+		mComponentProb[i]->SetVal(2,1,0.01);
 	}
 }
 /*
@@ -147,6 +147,15 @@ double CFlexibleObsProb::at(int state, int symbol)
 	}
 
 	return prob;
+}
+
+void CFlexibleObsProb::addEmission(int state, int symbol, double emission)
+{
+	int i;
+
+	for(i=1;i<= mDimension; i++){
+		mComponentProb[i]->addEmission(state, symbol, emission);// prob of component
+	}
 }
 
 //===============================================================================

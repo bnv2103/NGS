@@ -22,6 +22,18 @@ $SAMTOOLS index $DIR$chr.sorted.bam
 echo "Index Complete on Merged BAM"
 rm $DIR$chr.temp	
 
+basedir=`dirname DIR`
+LOG="$basedir/logs"
+if [ ! -e $LOG ]
+then
+	mkdir $LOG
+fi
+
+CMD="qsub -o $LOG/$chr.refine.o -e $LOG/$chr.refine.e -N refine.$chr -l mem=10G,time=10::  /ifs/scratch/c2b2/ngs_lab/sz2317/scripts/WGS/refine_bam.sh $chr $DIR "
+echo $CMD
+$CMD
+
+exit
 
 $SAMTOOLS rmdup $DIR$chr.sorted.bam $DIR$chr.sorted.bam.noDup.bam
 echo "Remove PCR Duplicates complete"
@@ -32,12 +44,11 @@ $SAMTOOLS index $DIR$chr.sorted.bam.noDup.bam.baq.bam
 echo "Index Complete on bam.noDup.bam.baq.bam "
 rm $DIR$chr.sorted.bam.noDup.bam
 echo "Realigned using Samtools- CALMD with extended BAQ done"
-$SAMTOOLS sort -n  $DIR$chr.sorted.bam.noDup.bam.baq.bam $DIR$chr.sorted.bam.noDup.bam.baq.bam.sorted
-echo "Name Sort Complete on bam.noDup.bam.baq.bam "
-$SAMTOOLS index $DIR$chr.sorted.bam.noDup.bam.baq.bam.sorted.bam
-echo "Index Complete on  bam.noDup.bam.baq.bam.sorted.bam "
+# $SAMTOOLS sort -n  $DIR$chr.sorted.bam.noDup.bam.baq.bam $DIR$chr.sorted.bam.noDup.bam.baq.bam.namesorted
+# echo "Name Sort Complete on bam.noDup.bam.baq.bam "
+# $SAMTOOLS index $DIR$chr.sorted.bam.noDup.bam.baq.bam.sorted.bam
+# echo "Index Complete on  bam.noDup.bam.baq.bam.sorted.bam "
 
-exit
  
 qsub fixmte n stat
 HEAP=7

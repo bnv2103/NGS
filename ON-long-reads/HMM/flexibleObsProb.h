@@ -46,12 +46,13 @@ class CFlexibleObsProb: public CObsProb{
 	double EndIter();
 	void End();
 	void InitStateProb(void);
-        void SetVal(int state, int symbol, int value);
+        void SetVal(int state, int symbol, double value);
 	CObs* PickObservation(int state);
         CObs** MapStateToObs(void);
 	void Print(ostream &outFile);
 	double at(int state, CObs *obs);
 	double at(int state, int symbol);
+	void addEmission(int state, int symbol, double emission);
 	int GetM(void){cout<<"Wrong class used"<<endl; return 0;};
 #if 1
 	CObs* ReadObsFrom(ifstream &inFile);

@@ -1,0 +1,25 @@
+INFO  14:44:44,515 HelpFormatter - --------------------------------------------------------------------------------- 
+INFO  14:44:44,519 HelpFormatter - The Genome Analysis Toolkit (GATK) v1.5-21-g979a84a, Compiled 2012/03/28 01:38:16 
+INFO  14:44:44,519 HelpFormatter - Copyright (c) 2010 The Broad Institute 
+INFO  14:44:44,520 HelpFormatter - Please view our documentation at http://www.broadinstitute.org/gsa/wiki 
+INFO  14:44:44,520 HelpFormatter - For support, please view our support site at http://getsatisfaction.com/gsa 
+INFO  14:44:44,521 HelpFormatter - Program Args: -R /ifs/data/c2b2/ngs_lab/ngs/resources/bowtie_DB/Mus_musculus/UCSC/mm9/Sequence/WholeGenomeFasta/genome.fa -I /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120418_UMRAO_TOMOYUKI_6_MOUSE_EXOME_60X_PE_HISEQ/120509_SN828_0132_AC0J91ACXX/mapping/1.bam_refine/all.realigned.bam -T CountCovariates -standard -recalFile /ifs/scratch/c2b2/ngs_lab/ngs/Projects/Exome-seq/120418_UMRAO_TOMOYUKI_6_MOUSE_EXOME_60X_PE_HISEQ/120509_SN828_0132_AC0J91ACXX/mapping/1.bam_refine/all.realigned.bam.temp.recal_data.csv --list 
+INFO  14:44:44,521 HelpFormatter - Date/Time: 2012/06/04 14:44:44 
+INFO  14:44:44,521 HelpFormatter - --------------------------------------------------------------------------------- 
+INFO  14:44:44,521 HelpFormatter - --------------------------------------------------------------------------------- 
+INFO  14:44:44,536 GenomeAnalysisEngine - Strictness is SILENT 
+INFO  14:44:44,795 SAMDataSource$SAMReaders - Initializing SAMRecords in serial 
+INFO  14:44:44,840 SAMDataSource$SAMReaders - Done initializing BAM readers: total time 0.03 
+INFO  14:44:46,368 CountCovariatesWalker - Available covariates: 
+INFO  14:44:46,369 CountCovariatesWalker - DinucCovariate 
+INFO  14:44:46,369 CountCovariatesWalker - CycleCovariate 
+INFO  14:44:46,369 CountCovariatesWalker - PrimerRoundCovariate 
+INFO  14:44:46,369 CountCovariatesWalker - MappingQualityCovariate 
+INFO  14:44:46,369 CountCovariatesWalker - HomopolymerCovariate 
+INFO  14:44:46,370 CountCovariatesWalker - GCContentCovariate 
+INFO  14:44:46,370 CountCovariatesWalker - PositionCovariate 
+INFO  14:44:46,370 CountCovariatesWalker - MinimumNQSCovariate 
+INFO  14:44:46,370 CountCovariatesWalker - ContextCovariate 
+INFO  14:44:46,370 CountCovariatesWalker - ReadGroupCovariate 
+INFO  14:44:46,371 CountCovariatesWalker - QualityScoreCovariate 
+INFO  14:44:46,371 CountCovariatesWalker -  

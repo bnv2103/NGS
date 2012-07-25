@@ -1,0 +1,60 @@
+Linux b13a.c13.titan 2.6.27.41-170.2.117.fc10.x86_64 #1 SMP Thu Dec 10 10:36:29 EST 2009 x86_64 x86_64 x86_64 GNU/Linux
+INFO  16:17:19,097 HelpFormatter - --------------------------------------------------------------------------------- 
+INFO  16:17:19,105 HelpFormatter - The Genome Analysis Toolkit (GATK) v1.5-21-g979a84a, Compiled 2012/03/28 01:38:16 
+INFO  16:17:19,106 HelpFormatter - Copyright (c) 2010 The Broad Institute 
+INFO  16:17:19,106 HelpFormatter - Please view our documentation at http://www.broadinstitute.org/gsa/wiki 
+INFO  16:17:19,106 HelpFormatter - For support, please view our support site at http://getsatisfaction.com/gsa 
+INFO  16:17:19,107 HelpFormatter - Program Args: -R /ifs/data/c2b2/ngs_lab/ngs/resources/bwa_samtools_gatk_DB/human_g1k_v37.fasta -T VariantAnnotator --list --variant /ifs/scratch/c2b2/ngs_lab/ngs/Projects/WG-seq/120309_ANDREA_GABRIELLE_6_HUMAN_GENOME_30X_PE_HISEQ/SAMPLES/AC2/VarCalling_samtool/out.vcf 
+INFO  16:17:19,107 HelpFormatter - Date/Time: 2012/05/15 16:17:19 
+INFO  16:17:19,107 HelpFormatter - --------------------------------------------------------------------------------- 
+INFO  16:17:19,108 HelpFormatter - --------------------------------------------------------------------------------- 
+INFO  16:17:19,129 RodBindingArgumentTypeDescriptor - Dynamically determined type of /ifs/scratch/c2b2/ngs_lab/ngs/Projects/WG-seq/120309_ANDREA_GABRIELLE_6_HUMAN_GENOME_30X_PE_HISEQ/SAMPLES/AC2/VarCalling_samtool/out.vcf to be VCF 
+INFO  16:17:19,143 GenomeAnalysisEngine - Strictness is SILENT 
+INFO  16:17:19,525 RMDTrackBuilder - Creating Tribble index in memory for file /ifs/scratch/c2b2/ngs_lab/ngs/Projects/WG-seq/120309_ANDREA_GABRIELLE_6_HUMAN_GENOME_30X_PE_HISEQ/SAMPLES/AC2/VarCalling_samtool/out.vcf 
+INFO  16:17:34,128 RMDTrackBuilder - Writing Tribble index to disk for file /ifs/scratch/c2b2/ngs_lab/ngs/Projects/WG-seq/120309_ANDREA_GABRIELLE_6_HUMAN_GENOME_30X_PE_HISEQ/SAMPLES/AC2/VarCalling_samtool/out.vcf.idx 
+
+Standard annotations in the list below are marked with a '*'.
+
+Available annotations for the VCF INFO field:
+	TransmissionDisequilibriumTest
+	*ChromosomeCounts
+	IndelType
+	HardyWeinberg
+	*SpanningDeletions
+	NBaseCount
+	AlleleBalance
+	*MappingQualityZero
+	LowMQ
+	BaseCounts
+	MVLikelihoodRatio
+	*InbreedingCoeff
+	*RMSMappingQuality
+	TechnologyComposition
+	*HaplotypeScore
+	SampleList
+	*QualByDepth
+	*FisherStrand
+	SnpEff
+	*HomopolymerRun
+	*DepthOfCoverage
+	MappingQualityZeroFraction
+	GCContent
+	*MappingQualityRankSumTest
+	*ReadPosRankSumTest
+	*BaseQualityRankSumTest
+
+
+Available annotations for the VCF FORMAT field:
+	ReadDepthAndAllelicFractionBySample
+	AlleleBalanceBySample
+	*DepthPerAlleleBySample
+	MappingQualityZeroBySample
+
+
+Available classes/groups of annotations:
+	RodRequiringAnnotation
+	StandardAnnotation
+	WorkInProgressAnnotation
+	ExperimentalAnnotation
+	RankSumTest
+

@@ -159,7 +159,7 @@ CVectorObsProb::~CVectorObsProb(void)
 
 //===============================================================================
 
-void CVectorObsProb::SetVal(int state,int symbo,int value)
+void CVectorObsProb::SetVal(int state,int symbo,double value)
 {
 	cout << "SetVal not to be called from CVectorObsProb" << endl;
 }
@@ -169,8 +169,8 @@ void CVectorObsProb::InitStateProb(void)
 	int i;
 
 	for(i=1;i<=mDimension;i++) {
-		mComponentProb[i]->SetVal(1,1,1);
-		mComponentProb[i]->SetVal(2,1,0);
+		mComponentProb[i]->SetVal(1,1,0.99);
+		mComponentProb[i]->SetVal(2,1,0.01);
 	}
 }
 
