@@ -82,11 +82,13 @@ ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats.rb $outdir "summary.csv"
 samtools sort $bam $outdir"/accepted_hits.sorted"
 samtools index $outdir"/accepted_hits.sorted.bam"
 
-qsub -l mem=2G,time=5:: -o logs/getSNPs.o -e logs/getSNPs.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
+sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh $outdir"/accepted_hits.sam"  $outdir"/accepted_hits_counts.txt" $bam $GENES
 
-qsub -l mem=2G,time=10::  -o logs/QCplot.o -e logs/QCplots.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir "QC.pdf"
+qsub -l mem=2G,time=5::  /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
 
-qsub -l mem=2G,time=5:: -o logs/getCounts.o -e logs/getCounts.e /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh "accepted_hits.sam"  "accepted_hits_counts.txt" $bam $GENES
+qsub -l mem=2G,time=10:: /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir
+
+# qsub -l mem=2G,time=5:: /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh $outdir"/accepted_hits.sam"  $outdir"/accepted_hits_counts.txt" $bam $GENES
 
 # cd $outdir
 # ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.rb "accepted_hits.bam" "QC.pdf"
