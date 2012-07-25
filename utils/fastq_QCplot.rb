@@ -12,8 +12,8 @@ def main
 
   outfile = File.new("#{output}_ACTG.txt", "w")
   outfile1 = File.new("#{output}_Qual.txt", "w")
-  qsc_f = File.new("#{output}_QScore_f.txt", "w")
-  qsc_r = File.new("#{output}_QScore_r.txt", "w")
+#  qsc_f = File.new("#{output}_QScore_f.txt", "w")
+#  qsc_r = File.new("#{output}_QScore_r.txt", "w")
   qsc_f_hist = File.new("#{output}_QScore_f_hist.txt", "w")
   qsc_r_hist = File.new("#{output}_QScore_r_hist.txt", "w")
   utils = "/ifs/data/c2b2/ngs_lab/ngs/code/NGS/utils/"
@@ -83,7 +83,7 @@ while !infile.eof?
 	aqscore += (item.ord - qground)
     end
         avgqscore = aqscore/slen
-        qsc_f.puts avgqscore    #Extract Qscore histogram info
+#        qsc_f.puts avgqscore    #Extract Qscore histogram info
         qscore_bucket_fwd[avgqscore]+=1
   end
 
@@ -131,7 +131,7 @@ infile = File.new(fq3, "r")
         aqscore += (item.ord - qground)
     end
         avgqscore = aqscore/slen
-	qsc_r.puts avgqscore	#Extract Qscore histogram info
+#	qsc_r.puts avgqscore	#Extract Qscore histogram info
 	qscore_bucket_rvs[avgqscore]+=1
   end
 end
@@ -172,8 +172,8 @@ end
   outfile.close
   qsc_r_hist.close
   qsc_f_hist.close
-  qsc_r.close
-  qsc_f.close
+#  qsc_r.close
+#  qsc_f.close
 
 
 puts "Rscript #{utils}/QCplot_qscore.R  #{numReads} #{output}.pdf #{output}_ACTG.txt #{output}_Qual.txt #{output}_QScore_f_hist.txt #{output}_QScore_r_hist.txt "
