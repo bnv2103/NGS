@@ -1,23 +1,21 @@
 #!/bin/python
 
-# filters mpileup file based on % top nonref allele and min number of top nonref on forward and reverse
-# annotates with quality, mapping quality, and homopolymer distance and size, and indel proximity, all segregated by base.
+# count calls in mpileup and correlate with reference and homopolymer information
+# for now it doesn't do anything with quality score
 
-import sys, re, string
-from numpy import mean, std
-from scipy.stats import mannwhitneyu 
 
+import pickle, sys, re, string
+from numpy import mean
+
+# mpileup file (for a specific amplicon)
 fin = open(sys.argv[1], 'r')
-#fout = open(sys.argv[1] + '.can', 'w')
 
-# filter thresholds on top nonreference allele frequency and count
-freq_thresh = 0.01
-count_thresh = 10
+# corresponding homo pickle file (for same amplicon)
+homo = pickle.load(open(sys.argv[2], 'r'))
 
-# filter for p-value in U test, for and rev
-# for now we are keeping them all
-# if both are low, that indicated false positive
-p_thresh = 0#0.01
+# what filtering do we want to do?? proabably depth? are we weighting observations by depth?
+depth_thresh = 100
+germline_thresh = .6 # up to 40% nonreference is considered not germline
 
 for line in fin:
         # tokenize line in mpileup file
@@ -31,7 +29,7 @@ for line in fin:
         reads = re.sub('\.', ref, reads)
         reads = re.sub(',', string.lower(ref), reads)
 
-        #remove indels (WAIT: we want to include this right?)
+        #remove indels (WAIT: we want to include this as covariate info right?)
         i = 0
         while i < len(reads):
                 i = string.find(reads, '+', i, len(reads))
@@ -58,23 +56,10 @@ for line in fin:
 
         depth_for = sum(count_table['forward'].itervalues())
         depth_rev = sum(count_table['reverse'].itervalues())
-        
-        topnonrefct_for = max([n for b, n in count_table['forward'].iteritems() if b != ref])
-        topnonrefct_rev = max([n for b, n in count_table['reverse'].iteritems() if b != ref])
-
-        topnonref = ''
-        for n, ct in count_table['forward'].iteritems():
-            if ct == topnonrefct_for and n != ref:
-                topnonref += n
-        topnonref_rev = ''
-        for n, ct in count_table['reverse'].iteritems():
-            if ct == topnonrefct_rev and n != ref:
-                topnonref_rev += n
-
-        # top non reference nucleotides must agree between forward and reverse, also filter on count
-        if topnonref != topnonref_rev or topnonrefct_for < freq_thresh*depth_for or topnonrefct_rev < freq_thresh*depth_rev or topnonrefct_for < count_thresh or topnonrefct_rev < count_thresh:
+        if depth_for < depth_thresh or depth_rev < depth_thresh or \
+           count_table['forward'][ref] < germline_thresh*depth_for or count_table['reverse'][ref] < germline_thresh*depth_rev:
             continue
-        
+
         # generate seperate quality strings for each nucleotide and +/- 
         qA = ''.join([Q[i] for i, x in enumerate(reads) if x == "A"])
         qT = ''.join([Q[i] for i, x in enumerate(reads) if x == "T"])
@@ -89,15 +74,6 @@ for line in fin:
         q_table = {'forward':{'A':map(ord, qA), 'C':map(ord, qC), 'G':map(ord, qG), 'T':map(ord, qT)}, \
                    'reverse':{'A':map(ord, qa), 'C':map(ord, qc), 'G':map(ord, qg), 'T':map(ord, qt)}}
 
-
-
-        # missing functionality:
-        # get homopolymer info
-        # get mapping quality
-        # get indel info
-
-        # NOTE: these require dealing with sam file, entire reads
-
         # write data
         #fout.write(chr+'\t'+pos+'\t'+ref+'\t'+qA+'\t'+qC+'\t'+qG+'\t'+qT+'\t'+qa+'\t'+qc+'\t'+qg+'\t'+qt+'\n')
         # fout.write(chr+'\t'+pos+'\t'+ref+'\t'+topnonref+'\t'+ \
@@ -106,29 +82,11 @@ for line in fin:
         #           str(count_table['reverse'][ref])+'\t'+str(count_table['reverse'][topnonref])+'\t'+ \
         #           str(mean(q_table['reverse'][ref]))+'\t'+str(mean(q_table['reverse'][topnonref]))+'\n')
 
-
-        # using mann-whitney U
-
-        u_for, p_for = mannwhitneyu(q_table['forward'][ref], q_table['forward'][topnonref], use_continuity=False)
-        u_rev, p_rev = mannwhitneyu(q_table['reverse'][ref], q_table['reverse'][topnonref], use_continuity=False)
-
-        # null hypothesis corresponds to mutation
-        # mult p-val by 2 to get two-sided p-value
-        p_for = 2*p_for
-        p_rev = 2*p_rev
-
-        if p_for < p_thresh or p_rev < p_thresh: continue
-
-        print chr+'\t'+pos+'\t'+ref+'\t'+topnonref+'\t'+ \
+        print chr+'\t'+pos+'\t'+ref+'\t'+ \
               str(count_table['forward']['A'])+'\t'+str(count_table['forward']['C'])+'\t'+str(count_table['forward']['G'])+'\t'+str(count_table['forward']['T'])+'\t'+ \
-              str(mean(q_table['forward'][ref]) - 33)+'\t'+ \
-              str(std(q_table['forward'][ref]))+'\t'+ \
-              str(mean(q_table['forward'][topnonref]) - 33)+'\t'+ \
-              str(std(q_table['forward'][topnonref]))+'\t'+ \
-              str(p_for)+'\t'+\
+              str(mean(q_table['forward']['A'])-33)+'\t'+str(mean(q_table['forward']['C'])-33)+'\t'+str(mean(q_table['forward']['G'])-33)+'\t'+str(mean(q_table['forward']['T'])-33)+'\t'+\
+              str(homo[chr+':'+pos]['forward']) + '\t' + \
               str(count_table['reverse']['A'])+'\t'+str(count_table['reverse']['C'])+'\t'+str(count_table['reverse']['G'])+'\t'+str(count_table['reverse']['T'])+'\t'+ \
-              str(mean(q_table['reverse'][ref]) - 33)+'\t'+ \
-              str(std(q_table['reverse'][ref]))+'\t'+ \
-              str(mean(q_table['reverse'][topnonref]) - 33)+'\t'+ \
-              str(std(q_table['reverse'][topnonref]))+'\t'+ \
-              str(p_rev)
+              str(mean(q_table['reverse']['A'])-33)+'\t'+str(mean(q_table['reverse']['C'])-33)+'\t'+str(mean(q_table['reverse']['G'])-33)+'\t'+str(mean(q_table['reverse']['T'])-33)+'\t'+\
+              str(homo[chr+':'+pos]['reverse'])
+

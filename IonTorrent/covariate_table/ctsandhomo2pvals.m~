@@ -1,0 +1,46 @@
+function ctsandhomo2pvals(ctsandhomosfilename, cellsdir)
+
+% loads ctsandhomos file into memory
+ctsandhomosfile = fopen(ctsandhomosfilename, 'r');
+ctsandhomos = textscan(ctsandhomosfile, ...
+                       '%s\t%f\t%s\t%f\t%f\t%f\t%d\t%s\t%d\t%d\t%d\t%d\t%s', ...
+                       'Delimiter', '\t');
+fclose(ctsandhomosfile);
+
+% need to read in all alphas to one structure
+alphasfiles = dir([cellsdir '/*alpha']);
+alphamap = containers.Map();
+for i = 1:length(alphasfiles)
+    alphamap(alphasfiles(i).name(1:end-6)) = load([cellsdir '/' alphasfiles(i).name]);
+end
+
+% complement hash
+comp = containers.Map({'A', 'C', 'G', 'T'}, {'T', 'G', 'C', 'A'});
+
+% number of positions
+N = length(ctsandhomos{1});
+
+%  compute the p value for each position, make sure to comp reverse counts!
+p_for = zeros(N, 1);
+p_rev = zeros(N, 1);
+
+for i = 1:N
+    p_for(i) = polyapvalue([ctsandhomos{4}(i) ctsandhomos{5}(i) ctsandhomos{6}(i) ctsandhomos{7}(i)], ...
+                           alphamap([ctsandhomos{3}{i} '_' strrep(strrep(strrep(ctsandhomos{8}{i}, ', ', '_'), '[', ''), ']', '')]));
+    p_rev(i) = polyapvalue([ctsandhomos{12}(i) ctsandhomos{11}(i) ctsandhomos{10}(i) ctsandhomos{9}(i)], ...
+                           alphamap([comp(ctsandhomos{3}{i}) '_' strrep(strrep(strrep(ctsandhomos{8}{i}, ', ', '_'), '[', ''), ']', '')]));
+end
+
+
+keyboard
+
+% for line in ctsandhomosfile:
+%     chr, pos, ref, A, C, G, T, H, a, c, g, t, h = line.rstrip('\n').split('\t')
+% 
+%     alpha_for_file = cellsdir+'/'+ref+'_'+H.lstrip('[').rstrip(']').replace(', ', '_')
+%     alpha_rev_file = cellsdir+'/'+comp[ref]+'_'+h.lstrip('[').rstrip(']').replace(', ', '_')
+% 
+%     # have to remember to complement the reverse read counts
+%     
+% 
+% ctsandhomosfile.close()
