@@ -15,7 +15,7 @@ errrate=0.04
 coverage=10
 maxreadlen=5000
 minreadlen=2000
-region=0
+region=$1
 iteration=0
 pval=1.1
 
@@ -44,7 +44,7 @@ then
 	for i in `seq 1 2`
 	do
 		cat ${read_base}_${i}.ibs >> ${read_base}.ibs
-		rm ${read_base}_${i}.ibs
+		#rm ${read_base}_${i}.ibs
 	done
 	echo alignment complete
 
@@ -59,9 +59,9 @@ then
 	for i in `seq 1 2`
 	do
 		cat ${output_base}_${i}.${pval}.obs >> ${output_base}.${pval}.obs
-		rm ${output_base}_${i}.${pval}.obs
+		#rm ${output_base}_${i}.${pval}.obs
 		cat ${output_base}_${i}.${pval}.sta >> ${output_base}.${pval}.sta
-		rm ${output_base}_${i}.${pval}.sta
+		#rm ${output_base}_${i}.${pval}.sta
 	done
 	echo HMM complete
 
