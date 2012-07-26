@@ -52,6 +52,7 @@ while !infile.eof?
      valueT = Array.new(slen*pair) { |i| 0*i }
      valueC = Array.new(slen*pair) { |i| 0*i }
      valueG = Array.new(slen*pair) { |i| 0*i }
+     valueN = Array.new(slen*pair) { |i| 0*i }
    end
 
     s = infile.take(1)
@@ -71,6 +72,8 @@ while !infile.eof?
           valueC[i] = valueC[i] + 1
         elsif bp =="G"
           valueG[i] = valueG[i] + 1
+        elsif bp =="N"
+          valueN[i] = valueN[i] + 1
         end
       end
     end 
@@ -118,6 +121,8 @@ infile = File.new(fq3, "r")
           valueC[i] = valueC[i] + 1
         elsif bp =="G"
           valueG[i] = valueG[i] + 1
+        elsif bp =="N"
+          valueN[i] = valueN[i] + 1
         end
       end
     end 
@@ -155,6 +160,10 @@ end
   outfile.print "\n G \t"
   for i in 0..(slen*pair)
     outfile.print "#{valueG[i]} \t"
+  end
+  outfile.print "\n N \t"
+  for i in 0..(slen*pair)
+    outfile.print "#{valueN[i]} \t"
   end
   outfile.print "\n"
   # outfile.print "\n qual \t"

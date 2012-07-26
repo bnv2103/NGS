@@ -15,11 +15,13 @@ A = b[1,]
 T = b[2,]
 C = b[3,]
 G = b[4,]
+N = b[5,]
 
 A = A / numReads
 T = T / numReads
 C = C / numReads
 G = G / numReads
+N = N / numReads
 
 x = 1:readLength
 pdf(file = outfile)
@@ -29,7 +31,8 @@ lines(x, A, lty=1, col="blue")
 lines(x, C, lty=1, col="green")
 lines(x, T, lty=1, col="red")
 lines(x, G, lty=1, col="black")
-legend(80, 0.8, lty=c(1,1,1,1), col=c("blue", "green", "red", "black"),legend=c("A", "C", "T", "G"))
+lines(x, N, lty=1, col="yellow")
+legend(80, 0.8, lty=c(1,1,1,1,1), col=c("blue", "green", "red", "black", "yellow" ),legend=c("A", "C", "T", "G", "N"))
 
 qual1 = read.table(file=qualfile, header=F)
 qual1 = as.numeric(qual1)
