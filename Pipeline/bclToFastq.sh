@@ -261,13 +261,13 @@ cd $demultiplexout
         rm mailBody.txt
 
 ## zip up lane fastq
-for i in `seq 1 8`; do 
- qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=10:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq  $fastqout/s_"$i"n_1.fastq
- qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq $fastqout/s_"$i"n_2.fastq
- if [[ -e $fastqout/s_"$i"_3.fastq ]];then
-   qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=10:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq  $fastqout/s_"$i"n_3.fastq
- fi
-done  
+# for i in `seq 1 8`; do 
+#  qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=10:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_1.fastq  $fastqout/s_"$i"n_1.fastq
+# qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=4:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_2.fastq $fastqout/s_"$i"n_2.fastq
+# if [[ -e $fastqout/s_"$i"_3.fastq ]];then
+#   qsub -o $fastqout/logs/zip."$i".o -e $fastqout/logs/zip."$i".e -l mem=512M,time=10:: $NGSSHELL/do_bzip2.sh $fastqout/s_"$i"_3.fastq  $fastqout/s_"$i"n_3.fastq
+# fi
+# done  
 
 popd
 
