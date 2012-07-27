@@ -145,8 +145,8 @@ date
 
 ## Get GC Stats
 g=`basename $output.bam | sed 's/\//_/g'`
-
-CMD="qsub -o log.GC.$g.o -e log.GC.$g.e -N GC.$g  -l mem=5G,time=6:: $UTILS/picard_GCMetrics.sh -i $output.bam -o $output.bam -m 4 -g $setting -w 200 "
+dirg=`dirname $output.bam `
+CMD="qsub -o $dirg/log.GC.$g.o -e $dirg/log.GC.$g.e -N GC.$g  -l mem=5G,time=6:: $UTILS/picard_GCMetrics.sh -i $output.bam -o $output.bam -m 4 -g $setting -w 200 "
 echo $CMD
 $CMD
 
