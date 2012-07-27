@@ -76,7 +76,7 @@ if [ ! -d $TEMP ]; then
 fi
 
 JAVA="java -Xmx${HEAP}g -Djava.io.tmpdir="${TEMP}
-GATK="$JAVA -jar "${GATKJAR}
+GATK="$JAVA -jar "${GATKJAR15}
 FIXMATE="$JAVA -jar ${PICARD}/FixMateInformation.jar" 
 
 if [[ $CHR == "" ]]
@@ -115,6 +115,7 @@ $GATK \
     -T RealignerTargetCreator \
     -I $INP \
     -R $REF \
+    -known $DBSNPVCF \
     -o $OUTDIR/$CHR.forRealigner.intervals
 
 #    -D $DBSNP \
@@ -127,6 +128,7 @@ $GATK \
     -T IndelRealigner \
     --maxReadsForRealignment $MaxReads \
     -compress 5 \
+    -known $DBSNPVCF \
     -targetIntervals $OUTDIR/$CHR.forRealigner.intervals \
     -o $OUTDIR/$CHR.cleaned.bam 
 
@@ -216,9 +218,9 @@ if [[ $chain != "" ]]; then
 		  mkdir -p $OUTDIR/logs/
 		job_name=`basename $OUTDIR`
 		if [[ $AUTO == "" ]]; then
-                  cmd="qsub -l mem=8G,time=30:: -N recaliberate.$job_name -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 "
+                  cmd="qsub -l mem=8G,time=30:: -N recaliberate.$job_name -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6 -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 "
 		else
-		  cmd="qsub -l mem=8G,time=30:: -N recaliberate.$job_name.AUTO -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6000  -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 -A AUTO"
+		  cmd="qsub -l mem=8G,time=30:: -N recaliberate.$job_name.AUTO -o $OUTDIR/logs/all.realigned.bam.log.recalib.o -e $OUTDIR/logs/all.realigned.bam.log.recalib.e  ${BPATH}/gatk_recalibrate.sh -m 6 -g $GLOBAL   -I $OUTDIR/all.realigned.bam  -o $OUTDIR/all.recalibrated.bam -c 1 -A AUTO"
 		fi
 		  echo $cmd
 		  $cmd

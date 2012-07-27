@@ -6,7 +6,7 @@
 # INPUT:	Run with a single read-group/lane in $INP.list
 # OUTPUT:	$INP.$CHR.recalibrated.bam recalibrated bam file
 
-HEAP=4000
+HEAP=4
 
 # CHRFILE="${BPATH}/chrdb"
 
@@ -55,7 +55,7 @@ if [ ! -d $TEMP ]; then
     mkdir -p $TEMP
 fi
 
-JAVA="java -Xmx4G -Djava.io.tmpdir="${TEMP}
+JAVA="java -Xmx${HEAP}G -Djava.io.tmpdir="${TEMP}
 GATK="$JAVA -jar "${GATKJAR15}
 
 Targets="$TEMP/target.list"
@@ -73,14 +73,19 @@ Targets="$TEMP/target.list"
 # $SAMTOOLS index $INP
 
 
- $GATK \
-   -R $REF \
-   -I $INP \
-  -T CountCovariates \
-    -standard  \
-    -recalFile $INP.temp.recal_data.csv \
-    -knownSites $DBSNPVCF \
-     -nt 2
+$GATK \
+	-R $REF \
+	-I $INP \
+	-T CountCovariates \
+	-standard  \
+	-cov ReadGroupCovariate \
+	-cov QualityScoreCovariate \
+	-cov CycleCovariate \
+	-cov DinucCovariate \
+	-recalFile $INP.temp.recal_data.csv \
+	-knownSites $DBSNPVCF \
+	-nt 2
+
 if [[ $OUTPUT == ""  ]]
     then
     OUTPUT=$INP.recalibrated.bam
