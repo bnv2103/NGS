@@ -222,10 +222,10 @@ echo -e "conversion done" > $absOUT/BclToFastq.complete.txt
 ## Trigger nonPF QC 
 if [ ! -d $demultiplexout"_n/QC" ];then mkdir -p $demultiplexout"_n/QC" ; fi
 if [ ! -d $demultiplexout"_n/logs" ];then mkdir -p $demultiplexout"_n/logs" ; fi
-for fq1 in $demultiplexout"_n/*_1.fastq"
+for fq1 in $demultiplexout"_n"/*_1.fastq*
 do
 	j=`basename $fq1`
-	fq3=`echo $fq1 | sed 's/_1.fastq$/_3.fastq' `
+	fq3=`echo $fq1 | sed 's/_1.fastq/_3.fastq/' `
 	scriptfile="$demultiplexout""_n/QC/$j.runQC.sh"
 	echo '#!/bin/bash ' > $scriptfile 
 	echo '#$ -cwd ' >> $scriptfile

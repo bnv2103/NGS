@@ -44,16 +44,17 @@ TEMP=$input"_GCtemp"
 if [ ! -d $TEMP ]; then
   mkdir $TEMP
 fi
-if [ ! -d $output ];then
-	mkdir $output
-fi
+# if [ ! -d $output ];then
+#	mkdir $output
+# fi
 
 cmd="java -Xmx${HEAP}G -Djava.io.tmpdir=${TEMP} -jar ${PICARD}/CollectGcBiasMetrics.jar INPUT=$input  OUTPUT=$output.GCbias_detail CHART=$output.GCbias.pdf REFERENCE_SEQUENCE=$REF VALIDATION_STRINGENCY=SILENT WINDOW_SIZE=$WIN "
 echo $cmd
 $cmd
 
-cmd="java -Xmx${HEAP}G -Djava.io.tmpdir=${TEMP} -jar ${PICARD}/CollectInsertSizeMetrics.jar INPUT=$input OUTPUT=$output.InsertSize_detail HISTOGRAM_FILE=$output.InsertSize.pdf REFERENCE_SEQUENCE=$REF  VALIDATION_STRINGENCY=SILENT  "
+cmd="java -Xmx${HEAP}G -Djava.io.tmpdir=${TEMP} -jar ${PICARD}/CollectInsertSizeMetrics.jar INPUT=$input OUTPUT=$output.InsertSize_detail HISTOGRAM_FILE=$output.InsertSize.pdf VALIDATION_STRINGENCY=SILENT  "
 echo $cmd
 $cmd
 
 rm -rf $TEMP
+

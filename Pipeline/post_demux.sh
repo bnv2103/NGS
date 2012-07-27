@@ -64,7 +64,7 @@ do
 	        if [ ! -d $fqdir/QC ];then mkdir -p $fqdir/QC ; fi
 	        if [ ! -d $fqdir/logs ];then mkdir -p $fqdir/logs ; fi
 		j=`basename $fq`
-		fq3=`echo $fq | sed 's/_1.fastq$/_3.fastq' `
+		fq3=`echo $fq | sed 's/_1.fastq/_3.fastq' `
 		scriptfile="$fqdir/QC/$j.runQC.sh"
 		echo '#!/bin/bash ' > $scriptfile 
 		echo '#$ -cwd ' >> $scriptfile
@@ -73,7 +73,7 @@ do
 		echo " wait " >>  $scriptfile
 		## Finally GZip the demuxed file.
 		echo " qsub -o $fqdir/logs/zip.$j.o -e $fqdir/logs/zip.$j.e -N Zip.$j -l mem=512M,time=2::  $NGSSHELL/do_gzip.sh $fq $fq3 " >> $scriptfile
-		CMD="qsub -o $fqdir/logs/QC.$j.o -e $fqdir/logs/QC.$j.e -N QC.$j -l mem=9G,time=12:: $scriptfile "
+		CMD="qsub -o $fqdir/logs/QC.$j.o -e $fqdir/logs/QC.$j.e -N QC.$j -l mem=10G,time=12:: $scriptfile "
 		echo $CMD
 		$CMD
 		continue;
@@ -91,26 +91,25 @@ do
 	base_fq=`basename $fq`
 	ln_fq="$DIR/$APP/$projectid/$runid/fastq/$base_fq"
 	ln_fq_3=`echo $ln_fq | sed 's/_1.fastq/_3.fastq/' `
-	if [ ! -e $ln_fq_3 ]; then
-		ln_fq_3=""
-	fi
 
 	## Fire QC on the Fastq for RNA-seq & Exome-Seq 
         if [ ! -d $fqdir/QC ];then mkdir -p $fqdir/QC ; fi
         if [ ! -d $fqdir/logs ];then mkdir -p $fqdir/logs ; fi
-	scriptfile="$fqdir/QC/$j.runQC.sh"
+	scriptfile="$fqdir/QC/$base_fq.runQC.sh"
 		echo '#!/bin/bash ' > $scriptfile 
 		echo '#$ -cwd ' >> $scriptfile
-		echo " ruby $UTILS/fastq_QCplot.rb $fqdir/QC/$base_fq.QC $ln_fq $fq3  & " >> $scriptfile
-	        echo " sh  $UTILS/picard_LibraryComplexity.sh -i $ln_fq -p $fq3 -o $fqdir/QC/$base_fq.LibComplexity -m 7 -s $base_fq " >> $scriptfile
+		echo " ruby $UTILS/fastq_QCplot.rb $fqdir/QC/$base_fq.QC $ln_fq $ln_fq_3  & " >> $scriptfile
+	        echo " sh  $UTILS/picard_LibraryComplexity.sh -i $ln_fq  -p $ln_fq_3 -o $fqdir/QC/$base_fq.LibComplexity -m 7 -s $base_fq " >> $scriptfile
 		echo " wait " >>  $scriptfile
 		## Finally GZip the demuxed file.
-		CMD="qsub -o $fqdir/logs/QC.$base_fq.o -e $fqdir/logs/QC.$base_fq.e -N QC.$base_fq -l mem=9G,time=12:: $scriptfile "
+		CMD="qsub -o $fqdir/logs/QC.$base_fq.o -e $fqdir/logs/QC.$base_fq.e -N QC.$base_fq -l mem=10G,time=12:: $scriptfile "
 		echo $CMD
 		$CMD
 #        QCDir="$fqdir/QC/$lane_$sampleid/"
 #	if [ ! -d $QCDir ];then mkdir -p $QCDir ; fi
-	
+	if [ ! -e $ln_fq_3 ]; then
+		ln_fq_3=""
+	fi
 	cd $DIR/$APP/$projectid/$runid
 
 	#Initiate Pipelines according to app!
