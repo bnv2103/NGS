@@ -22,6 +22,7 @@ fi
 
 cd $infile
 bamFile="./accepted_hits.bam"
+# bamFile="./accepted_hits.sorted.bam"
 echo $bamFile
 echo $reference
 

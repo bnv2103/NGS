@@ -3,9 +3,9 @@
 
 samFile=$1
 txtFile=$2
-f=$3
+bamFile=$3
 gtf=$4
 
-samtools view -h -o $samFile $f
+samtools view -h -o $samFile $bamFile
 
 htseq-count $samFile $gtf --stranded=no > $txtFile

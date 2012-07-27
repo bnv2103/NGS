@@ -4,9 +4,9 @@ $VERBOSE = nil
 def main
   fq = ARGV[0] # bam file dir
   # output = ARGV[1] # QC.pdf
-
- #  `samtools view #{fq}/accepted_hits.bam > #{fq}/accepted_hits.sam`
-  infile = File.new("#{fq}/accepted_hits.sam", "r")
+  puts fq
+  `samtools view #{fq}/accepted_hits.bam > #{fq}/accepted_hits_QC.sam`
+  infile = File.new("#{fq}/accepted_hits_QC.sam", "r")
   outfile = File.new("#{fq}/ACTG.txt", "w")
   outfile1 = File.new("#{fq}/Qual.txt", "w")
   
@@ -96,7 +96,7 @@ def main
   outfile.close
 
   `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.R #{numReads} "#{fq}/ACTG.txt" "#{fq}/Qual.txt" "#{fq}/QC.pdf"`
-
+  `rm "#{fq}/*.sam"`
 end
 
 main()

@@ -81,9 +81,9 @@ ruby /ifs/scratch/c2b2/ngs_lab/xs2182/code/comb_stats_PE.rb $outdir "summary.csv
 samtools sort $bam $outdir"/accepted_hits.sorted"
 samtools index $outdir"/accepted_hits.sorted.bam"
 
-sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh $outdir"/accepted_hits.sam"  $outdir"/accepted_hits_counts.txt" $bam $GENES
-
 qsub -l mem=2G,time=5::  /ifs/scratch/c2b2/ngs_lab/xs2182/code/getSNPs.sh $outdir $GENO
+
+sh /ifs/scratch/c2b2/ngs_lab/xs2182/code/getCounts.sh $outdir"/accepted_hits.sam"  $outdir"/accepted_hits_counts.txt" $bam $GENES
 
 qsub -l mem=2G,time=10:: /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.sh $outdir
 

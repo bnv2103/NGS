@@ -3,7 +3,7 @@ $VERBOSE = nil
 
 def main
   fq = ARGV[0] # sampl.fastq
-  # output = ARGV[1] #pdf file
+  output = ARGV[1] #pdf file
 
   # `samtools view #{fq} > accepted_hits.sam`
   infile = File.new(fq, "r")
@@ -105,7 +105,7 @@ def main
 
   outfile.close
 
-  `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.R #{numReads} #{outfile} #{outfile1} QC.pdf`
+  `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.R #{numReads} "ACTG.txt" "Qual.txt" #{output}`
  # `Rscript /ifs/scratch/c2b2/ngs_lab/xs2182/code/QCplot.R #{numReads} #{output}`
 
 end
