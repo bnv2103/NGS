@@ -341,7 +341,7 @@ void simulate(int chrnum)
 #ifdef DEBUG
 printf("Before sorting\n");
 for(i=0; i<n_reads; i++) {
-	printf("Read %d starts at %d,%d,%f,%f\n", i, reads[i].start,reads[i].len,reads[i].del_errors,reads[i].snp_errors);
+//	printf("Read %d starts at %d,%d,%f,%f\n", i, reads[i].start,reads[i].len,reads[i].del_errors,reads[i].snp_errors);
 }
 #endif
 	qsort(reads, n_reads, sizeof(struct read_struct), read_cmp);
@@ -349,7 +349,7 @@ for(i=0; i<n_reads; i++) {
 #ifdef DEBUG
 printf("After sorting\n");
 for(i=0; i<n_reads; i++) {
-	printf("Read %d starts at %d,%d,%d,%f,%f\n", i, reads[i].start,reads[i].len,reads[i].start+reads[i].len,reads[i].del_errors,reads[i].snp_errors);
+//	printf("Read %d starts at %d,%d,%d,%f,%f\n", i, reads[i].start,reads[i].len,reads[i].start+reads[i].len,reads[i].del_errors,reads[i].snp_errors);
 }
 #endif
 
@@ -377,7 +377,7 @@ for(i=0; i<n_reads; i++) {
 					reads[i].str[k] = snps[snp_ct].all[reads_hap[i%100]-1];
 					common_snp = 1;
 #ifdef DEBUG
-printf("Replacing common snp %c with %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),snps[snp_ct].all[reads_hap[i%100]-1],i,k+1,j+1,reads[i].start+j+1);
+//printf("Replacing common snp %c with %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),snps[snp_ct].all[reads_hap[i%100]-1],i,k+1,j+1,reads[i].start+j+1);
 #endif
 					break;
 				} else {
@@ -403,7 +403,7 @@ printf("Replacing common snp %c with %c on read %d at position %d,%d,%d\n",*(ref
 					//j += indels[indel_ct].reflen - strlen(indels[indel_ct].all[reads_hap[i%100]-1]);
 					j += (indels[indel_ct].reflen - 1);
 #ifdef DEBUG
-printf("Indeling site %s with %s on read %d up to position %d,%d,%d\n",*(ref_s+reads[i].start+j),indels[indel_ct].all[reads_hap[i%100]-1],i,k,j+1,reads[i].start+j+1);
+printf("Indeling site %c with %s on read %d up to position %d,%d,%d\n",*(ref_s+reads[i].start+j),indels[indel_ct].all[reads_hap[i%100]-1],i,k,j+1,reads[i].start+j+1);
 #endif
 					break;
 				} else {
@@ -417,7 +417,7 @@ printf("Indeling site %s with %s on read %d up to position %d,%d,%d\n",*(ref_s+r
 				if(common_snp==0) {
 					reads[i].str[k] = *(ref_s+reads[i].start+j);
 #ifdef DEBUG
-printf("inserting %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),i,k+1,j+1,reads[i].start+j+1);
+//printf("inserting %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),i,k+1,j+1,reads[i].start+j+1);
 #endif
 				}
 				k++;
@@ -433,11 +433,11 @@ printf("inserting %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j
 				} else { reads[i].str[k] = *(ref_s+reads[i].start+j); }
 				k++;
 #ifdef DEBUG
-printf("replacing %c with %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),reads[i].str[k-1],i,k,j+1,reads[i].start+j+1);
+//printf("replacing %c with %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),reads[i].str[k-1],i,k,j+1,reads[i].start+j+1);
 #endif
 			} else {
 #ifdef DEBUG
-printf("Deleting %c on read %d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),i,k+1,j+1,reads[i].start+j+1);
+//printf("Deleting %c on read %d\t%d at position %d,%d,%d\n",*(ref_s+reads[i].start+j),i,reads[i].start,k+1,j+1,reads[i].start+j+1);
 #endif
 			}
 		}

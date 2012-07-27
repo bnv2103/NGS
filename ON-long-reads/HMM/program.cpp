@@ -32,12 +32,13 @@ using namespace std;
 
 #define ncells 1
 #define FULL
-#define DEBUG
+//#define DEBUG
 
 int region;
 vector<SNP*> snp_list;
 vector<READ*> reads_list;
 vector<string> known_snps;
+ofstream fileOut("readslist");
 
 vector<string> &split(const string &s, char delim, vector<string> &elems) {
 	stringstream ss(s);
@@ -47,8 +48,10 @@ vector<string> &split(const string &s, char delim, vector<string> &elems) {
 	return elems;
 }
 
+// Get a seg fault due to mem corruption error here.
+// Fixed by setting \0 at end of line copied from file
 vector<string> split(const string &s, char delim,int flag) {
-if(flag) cout << s << endl;
+if(flag) fileOut << s << endl;
 	vector<string> elems;
 	return split(s, delim, elems);
 }
@@ -105,43 +108,72 @@ int get_deletion_count(string cigar, int limit)
 	int dlen = 0;
 	int mlen = 0;
 	int ilen = 0;
-	int slen;
+	int slen = 0;
+	int dmlim = 0;
 
-	if(limit==-1) limit = 10000;
+	// slen serves no great purpose. Not utilized here.
 	while(it<strlen(c_cigar)) {
 		if(c_cigar[it]>='0'&&c_cigar[it]<='9') {
 			len = len*10 + c_cigar[it] - '0';
 		} else if(c_cigar[it]=='S') {
 			slen += len;
 			len = 0;
+#ifdef DEBUG
+if(limit<10000) cout << "Slen = " << slen << endl;
+#endif
 		} else if (c_cigar[it]=='M') {
 			mlen += len;
 			len = 0;
-/*
- * REVISIT: For future implementation, we need to account for deleted snps themselves
-	if(mlen+dlen==limit) {
-		cout << "Mlen = limit" << endl;
-	}
-*/
-			if(mlen+dlen==limit) {
-// Experimental:
-//				return -1;
+#ifdef DEBUG
+if(limit<10000) cout << "Mlen = " << mlen << endl;
+#endif
+			if(mlen+dlen-ilen==limit) {
+				dmlim = 0;
+#ifdef DEBUG
+if(limit<10000) cout << "Limit= " << limit << endl << "Mlen+Dlen = " << mlen+dlen << endl;
+#endif
 				break;
-			} else if(mlen+dlen > limit) {
+			} else if(mlen+dlen-ilen > limit) {
+				dmlim = 0;
+#ifdef DEBUG
+if(limit<10000) cout << "Limit= " << limit << endl << "Mlen+Dlen = " << mlen+dlen << endl;
+#endif
 				break;
 			}
 		} else if(c_cigar[it]=='D') {
 			dlen += len;
 			len = 0;
+#ifdef DEBUG
+if(limit<10000) cout << "Dlen = " << dlen << endl;
+#endif
+			if(mlen+dlen-ilen==limit) {
+				dmlim = 1;
+#ifdef DEBUG
+if(limit<10000) cout << "Limit " << limit << endl << "Dlen+Mlen = " << dlen+mlen << endl;
+#endif
+				break;
+			} else if(mlen+dlen-ilen > limit) {
+				dmlim = 1;
+#ifdef DEBUG
+if(limit<10000) cout << "Limit " << limit << endl << "Dlen+Mlen = " << dlen+mlen << endl;
+#endif
+				break;
+			}
 		} else if(c_cigar[it]=='I') {
 			ilen += len;
 			len = 0;
+#ifdef DEBUG
+if(limit<10000) cout << "Ilen = " << ilen << endl;
+#endif
 		} else {
 			cout << "Invalid character in cigar string " << c_cigar[it] << endl;
 		}
 		it++;
 	}
-	return dlen - ilen;
+	if(dmlim)
+		return -1;
+	else
+		return dlen - ilen;
 }
 
 void read_known_snp_file(const char *file)
@@ -154,24 +186,21 @@ void read_known_snp_file(const char *file)
 	}
 
 	while(true) {
-		char str[20];
+		char str[50];
 		fgets(str,sizeof(str),snp_file);
+		str[strlen(str)-1] = '\0';
 		if(feof(snp_file))
 			break;
 		line = str;
 		vector<string> snp_line = split(line, ' ',0);
-		if(snp_line[1]!="N") {
-			known_snps.insert(known_snps.end(),snp_line[0]);
-		}
+		string snpit = snp_line[1] + snp_line[4] + snp_line[5] + snp_line[8];
+		known_snps.insert(known_snps.end(),snpit);
 	}
 }
 
 void read_snp_file(const char *snpfile)
 {
 	string line;
-	int hash_ctr = 0;
-	int known_hash = 10;
-	int homon_hash = 100;
 	FILE *snp_file = fopen(snpfile, "r");
 	if(snp_file==NULL) {
 		printf("Cannot open snp file %s\n",snpfile);
@@ -182,6 +211,7 @@ void read_snp_file(const char *snpfile)
 	while(true) {
 		char str[1000];
 		fgets(str,sizeof(str),snp_file);
+		str[strlen(str)-1] = '\0';
 		if(feof(snp_file))
 			break;
 		if(str[0]=='#')
@@ -193,26 +223,25 @@ void read_snp_file(const char *snpfile)
 			string info = vcf_line[9];
 			vector<string> format = split(info, ':',0);
 			vector<string> gl3 = split(format[1], ',',0);
-			int known = 0;
+
+			// known = 0(error), 1(known), 2(novel), 3(null ref) - discarding value 3
+			int known = 0, a1 = 0, a2 = 0;
 			for(vector<string>::iterator known_snpit = vec_start; known_snpit != known_snps.end(); known_snpit++) {
-				if(atol((*known_snpit).c_str()) > pos) {
+				long int full_info = atol((*known_snpit).c_str());
+				if( full_info/1000 > pos) {
 					break;
 				}
-				if(atol((*known_snpit).c_str()) == pos) {
-					hash_ctr = distance(known_snps.begin(), known_snpit);
-					if((hash_ctr%known_hash)+1!=known_hash) {
-						known = 1;
-					} else if((hash_ctr%homon_hash)+1!=homon_hash) {
-						known = 2;
-					} else {
-						known = 3;
-					}
+				if(full_info/1000 == pos) {
+					known = full_info%10 == 0 ? 2 : 1;
+					a1 = (full_info/10)%10;
+					a2 = (full_info/100)%10;
 					vec_start = known_snpit;
 					break;
 				}
 			}
 			SNP *snp = new SNP(pos, vcf_line[3].c_str()[0], vcf_line[4].c_str()[0], gl3, known, atof(vcf_line[5].c_str()));
 			snp_list.insert(snp_list.end(), snp);
+if(pos>13500000) break;
 //cout << "Insert.." << sizeof(*snp) << endl;
 		}
 	}
@@ -234,21 +263,22 @@ void read_sam_files(char *fq_files)
 	while(true) {
 		char str[20000];
 		fgets(str,sizeof(str),fq_file);
+		str[strlen(str)-1] = '\0';
 		if(feof(fq_file))
 			break;
-		char start = str[0];
+		char star = str[0];
 
-		if(start != '@') { // for each new read in the file
+		if(star != '@') { // for each new read in the file
 			line = str;
-			vector<string> read_line = split(line, '\t',0);
+			vector<string> read_line = split(line, '\t', 0);
 			long start = atol(read_line[3].c_str());
 #ifdef DEBUG
 cout << start << endl;
 #endif
-			int slen = s_len(read_line[5].c_str());
-			int rev_slen = rev_s_len(read_line[5].c_str());
 			string cigar = read_line[5];
-			int Ndels = get_deletion_count(cigar,-1);
+			int slen = s_len(cigar.c_str());
+			int rev_slen = rev_s_len(cigar.c_str());
+			int Ndels = get_deletion_count(cigar,10000);
 if(Ndels==-1) {
 	cout <<"Unexpected -1 for get_deletion_count" << endl;
 }
@@ -266,8 +296,16 @@ cout << slen << "\t" << rev_slen << "\t" << Ndels << "\t" << length << endl;
 						int type = 2;
 						char snp_ref = (*snp_it)->GetRef();
 						char alt_ref = (*snp_it)->GetAlt();
+#ifdef DEBUG
+cout << (*snp_it)->GetPos() << "\t" << start << endl;
+#endif
 						int ndels = get_deletion_count(cigar,(*snp_it)->GetPos()-start);
-//if(ndels==-1) break;
+#ifdef DEBUG
+cout << "Ndels = " << ndels << endl;
+#endif
+						if(ndels==-1)
+							continue;
+
 						char allele = read_line[9][(*snp_it)->GetPos() - start + slen - ndels];
 
 						if(allele==snp_ref)
@@ -289,6 +327,7 @@ cout << slen << "\t" << rev_slen << "\t" << Ndels << "\t" << length << endl;
 //cout << "READ" << endl;
 			vector<READ*>::iterator rend = reads_list.end();
 			reads_list.insert(rend, read); // add it to the vector
+if(start>13500000) break;
 		}
 	}
 	fclose(fq_file);
@@ -379,10 +418,12 @@ int main(int argc, char **argv)
 	const char *ext = ".sam";
 
 #ifdef FULL
-	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/vcfs/0.01_0.04_2_5000_2000_0_20.1.1.vcf";
-	const char *knownsnps="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/snps/snp_20.list";
-	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/reads/0.01_0.04_2_5000_2000_0_20.sorted";
-	char knownsnpfile[200], *base;
+	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/vcfs/0.01_0.04_10_5000_2000_0_21.1.1.vcf";
+	const char *knownsnps="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/snps/snp_21.list";
+	const char *file_base = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/reads/0.01_0.04_10_5000_2000_0_21.sorted";
+	const char *base_name="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/HMM/output/output.21.1";
+	char knownsnpfile[200];
+	const char *base;
 
 	if(argc>1) {
 		file_base=argv[1];
@@ -392,7 +433,7 @@ int main(int argc, char **argv)
 		base=argv[4];
 	} else {
 		strcpy(knownsnpfile,knownsnps);
-		strcpy(base,"/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/HMM/output/output.1.1");
+		base=base_name;
 	}
 #else
 	const char *snpfile="/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/short_6.vcf";
@@ -404,9 +445,7 @@ int main(int argc, char **argv)
 	char file_name[200];
 	sprintf(file_name, "%s%s", file_base, ext);
 
-cout << knownsnpfile << endl << snpfile << endl << file_name << endl << base << endl << endl;
-
-	//read_known_snp_file(knownsnpfile);
+	read_known_snp_file(knownsnpfile);
 	read_snp_file(snpfile);
 	read_sam_files(file_name);
 
@@ -414,3 +453,4 @@ cout << knownsnpfile << endl << snpfile << endl << file_name << endl << base << 
 
 	return 0;
 }
+

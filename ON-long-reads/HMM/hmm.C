@@ -197,9 +197,17 @@ double CHMM::ForwardAlgo(double **alpha, double *scale, CObs **obs, long T, bool
 				sum += alpha[t][i] * aij;
 	    		}
 
+#ifdef DEBUG
+cout << "Read " << t << " and " << t+1 << ", " << rd_start << ", " << rd_end << " with " << common_snp_count << " overlapping snps" << endl << endl;
+cout << "K SnpPos  R A L L\tAA_gen\tAA_obs\tAA_genob\tAB_gen\tAB_obs\tAB_genob\tBB_gen\tBB_obs\tBB_genob\tprob\tlogprob\n";
+#endif
 			double logBiOt = 0;
 			for(int count=0; count<common_snp_count; count++) {
                                 SNP *sp = reads_snp_list[count];
+#ifdef DEBUG
+cout << sp->GetKnown() << " " << sp->GetPos() << " " << sp->GetRef() << " " << sp->GetAlt() << " " << (*pd).GetAllele(index[2*count]) << " " << (*nd).GetAllele(index[2*count+1]);
+cout << endl;
+#endif
                                 double emission = compute_new_emission(reads_snp_list, count, obs, t+1, index, j, obslik[count][j-1], genlik[count][j-1]);
                                 logBiOt += log(emission)/common_snp_count;
 			}
@@ -752,7 +760,7 @@ void CHMM::UpdateGenotypes()
 
 #ifdef DEBUG
 		cout << "SNP: " << (*snp_it)->GetPos() << " " << (*snp_it)->GetKnown() << endl;
-		cout << ref_ct << "\t" << alt_ct << "\t" << err_ct << endl;
+		cout << ref_ct << "\t" << alt_ct << "\t" << err_ct << "\t" << (*snp_it)->GetPos() << endl;
 
 		cout << "Priors:\t";
 		cout << ref_ct << "\t" << alt_ct << "\t" << err_ct << "\t";
@@ -863,7 +871,7 @@ void CHMM::GetCommonSnpList(CObs**obs, SNP**reads_snp_list, int *common_snp_coun
 	int curr_read_snp_count = curr_read.GetSnpCount();
 	SNP **curr_snp_list = curr_read.GetSnpList();
 	int it1 = 0, it2 = 0;
-//cout << prev_read.GetPos() << "\t" << curr_read.GetPos() << endl;
+cout << prev_read.GetPos() << "\t" << curr_read.GetPos() << endl;
 	while(it1<prev_read_snp_count && it2<curr_read_snp_count) {
 		SNP* snp1 = prev_snp_list[it1];
 		SNP* snp2 = curr_snp_list[it2];

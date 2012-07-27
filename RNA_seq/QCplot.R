@@ -6,6 +6,7 @@ ACTG = args[2]
 Qual = args[3]
 outpdf = args[4]
 
+
 a = read.table(file=ACTG, header=F)
 
 b = a[,2:102]

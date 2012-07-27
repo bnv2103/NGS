@@ -9,7 +9,7 @@
 prefix=$1
 
 # Code to extract phased snp info in desired format
-grep -v ^# reference/CEU.trio.2010_03.genotypes.vcf | awk '{if(match($12,/[0-1]\|[0-1]:*/)) {split($12,gt,":"); split(gt[1],val,"|"); if(val[1]==0) mom=$4; else mom=$5; if(val[2]==0) dad=$4; else dad=$5; print $1, $2, $4, $5, val[1], val[2], mom, dad }}' > reference/snp.list
+grep -v ^# reference/CEU.trio.2010_03.genotypes.vcf | awk '{if(match($12,/[0-1]\|[0-1]:*/)) {split($12,gt,":"); split(gt[1],val,"|"); if(val[1]==0) mom=$4; else mom=$5; if(val[2]==0) dad=$4; else dad=$5; if(match($3,"rs")) known=1; else known=0; print $1, $2, $4, $5, val[1], val[2], mom, dad, known }}' > reference/snp.list
 
 grep -v ^# reference/CEU.trio.2010_07.indel.genotypes.vcf | awk '{split($12,gt,":"); split(gt[1],val,"/"); split($5,alt,","); if(val[1]==0) mom=$4; else mom=alt[val[1]]; if(val[2]==0) dad=$4; else dad=alt[val[2]]; print $1, $2, $4, $5, val[1], val[2], mom, dad }' > reference/indel.list
 
