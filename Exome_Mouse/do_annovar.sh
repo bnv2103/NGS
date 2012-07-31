@@ -6,7 +6,7 @@ BPATH="/ifs/home/c2b2/ngs_lab/ngs/code/NGS/Exome_Mouse/"
 
 if [ ! -e $1.annovar ]
 then
-	perl $ANNOVAR/convert2annovar.pl $1  -format vcf4 -allallele --includeinfo > $1.annovar
+	perl $ANNOVAR/convert2annovar.pl $1  -format vcf4 --includeinfo > $1.annovar
 fi
  
 perl $ANNOVAR/annotate_variation.pl -filter -dbtype snp128 --buildver mm9  $1.annovar  $ANNOVAR/mousedb/ -webfrom annovar 
