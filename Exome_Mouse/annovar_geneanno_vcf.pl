@@ -88,7 +88,7 @@ while(<fin2>) {
 	if (exists $hash{ $field[8] }{ $field[9] }){	## chromosome and pos from Annovar.exonic_variant_function file (at col 8,9 )
 		## search for the entry in %hash
 		$field[2]  =~ s/,$//g;
-		$field[1] =~ s/ //g;
+		$field[1] =~ s/\ //g;
 		if  (join(" ",@{$hash{ $field[8] }{ $field[9] }}[0..6]) eq join(" ",@{[  $field[8], $field[9], $field[10], $field[11], $field[12], $field[13], $field[14]]} ))
 		{
         		$hash{ $field[8] }{ $field[9] }[7].=";refGene.functionalClass=$field[1];refGene.name=$field[2]";

@@ -133,7 +133,7 @@ while(<vcf>) {
                 if ($item[7]) { $info.=";1KG=$item[7]";}
                 if ($item[8]) { $info.=";dbSNP";}
                 if ($item[0]) { $info.=";function=$item[0]";}	
-		if ($item[2]) { $info.=";functionalClass=$item[2]";}
+		if ($item[2]) { $item[2] =~ s/\ //; $info.=";functionalClass=$item[2]";}
 		if ($item[1]) { $info.=";geneName=$item[1]";}
 		if ($item[3]) { $info.=";AAChange=$item[3]";}
 		if ($item[4]) { $item[4] =~ s/Name=/mce.name:/ ; $item[4] =~ s/"// ;  $info.=";mce.score=$item[4]";}

@@ -22,6 +22,7 @@ def main
   homo = {}
   het  = {}
   sid = [] # sample array
+  indel =0 
 
   lastpos = -1 
 #  while line=ARGF.gets do 
@@ -45,32 +46,37 @@ def main
       end
     else
       pos,name,ref,alt, passflag, info, gt = cols[1].to_i,cols[2],cols[3],cols[4], cols[6], cols[7], cols[9..-1]
-      next if ref.size != alt.size ## indel   || pos == lastpos ## indels or same var
+#	puts "#{pos}	#{name}	#{ref}	#{alt}	#{passflag}	#{info}	#{gt}"
       next if passflag != "PASS"
+      if ref.size != alt.size ## indel   || pos == lastpos ## indels or same var
+	indel +=1
+	next
+      end
       ## SYN AND NONSYN
 
       synonFlag, missenseFlag, nonsenseFlag, knowntiFlag, knowntvFlag ,noveltiFlag, noveltvFlag, readthroughFlag = 0,0,0, 0, 0, 0,0, 0
       coding = -1
       info.split(';').each do |l|  
         k,v = l.split('=')
-
-        if  k =~ /refseq\.functionalClass/ and v == "silent"  ## syn
-          synonFlag = 1
-          coding = 1
-        elsif  k =~ /refseq\.functionalClass/ and v == "missense"  # missense
-          missenseFlag = 1
-          coding = 1
-        elsif k =~ /refseq\.functionalClass/ and v == "nonsense"
-          nonsenseFlag = 1
-          coding = 1
-        elsif k =~ /refseq\.functionalClass/ and v == "readthrough"
-          coding = 1
-          readthroughFlag = 1
+     
+        if  k =~ /functionalClass/ 
+		coding = 1
+		if  v == "silent" or v == "synonymousSNV"  ## syn
+	          coding = 1
+	          synonFlag = 1
+        	elsif  v == "missense" or v == "nonsynonymousSNV"   # missense
+	          coding = 1
+	          missenseFlag = 1
+        	elsif  v == "nonsense"  or v == "stopgainSNV" 
+	          coding = 1
+	          nonsenseFlag = 1
+        	elsif  v == "readthrough" or v == "stoplossSNV" 
+	          coding = 1
+	          readthroughFlag = 1
+		end
         end
       end
 
-
-      
       next unless coding * codingSwitch > 0  # only take coding var
       
       next if pos == lastpos       
@@ -175,6 +181,10 @@ def main
 
   print "heterozygous"
   sid.each {|s| print "\t#{het[s]}" }
+  print "\n"
+
+  print "all_Indels"
+  sid.each {|s| print "\t#{indel}" }
   print "\n"
 
 end

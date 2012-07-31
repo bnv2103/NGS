@@ -79,13 +79,13 @@ echo -e "This data is released at http://genomecenter.columbia.edu/ngs/  \n" > R
 echo -e "Date : `date +%x` \n" >> README
 echo -e "ProjectID : $project \n" >> README
 echo -e "Note: \n" >> README
-echo -e "   - No. of Samples = 12 " >> README
+echo -e "   - No. of Samples = $samp " >> README
 echo -e "   - There are 6 files in all. " >> README
 echo -e "   - raw.variants.vcf  : Contains all raw variants " >> README
 echo -e "   - indels.vcf 	: Contains filtered indels  " >> README
 echo -e "   - SNVs.vcf    	: Contains filtered SNV calls" >> README
-echo -e "   - summary.coding	: Summary files " >> README
-echo -e "   - summary.noncoding	: Summary files " >> README
+echo -e "   - summary.coding	: Summary of filtered coding variants " >> README
+echo -e "   - summary.noncoding	: Summary of filtered non-coding variants " >> README
 echo -e "   - summary_reads	: Summary of reads, coverage, D15 etc. per sample \n" >> README
 
 echo -e "  Data on the web will be available for a month, after that, the data must be requested again." >> README
