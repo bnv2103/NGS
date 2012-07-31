@@ -24,7 +24,7 @@ File.new(infile, 'r').each do |line|
 	next
     end
 		
-	pos,name,ref,alt,infoall,genotype = cols[1],cols[2],cols[3],cols[4],cols[7],cols[9].split(":")[0]
+	pos,name,ref,alt,infoall,genotype = cols[1],cols[2],cols[3],cols[4].split(",")[0],cols[7],cols[9].split(":")[0]
 	info = infoall.split(/;/)
 	
 	next if pos == lastpos       #ignore same variant i.e. same position in tht chromose

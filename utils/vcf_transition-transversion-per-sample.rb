@@ -45,7 +45,7 @@ def main
         het[cc] = 0
       end
     else
-      pos,name,ref,alt, passflag, info, gt = cols[1].to_i,cols[2],cols[3],cols[4], cols[6], cols[7], cols[9..-1]
+      pos,name,ref,alt, passflag, info, gt = cols[1].to_i,cols[2],cols[3],cols[4].split(",")[0], cols[6], cols[7], cols[9..-1]
 #	puts "#{pos}	#{name}	#{ref}	#{alt}	#{passflag}	#{info}	#{gt}"
       next if passflag != "PASS"
       if ref.size != alt.size ## indel   || pos == lastpos ## indels or same var
