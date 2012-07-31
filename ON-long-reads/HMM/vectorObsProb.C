@@ -164,13 +164,15 @@ void CVectorObsProb::SetVal(int state,int symbo,double value)
 	cout << "SetVal not to be called from CVectorObsProb" << endl;
 }
 
-void CVectorObsProb::InitStateProb(void)
+void CVectorObsProb::InitStateProb(double initProb)
 {
 	int i;
+	double otherProb;
 
+	otherProb = 1.0 - initProb;
 	for(i=1;i<=mDimension;i++) {
-		mComponentProb[i]->SetVal(1,1,0.99);
-		mComponentProb[i]->SetVal(2,1,0.01);
+		mComponentProb[i]->SetVal(1,1,initProb);
+		mComponentProb[i]->SetVal(2,1,otherProb);
 	}
 }
 

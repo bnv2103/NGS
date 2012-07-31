@@ -11,7 +11,7 @@ public:
   //SNP(long snp_pos, char snp_ref, char snp_alt, int type, READ *read, vector<string>, bool known);
   SNP(long snp_pos, char snp_ref, char snp_alt, vector<string>, int known, double qual);
 
-  ~SNP(void) {}
+  ~SNP(void);
 
   long GetPos();
   void append(int type, READ *read);
@@ -27,8 +27,8 @@ public:
   double GetQualScore();
   void add_posteriors(double posterior[3]);
   void assign_genotype(int gt, double genp);
-  void PrintPosterior();
-  void PrintLR();
+//  void PrintPosterior();
+//  void PrintLR();
   double* GetPosteriors();
 
 private:
@@ -47,11 +47,11 @@ private:
   double genprob;
   READ **reads;
   double *gl;
-  double **posteriors;
+//  double **posteriors;
   double *posterior;
 
 void add_read(int type, READ *read);
-void CalculateLikelihoodRatio();
+//void CalculateLikelihoodRatio();
 
 };
 

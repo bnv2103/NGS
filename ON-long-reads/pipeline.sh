@@ -35,7 +35,7 @@ output_base=${base}/HMM/output/${pre}
 if [[ $region -eq 0 ]]
 then
 	let "qmem=400*$coverage"
-	qsub -sync y -t 1-2 -l mem=4G,time=16:: ./simulate_read.sh $snprate $errrate $coverage $maxreadlen $minreadlen $region $iteration ${read_base}
+	qsub -sync y -t 1-2 -l mem=4G,time=8:: ./simulate_read.sh $snprate $errrate $coverage $maxreadlen $minreadlen $region $iteration ${read_base}
 	echo simulation complete
 
 	let "qtime=3*$coverage"
@@ -53,7 +53,7 @@ then
 	echo snp calling complete
 
 	cd HMM
-	qsub -sync y -t 1-2 -l mem=32G,time=8:: ./program.sh ${read_base} ${vcf_base} $region $pval ${output_base}
+	qsub -sync y -t 1-2 -l mem=2G,time=8:: ./program.sh ${read_base} ${vcf_base} $region $pval ${output_base}
 	rm ${output_base}.${pval}.obs
 	rm ${output_base}.${pval}.sta
 	for i in `seq 1 2`
@@ -68,7 +68,7 @@ then
 	./analysis.sh ${output_base}.${pval} ${read_base}
 else
 	let "qmem=400*$coverage"
-	qsub -sync y -l mem=4G,time=16:: ./simulate_read.sh $snprate $errrate $coverage $maxreadlen $minreadlen $region $iteration ${read_base}
+	qsub -sync y -l mem=4G,time=8:: ./simulate_read.sh $snprate $errrate $coverage $maxreadlen $minreadlen $region $iteration ${read_base}
 	echo simulation complete
 
 	let "qtime=3*$coverage"
@@ -80,7 +80,7 @@ else
 	echo snp calling complete
 
 	cd HMM
-	qsub -sync y -l mem=32G,time=8:: ./program.sh ${read_base} ${vcf_base} $region $pval ${output_base}
+	qsub -sync y -l mem=2G,time=8:: ./program.sh ${read_base} ${vcf_base} $region $pval ${output_base}
 	echo HMM complete
 
 	./analysis.sh ${output_base}_${region}.${pval} ${read_base}_${region}

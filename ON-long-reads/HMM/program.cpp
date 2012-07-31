@@ -30,7 +30,10 @@ using namespace std;
 #include "initStateProb.h"
 #include "hmm.h"
 
+#define EM 1
 #define ncells 1
+#define MAX_READS 10000
+#define MAX_READ_LEN 5000
 #define FULL
 //#define DEBUG
 
@@ -38,7 +41,20 @@ int region;
 vector<SNP*> snp_list;
 vector<READ*> reads_list;
 vector<string> known_snps;
-ofstream fileOut("readslist");
+
+struct gt_st {
+	int known;
+	double gt[3];
+};
+
+map<long, gt_st> gt_map;
+
+struct read_span {
+	long start;
+	long end;
+};
+
+read_span *read_info = new read_span[1000];
 
 vector<string> &split(const string &s, char delim, vector<string> &elems) {
 	stringstream ss(s);
@@ -51,7 +67,6 @@ vector<string> &split(const string &s, char delim, vector<string> &elems) {
 // Get a seg fault due to mem corruption error here.
 // Fixed by setting \0 at end of line copied from file
 vector<string> split(const string &s, char delim,int flag) {
-if(flag) fileOut << s << endl;
 	vector<string> elems;
 	return split(s, delim, elems);
 }
@@ -100,8 +115,9 @@ int s_len(const char* seq)
 
 int get_deletion_count(string cigar, int limit)
 {
-	char *c_cigar = new char[cigar.length()+1];
-	c_cigar = (char*)cigar.c_str();
+	//char *c_cigar = new char[cigar.length()+1];
+	char c_cigar[1000];
+	strcpy(c_cigar,cigar.c_str());
 	c_cigar[cigar.length()] = '\0';
 	int it = 0;
 	int len = 0;
@@ -170,10 +186,60 @@ if(limit<10000) cout << "Ilen = " << ilen << endl;
 		}
 		it++;
 	}
+
+//	delete [] c_cigar;
 	if(dmlim)
 		return -1;
 	else
 		return dlen - ilen;
+}
+
+int get_read_span(const char *file_name)
+{
+	int iter = 0;
+	int span_iter = 0;
+	string line;
+	char str[20000];
+	FILE *file = fopen(file_name, "r");
+
+	if(file==NULL) {
+		printf("Cannot open file %s\n",file_name);
+		exit(1);
+	}
+
+	while(true) {
+		fgets(str,sizeof(str),file);
+		str[strlen(str)-1] = '\0';
+		if(feof(file)) {
+			printf("Empty file %s\n",file_name);
+			exit(1);
+		}
+		if(str[0]!='@')
+			break;
+	}
+
+	iter++;
+	line = str;
+	vector<string> read_line = split(line, '\t',0);
+	read_info[span_iter].start = atol(read_line[3].c_str());
+
+	while(true) {
+		fgets(str,sizeof(str),file);
+		str[strlen(str)-1] = '\0';
+		if(feof(file)) {
+			read_info[span_iter].end = atol(read_line[3].c_str());
+			return span_iter+1;
+		}
+		iter++;
+		line = str;
+		read_line = split(line, '\t',0);
+		if(!(iter%MAX_READS)) {
+			read_info[span_iter].end = atol(read_line[3].c_str());
+			span_iter++;
+			read_info[span_iter].start = atol(read_line[3].c_str());
+		}
+	}
+	fclose(file);
 }
 
 void read_known_snp_file(const char *file)
@@ -198,18 +264,15 @@ void read_known_snp_file(const char *file)
 	}
 }
 
-void read_snp_file(const char *snpfile)
+void read_snp_file(FILE *snp_file, long snp_end)
 {
 	string line;
-	FILE *snp_file = fopen(snpfile, "r");
-	if(snp_file==NULL) {
-		printf("Cannot open snp file %s\n",snpfile);
-		exit(1);
-	}
 
 	vector<string>::iterator vec_start = known_snps.begin();
 	while(true) {
 		char str[1000];
+		fpos_t prev_pos;
+		fgetpos(snp_file,&prev_pos);
 		fgets(str,sizeof(str),snp_file);
 		str[strlen(str)-1] = '\0';
 		if(feof(snp_file))
@@ -219,7 +282,13 @@ void read_snp_file(const char *snpfile)
 		line = str;
 		vector<string> vcf_line = split(line, '\t',0);
 		if(vcf_line[4].find(',')==string::npos) {
+
 			long pos = atol(vcf_line[1].c_str());
+			if(pos>snp_end) {
+				fsetpos(snp_file,&prev_pos);
+				break;
+			}
+
 			string info = vcf_line[9];
 			vector<string> format = split(info, ':',0);
 			vector<string> gl3 = split(format[1], ',',0);
@@ -241,26 +310,20 @@ void read_snp_file(const char *snpfile)
 			}
 			SNP *snp = new SNP(pos, vcf_line[3].c_str()[0], vcf_line[4].c_str()[0], gl3, known, atof(vcf_line[5].c_str()));
 			snp_list.insert(snp_list.end(), snp);
-if(pos>13500000) break;
-//cout << "Insert.." << sizeof(*snp) << endl;
+//cout << "Insert.. " << pos << endl;
 		}
 	}
-	fclose(snp_file);
 	cout << "SNP MAP size = " << snp_list.size() << endl;
 }
 
-void read_sam_files(char *fq_files)
+int read_sam_files(FILE *fq_file)
 {
 	int i;
+	int iter = 0;
 	string line;
-	FILE *fq_file = fopen(fq_files, "r");
-	if(fq_file==NULL) {
-		printf("Cannot open fq file %s\n",fq_files);
-		exit(1);
-	}
 
 	vector<SNP*>::iterator snp_begin = snp_list.begin();
-	while(true) {
+	while(iter<MAX_READS) {
 		char str[20000];
 		fgets(str,sizeof(str),fq_file);
 		str[strlen(str)-1] = '\0';
@@ -324,23 +387,23 @@ cout << "Ndels = " << ndels << endl;
 //cout << "catch up" << "\t" << (*snp_begin)->GetPos() << endl;
 				}
 			}
-//cout << "READ" << endl;
 			vector<READ*>::iterator rend = reads_list.end();
 			reads_list.insert(rend, read); // add it to the vector
-if(start>13500000) break;
+//cout << "READ: " << (read)->GetPos() << endl;
+			iter++;
 		}
 	}
-	fclose(fq_file);
 
 	cout << "number of reads = " << reads_list.size() << endl;
 	cout << "number of snps = " << snp_list.size() << endl;
+	return iter;
 }
 
-void runHMM(const char *outputName)
+double runHMM(ofstream &stateOutput, ofstream &distanceOutput, double initProb, long snp_start, long snp_end, int nbSymbols)
 {
 	int i;
-//	int nbDimensions = 1, nbSymbols = 140000, nbStates = 2;
-	int nbDimensions = 1, nbSymbols = reads_list.size(), nbStates = 2;
+	int nbDimensions = 1, nbStates = 2;
+//	int nbSymbols = reads_list.size() < MAX_READS+1 ? reads_list.size(): MAX_READS+1;
 	int isGaussian = 0;
 	int *listNbSymbols = new int[(nbDimensions)+1];;
 	double **transitionMatrix, **emissionMatrix;
@@ -349,14 +412,7 @@ void runHMM(const char *outputName)
 	for (i=1;i<=nbDimensions;i++){
 		listNbSymbols[i] = nbSymbols;
 	}
-
-//	const char *outputName = "/ifs/scratch/c2b2/ys_lab/aps2157/Haplotype/HMM/output/";
-	char stateOutputName[256];
-	char expectedObsOutputName[256];
-	char distanceOutputName[256];
-
-	sprintf(stateOutputName,"%s%s",outputName, ".sta");
-	sprintf(distanceOutputName,"%s%s",outputName, ".obs");
+cout << "Nbsymbols = " << nbSymbols << endl;
 
 	CStateTrans *a;
 	CObsProb *b;
@@ -372,21 +428,17 @@ void runHMM(const char *outputName)
 
 	emissionMatrix = SetMatrix(nbStates, nbSymbols);
 	b = new CFlexibleObsProb(listNbSymbols,nbStates,nbDimensions,isGaussian);
-	b->InitStateProb();
+	b->InitStateProb(initProb);
 
 	pi = new CInitStateProb(nbStates);
 
 	learnedHMM = new CHMM(a, b, pi);
  
 	// 2. Read observation sequence into data structure
-	// GLOBAL
-	CObsSeq *obsSeq = new CObsSeq(obsType);
-	//CObsSeq *obsSeq = new CObsSeq(obsType, &snp_list, &reads_list);
+	// This is an important call. We carefully choose the reads to be dealt with in an iteration here
+	CObsSeq *obsSeq = new CObsSeq(obsType, (long)nbSymbols);
 
-	ofstream stateOutput(stateOutputName);
-	ofstream distanceOutput(distanceOutputName);
 	//GLOBAL
-//	double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput, &reads_list, &snp_list);
 	//double normalizedLogProb = learnedHMM->FindViterbiDistance(obsSeq, distanceOutput,stateOutput);
 	//
 	// Supposed to run forward and backward algorithms
@@ -394,22 +446,69 @@ void runHMM(const char *outputName)
 	// Perform haplotype calling
 	// Perform genotype calling
 	// Perform EM
-	learnedHMM->FindFBDistance(obsSeq, distanceOutput);
-	distanceOutput.close();
+	learnedHMM->FindFBDistance(obsSeq, distanceOutput, snp_start, snp_end);
 
 	cout << endl << endl;
+
 	for(vector<SNP*>::iterator snp_it = snp_list.begin(); snp_it != snp_list.end(); snp_it++) { // check for snps in vector
-		double *gt = new double[3];
-		gt = (*snp_it)->GetPosteriors();
+		long pos = (*snp_it)->GetPos();
+		if(pos<=snp_start)
+			continue;
+		else if(pos>snp_end)
+			break;
+
+		double gt[3];
+		gt[0] = (*snp_it)->GetPosteriors()[0];
+		gt[1] = (*snp_it)->GetPosteriors()[1];
+		gt[2] = (*snp_it)->GetPosteriors()[2];
 		int gp = gt[0]>gt[1] ? (gt[0]>gt[2] ? 0:2) : (gt[1]>gt[2] ? 1:2);
 		stateOutput << (*snp_it)->GetPos() << "\t" << (*snp_it)->GetKnown() << "\t" << gp << "\t" << gt[0] << "\t" << gt[1] << "\t" << gt[2] << endl;
 	}
-	stateOutput.close();
+
+	int highHap = (*reads_list.begin())->GetHap();
+	double newProb = (*reads_list.begin())->GetHapProb();
+	if(highHap==1)
+		newProb = newProb;
+	else if(highHap==2)
+		newProb = 1.0 - newProb;
+	else
+		cout << "Incorrect Haplotype for last read: " << newProb << endl;
+
 	delete learnedHMM;
 	delete pi;
 	delete b;
 	delete a;
-	//delete obsSeq;// check with purify
+	delete obsSeq;// check with purify
+	return newProb;
+}
+
+void delete_objects(long snp_start, long snp_end)
+{
+	for(vector<SNP*>::iterator snp_it = snp_list.begin(); snp_it != snp_list.end();) {
+//cout << (*snp_it)->GetPos() << endl;
+		if((*snp_it)->GetPos() < snp_start) {
+			cout << "Unexpected snp below lower limit. Had to be deleted earlier: " << (*snp_it)->GetPos() << endl;
+		} else if((*snp_it)->GetPos() >= snp_end) {
+			break;
+		} else {
+			delete (*snp_it);
+			snp_list.erase(snp_list.begin());
+		}
+	}
+
+	for(vector<READ*>::iterator read_it = reads_list.begin(); read_it != reads_list.end();) {
+//cout << (*read_it)->GetPos() << endl;
+//cout << reads_list.size() << endl;
+		if((*read_it)->GetPos() < snp_start) {
+			delete (*read_it);
+			reads_list.erase(reads_list.begin());
+		} else if((*read_it)->GetPos()+(*read_it)->GetLen() >= snp_end) {
+			break;
+		} else {
+			delete (*read_it);
+			reads_list.erase(reads_list.begin());
+		}
+	}
 }
 
 int main(int argc, char **argv)
@@ -446,11 +545,52 @@ int main(int argc, char **argv)
 	sprintf(file_name, "%s%s", file_base, ext);
 
 	read_known_snp_file(knownsnpfile);
-	read_snp_file(snpfile);
-	read_sam_files(file_name);
+	int span = get_read_span(file_name);
 
-	runHMM(base);
+	char stateOutputName[256];
+	char distanceOutputName[256];
 
+	sprintf(stateOutputName,"%s%s", base, ".sta");
+	sprintf(distanceOutputName,"%s%s", base, ".obs");
+
+	for(int em = 0; em < EM; em++) {
+		int iter=0;
+		double prob1 = 0.99;
+		FILE *snp_file = fopen(snpfile, "r");
+		if(snp_file==NULL) {
+			printf("Cannot open snp file %s\n",snpfile);
+			exit(1);
+		}
+		FILE *fq_file = fopen(file_name, "r");
+		if(fq_file==NULL) {
+			printf("Cannot open fq file %s\n",file_name);
+			exit(1);
+		}
+		ofstream stateOutput(stateOutputName);
+		ofstream distanceOutput(distanceOutputName);
+
+		while(iter<span) {
+			read_snp_file(snp_file, read_info[iter].end + MAX_READ_LEN); // Reads specified range or from pos 1
+			int read_ct = read_sam_files(fq_file); // Reads 10000 at a time
+			if(iter==0) {
+				distanceOutput << "1\t" << reads_list[0]->GetPos() << endl;
+			} else {
+				read_ct++;
+			}
+			// Runs haplotype calling on [start,end] start position range of reads
+			// Runs genotype calling on (start,end]
+			prob1 = runHMM(stateOutput, distanceOutput, prob1, read_info[iter].start, read_info[iter].end, read_ct);
+			// Delete reads [start,end.end<end]
+			// Delete snps [start,end)
+			delete_objects(read_info[iter].start, read_info[iter].end);
+			iter++;
+		}
+
+		distanceOutput.close();
+		stateOutput.close();
+		fclose(fq_file);
+		fclose(snp_file);
+	}
 	return 0;
 }
 

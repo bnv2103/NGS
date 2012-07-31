@@ -65,7 +65,7 @@ extern vector<READ*> reads_list;
 
 //===============================================================================
 
-#define DEBUG
+//#define DEBUG
 
 //===============================================================================
 
@@ -202,6 +202,7 @@ cout << "Read " << t << " and " << t+1 << ", " << rd_start << ", " << rd_end << 
 cout << "K SnpPos  R A L L\tAA_gen\tAA_obs\tAA_genob\tAB_gen\tAB_obs\tAB_genob\tBB_gen\tBB_obs\tBB_genob\tprob\tlogprob\n";
 #endif
 			double logBiOt = 0;
+//cout << "Read check: " << rd_start << ", " << rd_end << " with " << common_snp_count << " common snps" << endl;
 			for(int count=0; count<common_snp_count; count++) {
                                 SNP *sp = reads_snp_list[count];
 #ifdef DEBUG
@@ -241,6 +242,8 @@ cout << endl;
 	  }
 	}// endif
 
+	delete [] index;
+	delete [] reads_snp_list;
 	return logProb;// zero returned if doLog is false
 }
 
@@ -701,13 +704,19 @@ cout << "Assigning read " << (*nd).GetPos() << " haplotype " << ind_snp << " and
 
 //GLOBAL
 //void CHMM::UpdateGenotypes(vector<SNP*> *snp_list)
-void CHMM::UpdateGenotypes()
+void CHMM::UpdateGenotypes(long snp_start, long snp_end)
 {
 	for(vector<SNP*>::iterator snp_it = (snp_list).begin(); snp_it != (snp_list).end(); snp_it++) {
+		long pos = (*snp_it)->GetPos();
+		if(pos<=snp_start)
+			continue;
+		else if(pos>snp_end)
+			break;
+
 		int g=0;
 		int genotype = 0;
 		double post[3];
-		double *prior = new double[3];
+		double prior[3];
 		double *happrob = new double[3];
 		double *genprob = new double[2];
 		double genp = 1.0;
@@ -717,8 +726,10 @@ void CHMM::UpdateGenotypes()
 		int alt_ct = (*snp_it)->GetAltCount();
 		int err_ct = (*snp_it)->GetErrCount();
 
-		prior = (*snp_it)->GetGenLik();
-		happrob = haplotypeProbability(snp_it);
+		prior[0] = (*snp_it)->GetGenLik()[0];
+		prior[1] = (*snp_it)->GetGenLik()[1];
+		prior[2] = (*snp_it)->GetGenLik()[2];
+		haplotypeProbability(snp_it, happrob);
 
 #ifdef DEBUG
 //cout << "Returned happrob =" << "\t" << happrob[0] << "\t" << happrob[1] << "\t" << happrob[2] << endl;
@@ -739,7 +750,7 @@ void CHMM::UpdateGenotypes()
     		(*snp_it)->add_posteriors(post);
 
 		if(post[1]>post[0]&&post[1]>post[2]) {
-			genprob = genotypeProbability(snp_it);
+			genotypeProbability(snp_it, genprob);
 			if(genprob[0]>genprob[1]) {
 				genotype = 2;
 				genp = genprob[0];
@@ -779,13 +790,14 @@ void CHMM::UpdateGenotypes()
 
 		cout << "Genotype:\t" << genotype << "\t" << genp << endl << endl;
 #endif
+		delete [] happrob;
+		delete [] genprob;
 	}
 }
 
 //double CHMM::haplotypeProbability(int refct, int altct, int errct, int g)
-double* CHMM::haplotypeProbability(vector<SNP*>::iterator snp_it)
+void CHMM::haplotypeProbability(vector<SNP*>::iterator snp_it, double probs[3])
 {
-	double *probs = new double[3];
 	probs[0] = 1.0;
 	probs[1] = 1.0;
 	probs[2] = 1.0;
@@ -795,7 +807,7 @@ double* CHMM::haplotypeProbability(vector<SNP*>::iterator snp_it)
 	double qualscore = pow(10,-(qual/10)); // P(alt==wrong)
 	double errate = 0.01;
 
-cout << "SNP: " << (*snp_it)->GetPos() << " Qual: " << qual << ", " << qualscore << endl;
+//cout << "SNP: " << (*snp_it)->GetPos() << " Qual: " << qual << ", " << qualscore << endl;
 
 	// Here I assume that if an observed allele is not ref (or alt in case of BB),
 	// then it belongs to the other haplotype.
@@ -824,12 +836,10 @@ cout << "SNP: " << (*snp_it)->GetPos() << " Qual: " << qual << ", " << qualscore
 //cout << "Computing happrobs:" << "\t" << probs[0] << "\t" << probs[1] << "\t" << probs[2] << endl;
 #endif
 	}
-	return probs;
 }
 
-double *CHMM::genotypeProbability(vector<SNP*>::iterator snp_it)
+void CHMM::genotypeProbability(vector<SNP*>::iterator snp_it, double probs[2])
 {
-	double *probs = new double[2];
 	probs[0] = probs[1] = 1.0;
 	char ref = (*snp_it)->GetRef();
 	char alt = (*snp_it)->GetAlt();
@@ -859,19 +869,18 @@ double *CHMM::genotypeProbability(vector<SNP*>::iterator snp_it)
 	probs[0] = pow(2.7182, log(probs[0])/read_count);
 	probs[1] = pow(2.7182, log(probs[1])/read_count);
 	probs[2] = pow(2.7182, log(probs[2])/read_count);
-	return probs;
 }
 		
 void CHMM::GetCommonSnpList(CObs**obs, SNP**reads_snp_list, int *common_snp_count, int *index, int t)
 {
-	READ prev_read = *(((CFlexibleObs<READ*>*)(obs[t-1]))->Get(1));
-	int prev_read_snp_count = prev_read.GetSnpCount();
-	SNP **prev_snp_list = prev_read.GetSnpList();
-	READ curr_read = *(((CFlexibleObs<READ*>*)(obs[t]))->Get(1));
-	int curr_read_snp_count = curr_read.GetSnpCount();
-	SNP **curr_snp_list = curr_read.GetSnpList();
+	READ *prev_read = (((CFlexibleObs<READ*>*)(obs[t-1]))->Get(1));
+	int prev_read_snp_count = prev_read->GetSnpCount();
+	SNP **prev_snp_list = prev_read->GetSnpList();
+	READ *curr_read = (((CFlexibleObs<READ*>*)(obs[t]))->Get(1));
+	int curr_read_snp_count = curr_read->GetSnpCount();
+	SNP **curr_snp_list = curr_read->GetSnpList();
 	int it1 = 0, it2 = 0;
-cout << prev_read.GetPos() << "\t" << curr_read.GetPos() << endl;
+//cout << prev_read->GetPos() << "\t" << curr_read->GetPos() << endl;
 	while(it1<prev_read_snp_count && it2<curr_read_snp_count) {
 		SNP* snp1 = prev_snp_list[it1];
 		SNP* snp2 = curr_snp_list[it2];
@@ -918,7 +927,7 @@ double CHMM::compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, i
 	double good = (1-err_rate)*(1-err_rate);
 	double bad = (1-err_rate)*err_rate;
 	double ugly = err_rate*err_rate;
-
+//cout << "SNP: " << reads_snp_list[count]->GetPos() << " run" << endl;
 	for(int j=0; j<3; j++) {
 		lik += (reads_snp_list[count]->GetGenLik())[j] * gen_prior[j];
 	}
@@ -1101,7 +1110,7 @@ double CHMM::IterBaumWelch(CObsSeq *obsSeq, double *gamma, double **xi)
 // Perform genotype calling
 // Perform EM
 
-void CHMM::FindFBDistance(CObsSeq *obsSeq, ostream &outFile)
+void CHMM::FindFBDistance(CObsSeq *obsSeq, ostream &outFile, long snp_start, long snp_end)
 {
 	double *scale;
 	double **alpha, **beta;
@@ -1119,23 +1128,21 @@ void CHMM::FindFBDistance(CObsSeq *obsSeq, ostream &outFile)
 		int *q = SetIntVector(T);
 		posterior = SetMatrix(T,mN);
 
-		for(em=0; em<EM; em++) {
-			// logProb = BaumWelchCore(obsSeq->mObs[i], obsSeq->mNbObs[i], gamma, xi, NOLOG);
-			// logProb contains log P(x)
-			// Haplotype Calling
-			logProb = ForwardAlgo(alpha, scale, obs, T, TRUE);
-			BackwardAlgo(beta, scale, obs, T);
+		// logProb contains log P(x)
+		// Haplotype Calling
+		logProb = ForwardAlgo(alpha, scale, obs, T, TRUE);
+		BackwardAlgo(beta, scale, obs, T);
 
-			for(t=1;t<=T;t++) {
-				READ *nd = (((CFlexibleObs<READ*>*)(obs[t]))->Get(1));
-				for(k=1;k<=mN;k++) {
-					// Experimental: P(x) cancels scaling for alpha and beta
-					// so posterior is just their product
-					double st = 1.0;
-					for(j=T; j>t; j--) {
-						st *= scale[j];
-					}
-					post = (alpha[t][k]*beta[t][k]*scale[t]);
+		for(t=1;t<=T;t++) {
+			READ *nd = (((CFlexibleObs<READ*>*)(obs[t]))->Get(1));
+			for(k=1;k<=mN;k++) {
+				// Experimental: P(x) cancels scaling for alpha and beta
+				// so posterior is just their product
+				double st = 1.0;
+				for(j=T; j>t; j--) {
+					st *= scale[j];
+				}
+				post = (alpha[t][k]*beta[t][k]*scale[t]);
 #ifdef DEBUG
 cout << endl;
 cout << "Scale = " << scale[t] << endl;
@@ -1143,22 +1150,21 @@ cout << "Scaled alpha = " << alpha[t][k] << endl;
 cout << "beta = " << beta[t][k] << endl;
 cout << "Scaled beta = " << beta[t][k]*scale[t] << endl;
 #endif
-					posterior[t][k] = post;
-				}
-				// REVISIT: hardcoding #states.
-				q[t] = posterior[t][1] > posterior[t][2] ? 1 : 2;
+				posterior[t][k] = post;
+			}
+			// REVISIT: hardcoding #states.
+			q[t] = posterior[t][1] > posterior[t][2] ? 1 : 2;
 #ifdef DEBUG
 //cout << "q[t] = " << q[t] << endl;
 //cout << "posterior = " << posterior[t][q[t]] << endl;
 #endif
-				nd->assignHaplotype(q[t],posterior[t][q[t]]);
-			}
-
-			// Genotype Calling
-			UpdateGenotypes();
+			nd->assignHaplotype(q[t],posterior[t][q[t]]);
 		}
-		for(j=1;j<=T;j++) {
-			outFile << q[j] << "\t" << ((reads_list)[j-1])->GetPos() << endl;
+
+		UpdateGenotypes(snp_start, snp_end);
+
+		for(j=2;j<=T;j++) {
+			outFile << q[j] << "\t" << ((reads_list)[reads_list.size()-T+j-1])->GetPos() << endl;
 		}
 		delete [] q;
 	}
@@ -1554,7 +1560,7 @@ double CHMM::FindViterbiDistance(CObsSeq *obsSeq, ostream &outFile, ostream &gtF
     	sumProb += logProb;
 
     	// Genotype calling
-    	UpdateGenotypes();
+    	UpdateGenotypes(0,0);
     }
 
     cout << -logProb/T << endl;

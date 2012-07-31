@@ -7,7 +7,7 @@ inp=$2
 # Code to find sensitivity to accuracy ratio based on maximum value of genotype - single point in plot
 # Maybe split for known and novel hets later?
 echo "Sensitivity and accuracy(1-specificity) based on highest genotype value" > ${prefix}.a
-awk '{if($2==1||$2==2) {tot++;if($3==1) sum++;} else {pot++; if($3!=1) pum++;}} END{sens = sum/tot; spc = pum/pot; print 1-sens, "\t", spc;}' ${prefix}.sta > ${prefix}.a
+awk '{if($2==1||$2==2) {tot++;if($3==1) sum++;} else {pot++; if($3!=1) pum++;}} END{sens = sum/tot; spc = pum/pot; print 1-sens, "\t", spc;}' ${prefix}.sta >> ${prefix}.a
 echo >> ${prefix}.a
 
 # Code to obtain sensitivity to accuracy ratio for different cut-off for heterozygous snps

@@ -88,13 +88,15 @@ void CFlexibleObsProb::SetVal(int state,int symbo,double value)
 	cout << "SetVal not to be called from CFlexibleObsProb" << endl;
 }
 
-void CFlexibleObsProb::InitStateProb(void)
+void CFlexibleObsProb::InitStateProb(double initProb)
 {
 	int i;
+	double otherProb;
 
+	otherProb = 1.0 - initProb;
 	for(i=1;i<=mDimension;i++) {
-		mComponentProb[i]->SetVal(1,1,0.99);
-		mComponentProb[i]->SetVal(2,1,0.01);
+		mComponentProb[i]->SetVal(1,1,initProb);
+		mComponentProb[i]->SetVal(2,1,otherProb);
 	}
 }
 /*

@@ -41,7 +41,7 @@ public:
 	double EndIter();
 	void End();
 	void SetVal(int state, int symbol, double value);
-	void InitStateProb();
+	void InitStateProb(double);
 	CObs*  PickObservation(int state);
 	uChar* FindAverageStateGray(void);
 	CObs** MapStateToObs(void);

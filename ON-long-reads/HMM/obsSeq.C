@@ -100,10 +100,11 @@ CObsSeq::CObsSeq(CObs *obsType, long nbSequences, long nbObs)
 //===============================================================================
 //GLOBAL
 //CObsSeq::CObsSeq(CObs *obsType, vector<SNP*> *snp_list, vector<READ*> *reads_list)
-CObsSeq::CObsSeq(CObs *obsType)
+CObsSeq::CObsSeq(CObs *obsType, long nbSymbols)
 {
-	long i, j, T = (reads_list).size();
+	long i, j, T;
 
+	T = nbSymbols;
 	mObsType = obsType;
 	mObsCount = 0;
 
@@ -118,8 +119,9 @@ CObsSeq::CObsSeq(CObs *obsType)
 		mObsCount += T;
 		mObs[i] = mObsType->AllocateVector(T+1);// This array is from 1 to T
 
-		for(j=1; j <=T; j++){
-			mObs[i][j]->SetSequence((reads_list)[j-1]);
+		// Adding the last T symbols/reads only
+		for(j=1; j <=T; j++) {
+			mObs[i][j]->SetSequence((reads_list)[reads_list.size()-(T-j)-1]);
 		}
 	}
 #if 0

@@ -45,7 +45,7 @@ class CFlexibleObsProb: public CObsProb{
 	void SKMSum(int state, CObs *obs);
 	double EndIter();
 	void End();
-	void InitStateProb(void);
+	void InitStateProb(double);
         void SetVal(int state, int symbol, double value);
 	CObs* PickObservation(int state);
         CObs** MapStateToObs(void);
