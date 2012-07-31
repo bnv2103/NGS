@@ -22,7 +22,7 @@ def main
   homo = {}
   het  = {}
   sid = [] # sample array
-  indel =0 
+#  indel =0 
 
   lastpos = -1 
 #  while line=ARGF.gets do 
@@ -49,7 +49,7 @@ def main
 #	puts "#{pos}	#{name}	#{ref}	#{alt}	#{passflag}	#{info}	#{gt}"
       next if passflag != "PASS"
       if ref.size != alt.size ## indel   || pos == lastpos ## indels or same var
-	indel +=1
+#	indel +=1
 	next
       end
       ## SYN AND NONSYN
@@ -183,9 +183,9 @@ def main
   sid.each {|s| print "\t#{het[s]}" }
   print "\n"
 
-  print "all_Indels"
-  sid.each {|s| print "\t#{indel}" }
-  print "\n"
+#  print "all_Indels"
+#  sid.each {|s| print "\t#{indel}" }
+#  print "\n"
 
 end
 
