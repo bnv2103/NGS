@@ -27,7 +27,7 @@ SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, int known
 	likelihood_ratio = -1;
 	reads = new READ*[70];
 	gl = new double[3];
-	posteriors = new double*[70];
+	//posteriors = new double*[70];
 	posterior = new double[3];
 
 //	add_read(type, read);
@@ -37,9 +37,21 @@ SNP::SNP(long snp_pos, char snp_ref, char snp_alt, vector<string> gl3, int known
 	gl[2] = pow(10, -(atof(gl3[2].c_str()))/10);
 
 	for(int p=0; p<70; p++) {
-		posteriors[p] = new double[3];
+		//posteriors[p] = new double[3];
 	}
 	posterior[0]=posterior[1]=posterior[2]=0.0;
+}
+
+SNP::~SNP()
+{
+//cout << "SNP Destructor called: " << position << endl;
+	delete [] reads;
+	delete [] gl;
+	for(int p=0; p<70; p++) {
+//		delete[] posteriors[p];
+	}
+//	delete[] posteriors;
+	delete [] posterior;
 }
 
 long SNP::GetPos()
@@ -76,7 +88,7 @@ void SNP::assign_genotype(int gt, double genp)
 	genotype = gt;
 	genprob = genp;
 }
-
+/*
 void SNP::CalculateLikelihoodRatio()
 {
 	double first, second;
@@ -134,6 +146,7 @@ void SNP::PrintLR()
 	cout << position << "\t" << posterior[0] << "\t" << posterior[1] << "\t" << posterior[2] << "\t" << likelihood_ratio << endl;
 	//cout << known << "\t" << position << "\t" << likelihood_ratio << endl;
 }
+*/
 
 READ* SNP::GetRead(int pos)
 {

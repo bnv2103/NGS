@@ -16,12 +16,22 @@ READ::READ(void)
 	snp_count = -1;
 	hap = 0;
 	hprob = 1.0;
-	snps = new SNP*[700];
-	alleles = new char[700];
+	snps = new SNP*[1000];
+	alleles = new char[1000];
 cout << "Invoking plain READ" << endl;
 }
 
-READ::READ(const READ &read) {*this = read;}
+READ::~READ()
+{
+//	cout << "Read destructor called: " << start << endl;
+	delete [] alleles;
+	delete [] snps;
+}
+
+READ::READ(const READ &read)
+{
+	*this = read;
+}
 
 READ::READ (int i)
 {
@@ -40,8 +50,8 @@ READ::READ(long st, int len)
 	hap = 1;
 	hprob = 0.5;
 	start = st;
-	snps = new SNP*[700];
-	alleles = new char[700];
+	snps = new SNP*[1000];
+	alleles = new char[1000];
 }
 
 void READ::addsnp(SNP *snp, char allele)
@@ -55,7 +65,7 @@ void READ::assignHaplotype(int haplotype, double prob)
 	if(haplotype!=1&&haplotype!=2) {
 		cout << "Assigning incorrect haplotype value " << haplotype << endl;
 	}
-cout << "Prob:: " << prob << endl;
+//cout << "Prob:: " << prob << endl;
 	if(prob<0.0||prob>1.0) {
 		cout << "Assigning incorrect haplotype probability " << prob << " to haplotype " << haplotype << endl;
 	}

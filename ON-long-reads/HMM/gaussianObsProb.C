@@ -240,7 +240,7 @@ void CGaussianObsProb::SetVal(int state, int symbol, double value)
 	cout << "SetVal not to be called from CGaussianObsProb" << endl;
 }
 
-void CGaussianObsProb::InitStateProb() { }
+void CGaussianObsProb::InitStateProb(double) { }
 
 CObs* CGaussianObsProb::PickObservation(int state)
 // Return a random observation given a state using the observation prob. matrix B

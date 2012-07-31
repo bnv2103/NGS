@@ -41,7 +41,7 @@ class CGaussianObsProb: public CObsProb{
 	double EndIter();
 	void End();
         void SetVal(int state, int symbol, double value);
-        void InitStateProb();
+        void InitStateProb(double);
 	CObs* PickObservation(int state);
 	void Print(ostream &outFile);
         CObs** MapStateToObs(void);

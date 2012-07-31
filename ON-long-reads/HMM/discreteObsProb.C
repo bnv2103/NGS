@@ -179,7 +179,7 @@ void CDiscreteObsProb::End()
 //===============================================================================
 
 
-void CDiscreteObsProb::InitStateProb(void) { }
+void CDiscreteObsProb::InitStateProb(double) { }
 
 void CDiscreteObsProb::SetVal(int state, int symbol, double value)
 {

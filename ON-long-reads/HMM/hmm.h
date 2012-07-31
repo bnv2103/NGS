@@ -51,7 +51,7 @@ public:
 	double BaumWelchCore(CObs **obs, long T, double *gamma, double **xi, boolean doLog);
         double IterBaumWelch(CObsSeq *obsSeq, double *gamma, double **xi);
 	void LearnBaumWelch(CObsSeq *obsSeq);
-	void RunFwdBwd(CObsSeq *obsSeq);
+	void FindFBDistance(CObsSeq *obsSeq, ostream &outFile, long start, long end);
         double SegmentalKMeansCore(CObs **obs, long T);
         double IterSegmentalKMeans(CObsSeq *obsSeq);
         void LearnSegmentalKMeans(CObsSeq *obsSeq);
@@ -80,12 +80,12 @@ public:
 	double compute_new_emission(int obs, int type, int hap);
 //	double compute_new_emission(SNP **reads_snp_list, int count, CObs **obs, int t, int *index, int hap);
 	double compute_new_emission(SNP**reads_snp_list, int count, CObs **obs, int t, int *index, int hap, double obslik[3], double genlik[3]);
-	double* haplotypeProbability(vector<SNP*>::iterator snp_it);
-	double* genotypeProbability(vector<SNP*>::iterator snp_it);
+	void haplotypeProbability(vector<SNP*>::iterator snp_it, double happ[3]);
+	void genotypeProbability(vector<SNP*>::iterator snp_it, double genp[2]);
 	//double* haplotypeProbability(SNP *snp_it);
 	//GLOBAL
 	//void UpdateGenotypes(vector<SNP*> *snp_list);
-	void UpdateGenotypes();
+	void UpdateGenotypes(long start, long end);
 
 protected:
         int mN;// nb of states

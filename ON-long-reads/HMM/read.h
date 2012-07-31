@@ -10,7 +10,7 @@ public:
   READ (int i);
   READ (double i);
 
-  ~READ(void) {}
+  ~READ(void);
 
   void addsnp(SNP *snp, char allele);
   void assignHaplotype(int haplotype, double prob);

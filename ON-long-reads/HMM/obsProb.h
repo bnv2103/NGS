@@ -36,7 +36,7 @@ class CObsProb{
 	virtual void SKMSum(int state, CObs *obs) = 0;
 	virtual double EndIter() = 0;
 	virtual void End() = 0;
-	virtual void InitStateProb() = 0;
+	virtual void InitStateProb(double) = 0;
         virtual void SetVal(int state, int symbol, double value) = 0;
 	virtual CObs* PickObservation(int state) = 0;
 	virtual void Print(ostream &outFile) = 0;
