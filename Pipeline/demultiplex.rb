@@ -77,7 +77,6 @@ def main
   else
 	$stderr.puts "Sanity Check Sucessful "
   end
-  exit
  ##  outputio["discarded"] = File.new(targetfastq + "_discarded.fastq", "w" )
   assignment = decode(inputdir, multiplex, outprefix, barcodesize, nt)
   
