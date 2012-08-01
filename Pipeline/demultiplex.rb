@@ -306,7 +306,7 @@ def sanity_check(inputdir, outprefix, coding)
 			sanity_flag=1
 			coding[lane].each_key do |code|
 #	                        print  "\n\t#{code}"
-				if all_codes.scan( "#{code}A" ).empty?		##Assuming one polyA base for HiSeq runs
+		if all_codes.scan( "#{code}A" ).empty? and all_codes.scan( "#{code}C" ).empty? and all_codes.scan( "#{code}G" ).empty?and all_codes.scan( "#{code}T" ).empty?	##Assuming one polyA base for HiSeq runs
 #					print "\tfailed\t"
 					sanity_flag=0
  #                                      print  all_codes.scan("#{code}" )
