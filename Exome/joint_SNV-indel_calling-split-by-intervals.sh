@@ -146,7 +146,7 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo " cmd2=\" sh $ANNOVAR/do_annovar_all.sh $outDir/list.vcf-files.txt.vcf $outDir/list.vcf-files.txt.vcf.complete.annotated.vcf \" " >> $out
   echo " echo \$cmd2 " >> $out
   echo " \$cmd2 "  >> $out
-  echo " cmd3=\"qsub -N gatk_filter.$job_ext.AUTO -o $temp/filter.SNV.o -e $temp/filter.SNV.e -l mem=6G,time=24:: ${BPATH}/gatk_filter.sh -I $outDir/list.vcf-files.txt.vcf.complete.annotated.vcf  -g $GLOBAL -A AUTO \" "  >> $out
+  echo " cmd3=\"qsub -N gatk_filter.$job_ext.AUTO -o $temp/filter.SNV.o -e $temp/filter.SNV.e -l mem=6G,time=24:: ${BPATH}/gatk_filter.sh -I $outDir/list.vcf-files.txt.vcf.complete.annotated.vcf  -g $setting -A AUTO \" "  >> $out
   echo " echo \$cmd3  "  >> $out
   echo " \$cmd3  "  >> $out
 
