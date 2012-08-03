@@ -2,3 +2,11 @@ Pipeline to call differentially methylated sites and compare across groups
 
 Please find instructions/details to run at http://wiki.c2b2.columbia.edu/nextgen/index.php/DNA_Methylation
 
+In short:
+
+./run_pipeline.sh
+
+./run_analysis.sh
+
+Ensure arguments before running.
+
