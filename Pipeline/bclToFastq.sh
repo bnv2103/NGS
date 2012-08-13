@@ -229,12 +229,12 @@ do
 	scriptfile="$demultiplexout""_n/QC/$j.runQC.sh"
 	echo '#!/bin/bash ' > $scriptfile 
 	echo '#$ -cwd ' >> $scriptfile
-	echo " ruby $UTILS/fastq_QCplot.rb $demultiplexout""_n/QC/$j.QC $fq1 $fq3  & " >> $scriptfile
-        echo " sh  $UTILS/picard_LibraryComplexity.sh -i $fq1 -p  $fq3 -o $demultiplexout""_n/QC/$j.LibComplexity -m 5 -s $j " >> $scriptfile
-	echo " wait " >>  $scriptfile
+	echo " ruby $UTILS/fastq_QCplot.rb $demultiplexout""_n/QC/$j.QC $fq1 $fq3  " >> $scriptfile
+#        echo " sh  $UTILS/picard_LibraryComplexity.sh -i $fq1 -p  $fq3 -o $demultiplexout""_n/QC/$j.LibComplexity -m 5 -s $j " >> $scriptfile
+#	echo " wait " >>  $scriptfile
 ## Finally Zip the nonPF demuxed files.
 	echo " qsub -o $demultiplexout""_n/logs/zip.$j.o -e $demultiplexout""_n/logs/zip.$j.e -N Zip.$j -l mem=512M,time=2::  $NGSSHELL/do_bzip2.sh $fq1 $fq3 " >> $scriptfile
-	CMD="qsub -o $demultiplexout""_n/logs/QC.$j.o -e $demultiplexout""_n/logs/QC.$j.e -N QC.$j -l mem=7G,time=8:: $scriptfile "
+	CMD="qsub -o $demultiplexout""_n/logs/QC.$j.o -e $demultiplexout""_n/logs/QC.$j.e -N QC.N.$j -l mem=7G,time=8:: $scriptfile "
 	echo $CMD
 	$CMD
 done

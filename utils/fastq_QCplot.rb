@@ -1,4 +1,6 @@
 require 'csv'
+require 'bzip2'
+require 'zlib'
 
 $VERBOSE = nil
 
@@ -35,7 +37,13 @@ rscript = "/nfs/apps/R/2.11.1/bin/Rscript "
  
   qscore_bucket_fwd = Array.new(45){ |i| 0*i }
   qscore_bucket_rvs = Array.new(45){ |i| 0*i }
-  infile = File.new(fq, "r")
+    if fq.match(/.gz$/)
+    infile = Zlib::GzipReader.new(File.open(fq))
+  elsif  fq.match(/.bz2$/)
+    infile = Bzip2::Reader.new File.open(fq)
+  else
+    infile = File.new(fq, 'r')
+  end
 
 while !infile.eof?
     s = infile.take(1)
@@ -72,7 +80,7 @@ while !infile.eof?
           valueC[i] = valueC[i] + 1
         elsif bp =="G"
           valueG[i] = valueG[i] + 1
-        elsif bp =="N"
+        elsif bp =="."
           valueN[i] = valueN[i] + 1
         end
       end
@@ -95,7 +103,14 @@ while !infile.eof?
 
 if pair == 2
 infile.close
-infile = File.new(fq3, "r")
+  if fq3.match(/.gz$/)
+    infile = Zlib::GzipReader.new(File.open(fq3))
+  elsif  fq3.match(/.bz2$/)
+    infile = Bzip2::Reader.new File.open(fq3)
+  else
+    infile = File.new(fq3, 'r')
+  end
+
   while !infile.eof?
     s = infile.take(1)
     readName = s
@@ -108,7 +123,6 @@ infile = File.new(fq3, "r")
     s = s.to_s
     s = s[2..-5]
     readQual = s
-    numReads = numReads + 1
     for j in 0..(slen -1)	##Extract ACTG info
       bp = readSeq[j]
 	i = (j + slen)
@@ -144,7 +158,6 @@ infile = File.new(fq3, "r")
   end
 end
 
-  numReads = numReads -1
   outfile.print "A \t"
   for i in 0..(slen*pair)
     outfile.print "#{valueA[i]} \t"

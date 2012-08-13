@@ -35,11 +35,13 @@ def main
 end
 
 def filterVCF(vcf, settings, nsample)
-  o = File.new(vcf + ".somaticfiltered.vcf", 'w')
+  ohet = File.new(vcf + ".somaticfiltered.het.vcf", 'w')
+  ohom = File.new(vcf + ".somaticfiltered.hom.vcf", 'w')
   e = File.new(vcf + ".dropped.vcf", 'w')
   File.new(vcf, 'r').each do |line|
     if line.match("^#") 
-      o.puts line
+      ohet.puts line
+      ohom.puts line
       e.puts line
     else
       cols=line.chomp.split(/\t/)
@@ -62,13 +64,15 @@ def filterVCF(vcf, settings, nsample)
 	end
 	
 	clrflag = 0     
-      	flag = 0 
+      	flag = 1 
 	if gt_norm == "0/0" and  gt_tumor == "0/1"
 		flag = 0
+	elsif  gt_norm == "0/0" and  gt_tumor == "1/1"
+		flag = 2
 	else
 		flag = 1
         end
-	if flag == 0
+	if not flag == 1
         info.each do |item|
           k,v=item.split('=')[0..1]
           if k == "DP4" 
@@ -90,13 +94,16 @@ def filterVCF(vcf, settings, nsample)
 	end
 	end
       if flag == 0 and clrflag == 1
-        o.puts line
+        ohet.puts line
+      elsif flag == 2 and clrflag == 1
+	ohom.puts line
       else
         e.puts line 
       end
     end
   end
-  o.close
+  ohet.close
+  ohom.close
   e.close
 end
 
