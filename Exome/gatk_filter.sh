@@ -41,12 +41,12 @@ fi
         dname=`dirname $INP`
         d1=`dirname $dname`
         sname=`basename $d1`
-if [ $AUTO == "" ]; then
+if [[ $AUTO == "" ]]; then
 	job_ext="$sname"
 else
 	job_ext="$sname.AUTO"
 fi
-if [ $JOB_ID == "" ]; then
+if [[ $JOB_ID == "" ]]; then
     JOB_ID="VarFilter$job_ext"
 fi
 
