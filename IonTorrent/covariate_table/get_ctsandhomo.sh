@@ -2,7 +2,7 @@
 # -cwd
 
 
-datadir=$1
+datadir=`pwd`/$1
 mkdir -p $datadir
 
 for s in `ls -d $datadir/../../sample_files/*.mpileups`

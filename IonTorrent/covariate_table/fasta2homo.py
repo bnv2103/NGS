@@ -10,11 +10,11 @@ homoout = sys.argv[2]
 
 lines = open(fasta, 'r').readlines()
 chr, start, end = re.split('[> : -]', lines[0][1:])
-homodat = homodist(''.join(lines[1:]).replace('\n', ''))
+fullfasta = ''.join(lines[1:]).replace('\n', '')
 
 outdict = {}
 keys = [chr+':'+str(x) for x in range(int(start), int(end) + 1)]
-for pos in range(len(homodat['forward'])):
-    outdict[keys[pos]] = {'forward':homodat['forward'][pos], 'reverse':homodat['reverse'][pos]}
+for pos in range(len(fullfasta)):
+    outdict[keys[pos]] = {'forward':homodist(fullfasta)[pos], 'reverse':homodist(fullfasta[::-1])[-pos-1]}
 
 pickle.dump(outdict, open(homoout, 'w'))

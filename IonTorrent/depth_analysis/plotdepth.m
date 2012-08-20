@@ -1,0 +1,26 @@
+% plot depth
+
+path('/ifs/scratch/c2b2/ngs_lab/ngs/Projects/IonTorrent/will/xunhai/depth_analysis/code/', path)
+
+[FileName,PathName,FilterIndex] = uigetfile('*.depth','MultiSelect', 'on');
+
+% number of samples
+nfiles = numel(FileName);
+
+for s = 1:nfiles
+    temp = importdata([PathName FileName{s}]);
+    FileName{s} = FileName{s}(1:end-6);
+    depths(:, s) = temp.data;
+    amps = temp.textdata;
+end
+
+figure(1)
+semilogy(depths)
+legend(FileName)
+xlabel('amplicon')
+ylabel('depth')
+
+figure(2)
+hist(depths)
+legend(FileName)
+xlabel('depth')

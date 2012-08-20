@@ -5,8 +5,8 @@ function [pval, alt] = polyapvalue(cts, alpha, ref)
 [cts, sortidx] = sort(cts, 'descend');
 % must be a dominant nonref
 if ~(cts(2) > cts(3))
-    pval = NaN
-    alt = ''
+    pval = NaN;
+    alt = '';
     return
 end
 

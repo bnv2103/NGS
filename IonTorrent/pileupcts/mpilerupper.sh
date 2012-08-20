@@ -13,7 +13,7 @@ N=`grep chr $bed | wc -l`
 n=0
 
 # threshold for mapping quality (note, we keep all base qualities)
-q=0 #30
+q=20 #30
 
 echo "generating pileups, mapQ filter = $q"
 

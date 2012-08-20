@@ -1,0 +1,1 @@
+/ifs/scratch/c2b2/ngs_lab/ngs/Projects/CNV/data/net_downsampled/scripts/downsample.wgs.sh

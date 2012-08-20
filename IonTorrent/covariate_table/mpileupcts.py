@@ -19,7 +19,7 @@ germline_thresh = .6 # up to 40% nonreference is considered not germline
 
 for line in fin:
         # tokenize line in mpileup file
-        [chr, pos, ref, depth, reads, Q] = line.split()
+        [chr, pos, ref, depth, reads, Q, mQ] = line.split()
 
         # convert read string to simple sequence of nucleotides
         # capital letters for forward strand, lower case for reverse
@@ -49,7 +49,7 @@ for line in fin:
                 reads = reads[:i] + reads[i+delete_len+(match.end()-match.start()) + 1:]
 
         # make sure lengths are still consistent
-        assert(len(Q) == len(reads) and int(depth) == len(reads))
+        assert(len(Q) == len(reads) and int(depth) == len(reads) and len(mQ) == len(reads))
 
         count_table = {'forward':{'A':reads.count('A'), 'C':reads.count('C'), 'G':reads.count('G'), 'T':reads.count('T')}, \
                        'reverse':{'A':reads.count('a'), 'C':reads.count('c'), 'G':reads.count('g'), 'T':reads.count('t')}}
@@ -71,22 +71,26 @@ for line in fin:
         qc = ''.join([Q[i]  for i, x in enumerate(reads) if x == "c"])
         qg = ''.join([Q[i]  for i, x in enumerate(reads) if x == "g"])
 
-        q_table = {'forward':{'A':map(ord, qA), 'C':map(ord, qC), 'G':map(ord, qG), 'T':map(ord, qT)}, \
-                   'reverse':{'A':map(ord, qa), 'C':map(ord, qc), 'G':map(ord, qg), 'T':map(ord, qt)}}
+        # generate seperate mapping quality strings for each nucleotide and +/- 
+        mqA = ''.join([mQ[i] for i, x in enumerate(reads) if x == "A"])
+        mqT = ''.join([mQ[i] for i, x in enumerate(reads) if x == "T"])
+        mqC = ''.join([mQ[i] for i, x in enumerate(reads) if x == "C"])
+        mqG = ''.join([mQ[i] for i, x in enumerate(reads) if x == "G"])
+
+        mqa = ''.join([mQ[i]  for i, x in enumerate(reads) if x == "a"])
+        mqt = ''.join([mQ[i]  for i, x in enumerate(reads) if x == "t"])
+        mqc = ''.join([mQ[i]  for i, x in enumerate(reads) if x == "c"])
+        mqg = ''.join([mQ[i]  for i, x in enumerate(reads) if x == "g"])
 
         # write data
-        #fout.write(chr+'\t'+pos+'\t'+ref+'\t'+qA+'\t'+qC+'\t'+qG+'\t'+qT+'\t'+qa+'\t'+qc+'\t'+qg+'\t'+qt+'\n')
-        # fout.write(chr+'\t'+pos+'\t'+ref+'\t'+topnonref+'\t'+ \
-        #           str(count_table['forward'][ref])+'\t'+str(count_table['forward'][topnonref])+'\t'+ \
-        #           str(mean(q_table['forward'][ref]))+'\t'+str(mean(q_table['forward'][topnonref]))+'\t'+\
-        #           str(count_table['reverse'][ref])+'\t'+str(count_table['reverse'][topnonref])+'\t'+ \
-        #           str(mean(q_table['reverse'][ref]))+'\t'+str(mean(q_table['reverse'][topnonref]))+'\n')
 
         print chr+'\t'+pos+'\t'+ref+'\t'+ \
               str(count_table['forward']['A'])+'\t'+str(count_table['forward']['C'])+'\t'+str(count_table['forward']['G'])+'\t'+str(count_table['forward']['T'])+'\t'+ \
-              str(mean(q_table['forward']['A'])-33)+'\t'+str(mean(q_table['forward']['C'])-33)+'\t'+str(mean(q_table['forward']['G'])-33)+'\t'+str(mean(q_table['forward']['T'])-33)+'\t'+\
+              qA+'\t'+qC+'\t'+qG+'\t'+qT+'\t'+\
+              mqA+'\t'+mqC+'\t'+mqG+'\t'+mqT+'\t'+\
               str(homo[chr+':'+pos]['forward']) + '\t' + \
               str(count_table['reverse']['A'])+'\t'+str(count_table['reverse']['C'])+'\t'+str(count_table['reverse']['G'])+'\t'+str(count_table['reverse']['T'])+'\t'+ \
-              str(mean(q_table['reverse']['A'])-33)+'\t'+str(mean(q_table['reverse']['C'])-33)+'\t'+str(mean(q_table['reverse']['G'])-33)+'\t'+str(mean(q_table['reverse']['T'])-33)+'\t'+\
+              qa+'\t'+qc+'\t'+qg+'\t'+qt+'\t'+\
+              mqa+'\t'+mqc+'\t'+mqg+'\t'+mqt+'\t'+\
               str(homo[chr+':'+pos]['reverse'])
 
