@@ -105,7 +105,7 @@ then
         #Trigger automatic downstream steps : joint var calling
 	readlink -f $INP > $INP.list
 	path_inp=`dirname $INP`
-	cmd_varcalling="sh ${BPATH}/joint_SNV-indel_calling-split-by-intervals.sh -i $INP.list -m 6 -s $GLOBAL -n 2 -j 100 -d 300 -v 7 -t 30 -o $path_inp/VarCalling -A AUTO "
+	cmd_varcalling="sh ${BPATH}/joint_SNV-indel_calling-split-by-intervals.sh -i $INP.list -s $GLOBAL -n 2 -j 100 -d 300 -m 3 -v 4 -t 5 -o $path_inp/VarCalling -A AUTO "
 	echo $cmd_varcalling
 	$cmd_varcalling	
 fi

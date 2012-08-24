@@ -116,7 +116,7 @@ for (( j=1; j<=$njobs; j++ ))  #
   echo '#!/bin/bash'  > $out
   echo '#$ -cwd' >> $out
   echo 'uname -a' >> $out
-  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 30.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  --comp:HapMapV3 $HapMapV3VCF --dbsnp ${DBSNP135}  $infofields"
+  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 30.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  --comp:HapMapV3 $HapMapV3VCF --dbsnp ${DBSNP135}  $infofields -maxAlleles 1 "
 ##  cmd="java -Xmx${heap}g -Djava.io.tmpdir=${tempd}  -jar $GATKJAR -T UnifiedGenotyper  -R $REF   -nt ${nt} -o ${temp}/var.slice.$j.raw.vcf -stand_call_conf 30.0 -stand_emit_conf 10.0 -dcov ${dcov} -glm BOTH  -L $chrtarget -I $bamlist -metrics ${temp}/var.slice.$j.raw.vcf.metrics -G Standard  --comp:HapMapV3 $HapMapV3VCF --dbsnp ${DBSNPVCF}  $infofields"
 ## or should we just do --dbsnp dbsnp13X , in gatk they say "This file subsetted to only sites discovered in or before dbSNPBuildID 129, which excludes the impact of the 1000 Genomes project and is useful for evaluation of dbSNP rate and Ti/Tv values at novel sites. " at http://www.broadinstitute.org/gsa/wiki/index.php/GATK_resource_bundle
 
