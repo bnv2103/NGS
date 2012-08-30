@@ -85,7 +85,7 @@ rm -rf $TEMP
 
 if [ $? == 0 ]
     then
-    rm -f $INP.coverage
+    rm -f $INP.coverage  $INP.coverage.sample_statistics $INP.coverage.sample_interval_statistics $INP.coverage.sample_cumulative_coverage_* $INP.target.list
     echo "depth of coverage complete"
 fi
 

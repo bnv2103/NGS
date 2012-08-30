@@ -112,7 +112,7 @@ $GATK \
 
 $SAMTOOLS index $OUTPUT
 
-rm -rf $TEMP
+rm -rf $TEMP $INP.recal_data.csv 
 echo "recalibration complete"
 
 d1=`dirname $INP`

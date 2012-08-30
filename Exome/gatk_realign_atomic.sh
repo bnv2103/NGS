@@ -134,7 +134,7 @@ $FIXMATE INPUT=$OUTDIR/$CHR.cleaned.bam OUTPUT=$OUTDIR/$CHR.fixed.bam SO=coordin
 
 if [[ $? == 0 ]]
     then
-    rm -f $OUTDIR/$CHR.cleaned.bam*
+    rm -f $OUTDIR/$CHR.cleaned.bam* $OUTDIR/$CHR.cleaned.bai
     echo "fixmate complete"
     echo $CHR >> $status
 else
