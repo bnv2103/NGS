@@ -1,8 +1,6 @@
 #!/bin/python
 
-# count calls in mpileup and correlate with reference and homopolymer information
-# for now it doesn't do anything with quality score
-
+# count nucleotides and covariate info for each position in mpileup
 
 import pickle, sys, re, string
 from numpy import mean
@@ -29,7 +27,7 @@ for line in fin:
         reads = re.sub('\.', ref, reads)
         reads = re.sub(',', string.lower(ref), reads)
 
-        #remove indels (WAIT: we want to include this as covariate info right?)
+        #remove indels (NOTE: we may want to include indel proximity as a covariate in a future version)
         i = 0
         while i < len(reads):
                 i = string.find(reads, '+', i, len(reads))
@@ -51,11 +49,15 @@ for line in fin:
         # make sure lengths are still consistent
         assert(len(Q) == len(reads) and int(depth) == len(reads) and len(mQ) == len(reads))
 
+        # hash table (dictionary) for the counts of different nucleotides for foward and reverse reads
         count_table = {'forward':{'A':reads.count('A'), 'C':reads.count('C'), 'G':reads.count('G'), 'T':reads.count('T')}, \
                        'reverse':{'A':reads.count('a'), 'C':reads.count('c'), 'G':reads.count('g'), 'T':reads.count('t')}}
 
+        # depth of coverage for forward and reverse
         depth_for = sum(count_table['forward'].itervalues())
         depth_rev = sum(count_table['reverse'].itervalues())
+
+        # if either depth is below the threshold, or alt allele coverage exceeds the germline thredhold, skip it 
         if depth_for < depth_thresh or depth_rev < depth_thresh or \
            count_table['forward'][ref] < germline_thresh*depth_for or count_table['reverse'][ref] < germline_thresh*depth_rev:
             continue

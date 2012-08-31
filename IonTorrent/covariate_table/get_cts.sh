@@ -1,6 +1,7 @@
 #!/bin/bash
 # -cwd
 
+# this script runs the mpileupcts.py script for each amplicon in each gene in each sample 
 
 datadir=`pwd`/$1
 mkdir -p $datadir

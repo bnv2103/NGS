@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# run fasta2homo on the reference fasta for each amplicon in each gene
+
 fastadir=$1
 outdir=$2
 

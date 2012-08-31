@@ -1,6 +1,8 @@
 #!/bin/bash
 #$ -cwd
 
+# generates seperate reference fasta files for each amplicon in each gene
+
 fasta=$1 # reference file
 bed=$2 # a bed file listing genes and amplicon regions
 outdir=$3

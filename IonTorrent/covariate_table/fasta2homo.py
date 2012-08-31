@@ -1,6 +1,7 @@
 #!/bin/python
 
-# this script generates the homopolymer data corresponding to a fasta made by get_fasta.sh (only one region ">" line)
+# generates homopolymer pickle based on reference fasta (presumably from a single amplicon)
+# this script generates the homopolymer data corresponding to a fasta (only one region ">" line)
 
 import sys, pickle, re
 from covariatefuncs import homodist

@@ -17,6 +17,9 @@ alt = alleles(sortidx(2));
 % depth
 d = sum(cts);
 
+% for p-value, we sum over all the probabilities of "more extreme" observations, where "more extreme" is 
+% interpreted as less reference bases than observed in exchange for more top nonreference bases (the sum 
+% of the two other allele counts is held constant)
 pval = 0;
 for n1 = cts(1):-1:0
     n2 = cts(2) + (cts(1) - n1);
@@ -26,10 +29,8 @@ for n1 = cts(1):-1:0
 
 %       note: Minka's Polya is for the emmision case (order specific)
 %       we have to multiply by a multinomial coefficient
-%       overflows for large counts, Inf/Inf = NaN, so
-%       we're just ignoring those terms, could be problematic.
-
-%       we can use Stirling's approximation for the multinomial coeff, we
+%       but this overflows for large counts, Inf/Inf = NaN.
+%       We can use Stirling's approximation for the multinomial coeff, we
 %       know that factorial overflows for arguments over 170
         if d > 170
             log_d_fact = d*log(d) - d;
