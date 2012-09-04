@@ -19,6 +19,10 @@ for line in fin:
         # tokenize line in mpileup file
         [chr, pos, ref, depth, reads, Q, mQ] = line.split()
 
+        # format the chr string in a consitent way
+        if chr[0] != 'c':
+            chr = 'chr'+chr
+
         # convert read string to simple sequence of nucleotides
         # capital letters for forward strand, lower case for reverse
         reads = re.sub(r'\^\^','', reads)
