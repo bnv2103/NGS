@@ -4,8 +4,8 @@
 bam=$1 # alignment file
 bed=$2 # a bed file listing genes and amplicon regions
 ref=$3 #"/ifs/home/c2b2/ngs_lab/ngs/data/resources/ionTorrent_hg19/hg19.fasta" # reference genome
-
-outdir=$bam.mpileups
+outdir=$4
+#outdir=$bam.mpileups
 rm -rf $outdir
 mkdir -p $outdir
 
